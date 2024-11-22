@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Para garantir que a página seja responsiva -->
+  <title>Login</title>
+  <link rel="stylesheet" href="css/styles2.css">
+  <link rel="stylesheet" href="css/styles.css"> <!-- Acesse o CSS corretamente a partir da pasta public -->
+</head>
+<body>
+  <header>
+    <h1>Ministério do Esporte</h1>
+    <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="IMG1">
+  </header>
+
+  <div class="login-container">
+    <img src="images/ASSINATURAS_ESPORTE__PRINCIPAL VERTICAL.png" class="logo" alt="Ministério do Esporte"> <!-- Acesse a imagem corretamente a partir da pasta public -->
+    
+    <form action="/login" method="POST">
+      <input type="text" name="email" placeholder="E-mail" required>
+      <input type="password" name="senha" placeholder="Senha" required>
+      <!-- Botão de login -->
+      <button type="submit">Entrar</button>
+      <!-- Botão GOV.BR -->
+      <button class="btn-govbr" type="" onclick="showGovBrMessage()">
+        <img src="images/govbr.png" alt="Ícone GOV.BR">
+      </button>
+
+      <% if (typeof error !== 'undefined' && error) { %>
+        <p style="color: red;"><%= error %></p>
+      <% } %>
+
+    </form>
+
+    <!-- Link para a página de cadastro -->
+    <p><a href="/cadastro" class="link-cadastro">Não tem uma conta? Cadastre-se aqui</a></p>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 Ministério do Esporte</p>
+  </footer>
+
+  <script>
+    // Exibe mensagem ao clicar no botão
+    function showGovBrMessage() {
+      alert('Função disponível em breve!');
+    }
+  </script>
+
+</body>
+</html>

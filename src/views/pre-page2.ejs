@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário Técnico - Projeto/Evento</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+
+<header class="header">
+    <h2 class="header-title">Ministério do Esporte</h2>
+    <img src="img/Imagem1.png" alt="Logo" class="header-logo">
+</header>
+
+<div class="container1">
+    <!-- Escolhas principais -->
+    <div class="choice-container" id="choiceContainer">
+        <h1 class="main-title">Formulário Técnico - Projeto ou Evento</h1>
+        <p>Escolha uma das opções abaixo para continuar:</p>
+        <button class="btn-primary" onclick="window.location.href = '/Formulario-merito';">Gerar Novo Projeto</button>
+        <button class="btn-secondary" onclick="showSearchForm()">Consultar Projeto Existente</button>
+    </div>
+
+    <!-- Formulário de consulta (inicialmente oculto) -->
+    <div id="searchSection" class="hidden">
+        <h2>Consultar Projeto Existente</h2>
+        <form id="searchForm">
+            <label for="proposalNumber" class="form-label">Número da Proposta:</label>
+            <input type="text" id="proposalNumber" name="proposalNumber" class="form-input" required>
+            <button type="submit" class="btn-primary">Consultar</button>
+        </form>
+
+        <!-- Resultado da consulta (inicialmente oculto) -->
+        <div id="resultSection" class="hidden">
+            <h3>Informações do Projeto</h3>
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Número da Proposta</th>
+                        <th>Objeto</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="resultTable"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<footer class="footer">
+    &copy; 2024 Ministério do Esporte. Todos os direitos reservados.
+</footer>
+
+<script>
+    // Função para exibir o formulário de pesquisa
+    function showSearchForm() {
+        document.getElementById("choiceContainer").classList.add("hidden"); // Oculta os botões iniciais
+        document.getElementById("searchSection").classList.remove("hidden"); // Exibe o formulário de consulta
+    }
+
+    // Submete o formulário de consulta
+    document.getElementById("searchForm").addEventListener("submit", async function (event) {
+        event.preventDefault();
+
+        const proposalNumber = document.getElementById("proposalNumber").value.trim();
+
+        if (!proposalNumber) {
+            alert("Por favor, insira um número de proposta.");
+            return;
+        }
+
+        // Faz uma requisição para o backend (Node.js + PostgreSQL)
+        try {
+            const response = await fetch(`/api/projetos/${proposalNumber}`, {
+                method: "GET",
+                headers: { "Content-Type": "application/json" },
+            });
+
+            if (!response.ok) {
+                throw new Error("Projeto não encontrado.");
+            }
+
+            const data = await response.json();
+            displayResult(data);
+        } catch (error) {
+            alert("Erro ao consultar o projeto: " + error.message);
+        }
+    });
+
+    // Função para exibir os resultados na tabela
+    function displayResult(data) {
+        const resultTable = document.getElementById("resultTable");
+        resultTable.innerHTML = `
+            <tr>
+                <td>${data.proposalNumber}</td>
+                <td>${data.objeto}</td>
+                <td>${data.status}</td>
+            </tr>
+        `;
+
+        document.getElementById("resultSection").classList.remove("hidden"); // Exibe a seção de resultados
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Usuário</title>
+  <link rel="stylesheet" href="/css/styles1.css">
+  <link rel="stylesheet" href="css/styles.css"> <!-- Mantém o uso do CSS fornecido -->
+</head>
+<body>
+  <header>
+    <h1>Ministério do Esporte</h1>
+    <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="IMG1">
+  </header>
+
+  <div class="cadastro-container">
+    <img src="images/ASSINATURAS_ESPORTE__PRINCIPAL VERTICAL.png" class="logo" alt="Ministério do Esporte">
+    <form action="/verificar-codigo" method="POST">
+        <input type="email" name="email" placeholder="Digite seu e-mail" required>
+        <input type="text" name="codigo" placeholder="Digite o código de verificação" required maxlength="5">
+        <button type="submit">Verificar</button>
+      </form>
+  </div>
+
+  <footer>
+    <p>&copy; 2024 Ministério do Esporte</p>
+  </footer>
+
+  <% if (typeof error !== 'undefined') { %>
+    <div class="error-message"><%= error %></div>
+  <% } %>
+
+  <h2>Parabéns!</h2>
+<p>Seu e-mail (<%= email %>) foi verificado com sucesso.</p>
+<a href="/login" class="btn">Ir para o Login</a>
+  
+</body>
+</html>

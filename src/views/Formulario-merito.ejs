@@ -1,0 +1,672 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário Técnico - Projeto/Evento</title>
+    <link rel="stylesheet" href="/public/css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        /* Reset padrão */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f4f7f9;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        /* Header */
+        header {
+            background-color: #005CAA;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 20px 30px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        }
+
+        header h1 {
+            font-size: 1.8em;
+            font-weight: bold;
+            margin: 0;
+        }
+
+        .logo-header {
+            height: 50px;
+        }
+
+        /* Container principal */
+        .container {
+            max-width: 1200px;
+            margin: 30px auto;
+            background: #ffffff;
+            border-radius: 10px;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            flex: 1;
+        }
+
+        html, body {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Abas */
+        .tabs {
+            display: flex;
+            flex-wrap: wrap;
+            border-bottom: 3px solid #005CAA;
+            margin-bottom: 20px;
+            background-color: #f4f7f9;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 15px 10px;
+            cursor: pointer;
+            background-color: #ffffff;
+            color: #005CAA;
+            font-weight: bold;
+            border-right: 1px solid #ddd;
+            transition: background-color 0.3s, color 0.3s;
+        }
+
+        .tab:last-child {
+            border-right: none;
+        }
+
+        .tab:hover {
+            background-color: #e8f0ff;
+        }
+
+        .tab.active {
+            background-color: #005CAA;
+            color: #ffffff;
+            border-bottom: 3px solid #ffffff;
+        }
+
+        /* Conteúdo das abas */
+        .tab-content {
+            display: none;
+            padding: 20px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* Formulários */
+        form label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #005CAA;
+        }
+
+        form input,
+        form textarea,
+        form select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 16px;
+            color: #555;
+        }
+
+        form input:focus,
+        form textarea:focus,
+        form select:focus {
+            border-color: #005CAA;
+            outline: none;
+            box-shadow: 0 0 5px rgba(0, 92, 170, 0.2);
+        }
+
+        form button {
+            background-color: #005CAA;
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        form button:hover {
+            background-color: #003d80;
+        }
+
+        #submitAll {
+            margin: 20px auto;
+            display: block;
+            background-color: #28a745;
+            color: white;
+            padding: 15px 30px;
+            font-size: 18px;
+            font-weight: bold;
+            text-align: center;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #submitAll:hover {
+            background-color: #218838;
+        }
+
+        /* Rodapé */
+        footer {
+            text-align: center;
+            background-color: #005CAA;
+            color: white;
+            padding: 15px;
+            font-size: 0.9em;
+        }
+
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab {
+                flex: none;
+                text-align: left;
+                padding: 10px 15px;
+                border-bottom: 1px solid #ddd;
+            }
+
+            .tab:last-child {
+                border-bottom: none;
+            }
+
+            #submitAll {
+                font-size: 16px;
+                padding: 12px 20px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>Ministério do Esporte</h1>
+        <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="Ministério do Esporte">
+    </header>
+        <div class="container">
+            <button class="tab active" data-tab="tab1">1.1 Identificação</button>
+            <button class="tab" data-tab="tab2">1.2 Responsável</button>
+            <button class="tab" data-tab="tab3">1.3 Dimensão</button>
+            <button class="tab" data-tab="tab4">1.4 Localidade</button>
+            <button class="tab" data-tab="tab5">1.5 População</button>
+            <button class="tab" data-tab="tab6">1.6 Entidade</button>
+            <button class="tab" data-tab="tab7">1.7 Entidades Parceiras</button>
+            <button class="tab" data-tab="tab8">1.8 Coordenador</button>
+            <button class="tab" data-tab="tab9">1.9 Capacidade Técnica</button>
+            <button class="tab" data-tab="tab10">2.1 Objeto</button>
+            <button class="tab" data-tab="tab11">2.2 Justificativa</button>
+            <button class="tab" data-tab="tab12">2.3 Objetivos</button>
+            <button class="tab" data-tab="tab13">2.4 Objetivos Específicos</button>
+            <button class="tab" data-tab="tab14">3.1 Metodologia</button>
+            <button class="tab" data-tab="tab15">3.2 Nucleo</button>
+            <button class="tab" data-tab="tab16">3.3 Modalidades</button>
+            <button class="tab" data-tab="tab17">3.4 Reuniões</button>
+            <button class="tab" data-tab="tab18">3.5 Materiais</button>
+            <button class="tab" data-tab="tab19">3.6 Uniformes</button>
+            <button class="tab" data-tab="tab20">3.7 Equipe de Trabalho</button>
+            <button class="tab" data-tab="tab21">3.8 Divulgação</button>
+     
+  
+        <!-- Conteúdo das Abas -->
+        <div class="tab-content active" id="tab1">
+            <form id="formTab1">
+                <fieldset>
+                    <legend>1.1 Identificação da Proponente</legend>
+                    <label for="cnpjProponente">CNPJ da Proponente:</label>
+                    <input type="text" id="cnpjProponente" name="cnpjProponente" required>
+                    <label for="nomeProponente">Nome da Proponente:</label>
+                    <input type="text" id="nomeProponente" name="nomeProponente" required>
+                    <label for="nomeDirigente">Nome do Dirigente:</label>
+                    <input type="text" id="nomeDirigente" name="nomeDirigente" required>
+                    <label for="telefoneDirigente">Telefone de Contato (DDD):</label>
+                    <input type="text" id="telefoneDirigente" name="telefoneDirigente" required>
+                    <label for="emailDirigente">E-mail:</label>
+                    <input type="email" id="emailDirigente" name="emailDirigente" required>
+                </fieldset>
+                <button type="button" onclick="saveTab('tab1')">Salvar Informações Gerais</button>
+            </form>
+        </div>
+
+        <!-- Repetir a estrutura acima para cada aba subsequente -->
+        <!-- Exemplo para "1.2 Responsável pela Elaboração" -->
+        <div class="tab-content" id="tab2">
+            <form id="formTab2">
+                <fieldset>
+                    <legend>1.2 Responsável pela Elaboração</legend>
+                    <label for="responsavelNome">Nome:</label>
+                    <input type="text" id="responsavelNome" name="responsavelNome" required>
+                    <label for="responsavelEmail">E-mail:</label>
+                    <input type="email" id="responsavelEmail" name="responsavelEmail" required>
+                    <label for="responsavelTelefone">Telefone de Contato (DDD):</label>
+                    <input type="text" id="responsavelTelefone" name="responsavelTelefone" required>
+                </fieldset>
+                <button type="button" onclick="saveTab('tab2')">Salvar Responsável</button>
+            </form>
+        </div>
+
+<!-- Abas para 1.3 Dimensão -->
+<div class="tab-content" id="tab3">
+    <h3>1.3 Dimensão</h3>
+    <form id="formTab3">
+        <label for="dimensaoEducacional">
+            <input type="radio" id="dimensaoEducacional" name="dimensaoEvento" value="educacional" required>
+            Evento Educacional
+        </label>
+        <label for="dimensaoParticipacao">
+            <input type="radio" id="dimensaoParticipacao" name="dimensaoEvento" value="participacao" required>
+            Evento de Participação
+        </label>
+        <button type="button" onclick="saveTab('tab3')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 1.4 Localidade -->
+<div class="tab-content" id="tab4">
+    <h3>1.4 Localidade</h3>
+    <form id="formTab4">
+        <label for="idh">IDH:</label>
+        <input type="text" id="idh" name="idh" required>
+        <label for="idhFonte">Fonte:</label>
+        <input type="text" id="idhFonte" name="idhFonte" required>
+        <label for="idhAno">Ano de Referência:</label>
+        <input type="number" id="idhAno" name="idhAno" required>
+        <button type="button" onclick="saveTab('tab4')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 1.5 População -->
+<div class="tab-content" id="tab5">
+    <h3>1.5 População</h3>
+    <form id="formTab5">
+        <label for="numeroHabitantes">Número de Habitantes:</label>
+        <input type="number" id="numeroHabitantes" name="numeroHabitantes" required>
+        <label for="habitantesFonte">Fonte:</label>
+        <input type="text" id="habitantesFonte" name="habitantesFonte" required>
+        <label for="habitantesAno">Ano de Referência:</label>
+        <input type="number" id="habitantesAno" name="habitantesAno" required>
+        <button type="button" onclick="saveTab('tab5')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 1.6 Entidade -->
+<div class="tab-content" id="tab6">
+    <h3>1.6 Entidade</h3>
+    <form id="formTab6">
+        <label>A Entidade já celebrou parceria com o Ministério?</label>
+        <label for="parceriaSim">
+            <input type="radio" id="parceriaSim" name="parceriaMinisterio" value="sim" required>
+            Sim
+        </label>
+        <label for="parceriaNao">
+            <input type="radio" id="parceriaNao" name="parceriaMinisterio" value="nao" required>
+            Não
+        </label>
+        <label for="numeroParcerias">Número de Parcerias:</label>
+        <input type="number" id="numeroParcerias" name="numeroParcerias">
+        <label for="resultadosParcerias">Resultados das Parcerias:</label>
+        <textarea id="resultadosParcerias" name="resultadosParcerias"></textarea>
+        <button type="button" onclick="saveTab('tab6')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 1.7 Entidades Parceiras -->
+<div class="tab-content" id="tab7">
+    <h3>1.7 Entidades Parceiras</h3>
+    <form id="formTab7">
+        <label for="entidadeNome">Nome:</label>
+        <input type="text" id="entidadeNome" name="entidadeNome" required>
+        <label for="entidadeEmail">E-mail:</label>
+        <input type="email" id="entidadeEmail" name="entidadeEmail" required>
+        <label for="entidadeTelefone">Telefone:</label>
+        <input type="text" id="entidadeTelefone" name="entidadeTelefone" required>
+        <label for="entidadeEndereco">Endereço:</label>
+        <input type="text" id="entidadeEndereco" name="entidadeEndereco" required>
+        <label for="entidadeMunicipio">Município:</label>
+        <input type="text" id="entidadeMunicipio" name="entidadeMunicipio" required>
+        <label for="entidadeUF">UF:</label>
+        <input type="text" id="entidadeUF" name="entidadeUF" required>
+        <label for="entidadeCEP">CEP:</label>
+        <input type="text" id="entidadeCEP" name="entidadeCEP" required>
+        <label for="contribuicaoEntidade">Contribuição:</label>
+        <textarea id="contribuicaoEntidade" name="contribuicaoEntidade"></textarea>
+        <button type="button" onclick="saveTab('tab7')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 1.8 Coordenador -->
+<div class="tab-content" id="tab8">
+    <h3>1.8 Coordenador</h3>
+    <form id="formTab8">
+        <label for="coordenadorNome">Nome:</label>
+        <input type="text" id="coordenadorNome" name="coordenadorNome" required>
+        <label for="coordenadorEmail">E-mail:</label>
+        <input type="email" id="coordenadorEmail" name="coordenadorEmail" required>
+        <label for="coordenadorTelefone">Telefone:</label>
+        <input type="text" id="coordenadorTelefone" name="coordenadorTelefone" required>
+        <button type="button" onclick="saveTab('tab8')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 1.9 Capacidade Técnica -->
+<div class="tab-content" id="tab9">
+    <h3>1.9 Capacidade Técnica</h3>
+    <form id="formTab9">
+        <label>Capacidade Técnica:</label>
+        <label for="capacidadeSim">
+            <input type="radio" id="capacidadeSim" name="capacidadeTecnica" value="sim" required>
+            Sim
+        </label>
+        <label for="capacidadeNao">
+            <input type="radio" id="capacidadeNao" name="capacidadeTecnica" value="nao" required>
+            Não
+        </label>
+        <label for="historicoCapacidade">Histórico:</label>
+        <textarea id="historicoCapacidade" name="historicoCapacidade"></textarea>
+        <button type="button" onclick="saveTab('tab9')">Salvar</button>
+    </form>
+</div>
+
+<div class="tab-content" id="tab10">
+    <h3>2.1 Objeto</h3>
+    <form id="formTab10">
+        <label for="objetoEvento">Descrever o Objeto do Evento:</label>
+        <textarea id="objetoEvento" name="objetoEvento" required></textarea>
+        <button type="button" onclick="saveTab('tab10')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 2.2 Justificativa -->
+<div class="tab-content" id="tab11">
+    <h3>2.2 Justificativa</h3>
+    <form id="formTab11">
+        <label for="justificativaInteresses">Caracterização dos Interesses Recíprocos:</label>
+        <textarea id="justificativaInteresses" name="justificativaInteresses" required></textarea>
+        <label for="justificativaObjetivos">Relação com os Objetivos:</label>
+        <textarea id="justificativaObjetivos" name="justificativaObjetivos" required></textarea>
+        <label for="justificativaPublico">Público-Alvo:</label>
+        <textarea id="justificativaPublico" name="justificativaPublico" required></textarea>
+        <label for="problemaResolvido">Problema a ser Resolvido:</label>
+        <textarea id="problemaResolvido" name="problemaResolvido" required></textarea>
+        <label for="resultadosEsperados">Resultados Esperados:</label>
+        <textarea id="resultadosEsperados" name="resultadosEsperados" required></textarea>
+        <button type="button" onclick="saveTab('tab11')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 2.3 Objetivo Geral -->
+<div class="tab-content" id="tab12">
+    <h3>2.3 Objetivo Geral</h3>
+    <form id="formTab12">
+        <label for="objetivoGeral">Descrever o Objetivo Geral:</label>
+        <textarea id="objetivoGeral" name="objetivoGeral" required></textarea>
+        <button type="button" onclick="saveTab('tab12')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 2.4 Objetivos Específicos -->
+<div class="tab-content" id="tab13">
+    <h3>2.4 Objetivos Específicos</h3>
+    <form id="formTab13">
+        <label for="objetivosEspecificos">Descrever os Objetivos Específicos:</label>
+        <textarea id="objetivosEspecificos" name="objetivosEspecificos" required></textarea>
+        <button type="button" onclick="saveTab('tab13')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 3.1 Metodologia -->
+<div class="tab-content" id="tab14">
+    <h3>3.1 Metodologia</h3>
+    <form id="formTab14">
+        <label for="metodologiaEvento">Descrição Detalhada:</label>
+        <textarea id="metodologiaEvento" name="metodologiaEvento" required></textarea>
+        <button type="button" onclick="saveTab('tab14')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 3.2 Programação -->
+<div class="tab-content" id="tab15">
+    <h3>3.2 nucleo</h3>
+    <form id="formTab15">
+        <label for="nomeEvento">Nome do Evento:</label>
+        <input type="text" id="nomeEvento" name="nomeEvento" required>
+        <label for="periodoRealizacao">Período Previsto para Realização:</label>
+        <input type="text" id="periodoRealizacao" name="periodoRealizacao" required>
+        <label for="localEvento">Local:</label>
+        <input type="text" id="localEvento" name="localEvento" required>
+        <button type="button" onclick="saveTab('tab15')">Salvar</button>
+    </form>
+</div>
+<div class="tab-content" id="tab16">
+    <h3>3.3 Modalidades</h3>
+    <form id="formTab16">
+        <label for="modalidadesProjeto">Modalidades Oferecidas:</label>
+        <textarea id="modalidadesProjeto" name="modalidadesProjeto" rows="4" placeholder="Descreva as modalidades esportivas ou atividades oferecidas pelo projeto." required></textarea>
+        <button type="button" onclick="saveTab('formTab16')">Salvar</button>
+    </form>
+</div>
+
+<!-- 3.4 Reuniões -->
+<div class="tab-content" id="tab17">
+    <h3>3.4 Reuniões</h3>
+    <form id="formTab17">
+        <label for="frequenciaReunioes">Frequência das Reuniões:</label>
+        <input type="text" id="frequenciaReunioes" name="frequenciaReunioes" placeholder="Ex: Semanal, Mensal" required>
+        <label for="objetivoReunioes">Objetivo das Reuniões:</label>
+        <textarea id="objetivoReunioes" name="objetivoReunioes" rows="4" required></textarea>
+        <button type="button" onclick="saveTab('tab17')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 3.5 Materiais -->
+<div class="tab-content" id="tab18">
+    <h3>3.5 Materiais</h3>
+    <form id="formTab18">
+        <label>Adicionar Materiais/Serviços:</label>
+        <table id="materiaisTable">
+            <thead>
+                <tr>
+                    <th>Nº</th>
+                    <th>Descrição</th>
+                    <th>Quantidade</th>
+                    <th>Memória de Cálculo</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" name="numeroMaterial[]" required></td>
+                    <td><input type="text" name="descricaoMaterial[]" required></td>
+                    <td><input type="number" name="quantidadeMaterial[]" required></td>
+                    <td><textarea name="memoriaCalculo[]" required></textarea></td>
+                    <td><button type="button" onclick="removeRow(this)">Remover</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" onclick="addRow()">Adicionar Linha</button>
+        <button type="button" onclick="saveTab('tab18')">Salvar</button>
+    </form>
+</div>
+<div class="tab-content" id="tab19">
+    <h3>3.6 Uniformes</h3>
+    <form id="formTab19">
+        <table id="uniformesTable">
+            <thead>
+                <tr>
+                    <th>Vestimenta</th>
+                    <th>Especificação</th>
+                    <th>Quantidade</th>
+                    <th>Memória de Cálculo</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" name="vestimentaUniformes[]" required></td>
+                    <td><input type="text" name="especificacaoUniformes[]" required></td>
+                    <td><input type="number" name="quantidadeUniformes[]" min="1" required></td>
+                    <td><textarea name="memoriaUniformes[]" rows="2" required></textarea></td>
+                    <td><button type="button" onclick="removerLinha(this)">Remover</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" onclick="adicionarLinha('uniformesTable')">Adicionar Uniforme</button>
+        <button type="button" onclick="saveTab('tab19')">Salvar</button>
+    </form>
+</div>
+
+<!-- 3.7 Equipe de Trabalho -->
+<div class="tab-content" id="tab20">
+    <h3>3.7 Equipe de Trabalho</h3>
+    <form id="formTab37">
+        <p>(Inserir todos os recursos humanos envolvidos na realização do projeto e identificar quais serão cedidos pela proponente)</p>
+        <table id="equipeTable">
+            <thead>
+                <tr>
+                    <th>Função</th>
+                    <th>Qtd RH</th>
+                    <th>Atribuição / Carga Horária Semanal / Diária</th>
+                    <th>Qtd Meses / Diárias</th>
+                    <th>Ação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><input type="text" name="funcaoEquipe[]" placeholder="Ex: Coordenador Geral" required></td>
+                    <td><input type="number" name="quantidadeRh[]" min="1" required></td>
+                    <td><textarea name="atribuicaoCargaHoraria[]" rows="2" placeholder="Descreva a atribuição e carga horária" required></textarea></td>
+                    <td><input type="number" name="quantidadeMesesDiarias[]" min="1" placeholder="Qtd Meses/Diárias" required></td>
+                    <td><button type="button" onclick="removerLinha(this)">Remover</button></td>
+                </tr>
+            </tbody>
+        </table>
+        <button type="button" onclick="adicionarLinha('equipeTable')">Adicionar Função</button>
+        <button type="button" onclick="saveTab('tab20')">Salvar</button>
+    </form>
+</div>
+
+<!-- Abas para 3.8 Divulgação -->
+<div class="tab-content" id="tab21">
+    <h3>3.8 Divulgação</h3>
+    <form id="formTab17">
+        <label for="meiosDivulgacao">Meios de Divulgação:</label>
+        <label><input type="checkbox" name="meiosDivulgacao[]" value="internet"> Internet</label>
+        <label><input type="checkbox" name="meiosDivulgacao[]" value="carros"> Carros de Som</label>
+        <label><input type="checkbox" name="meiosDivulgacao[]" value="cartazes"> Cartazes</label>
+        <button type="button" onclick="saveTab('tab17')">Salvar</button>
+    </form>
+    </div>
+
+        <button id="submitAll" onclick="submitAll()">Enviar Projeto</button>
+    </div>
+</div>  
+
+    <footer>
+        <p>&copy; 2024 Ministério do Esporte</p>
+      </footer>
+
+    <script>
+        // Alternar entre as abas
+        const tabs = document.querySelectorAll(".tab");
+        const contents = document.querySelectorAll(".tab-content");
+
+        tabs.forEach(tab => {
+            tab.addEventListener("click", () => {
+                tabs.forEach(t => t.classList.remove("active"));
+                tab.classList.add("active");
+
+                contents.forEach(content => content.classList.remove("active"));
+                document.getElementById(tab.dataset.tab).classList.add("active");
+            });
+        });
+
+        // Salvar dados por aba
+        function saveTab(tabId) {
+            const form = document.getElementById(`form${tabId}`);
+            const formData = new FormData(form);
+
+            const data = {};
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+
+            console.log(`Dados da ${tabId} salvos:`, data);
+            alert(`Informações da ${tabId} salvas com sucesso!`);
+        }
+
+        // Enviar todos os dados do formulário
+        function submitAll() {
+            const allData = {};
+            const forms = document.querySelectorAll("form");
+
+            forms.forEach(form => {
+                const formData = new FormData(form);
+                formData.forEach((value, key) => {
+                    allData[key] = value;
+                });
+            });
+
+            console.log("Dados completos:", allData);
+            alert("Projeto enviado com sucesso!");
+        }
+
+        function addRow(tableId) {
+    const table = document.getElementById(tableId);
+    const newRow = table.querySelector("tbody tr").cloneNode(true);
+
+    // Limpa os campos da nova linha
+    newRow.querySelectorAll("input, textarea").forEach((input) => {
+        input.value = "";
+    });
+
+    table.querySelector("tbody").appendChild(newRow);
+}
+
+function removeRow(button) {
+    const row = button.closest("tr");
+    const tableBody = row.parentNode;
+
+    // Evita remover todas as linhas
+    if (tableBody.querySelectorAll("tr").length > 1) {
+        row.remove();
+    } else {
+        alert("Não é possível remover todas as linhas!");
+    }
+}
+
+    </script>
+</body>
+</html>

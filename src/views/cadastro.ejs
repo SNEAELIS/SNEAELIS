@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Usuário</title>
+  <link rel="stylesheet" href="css/styles1.css">
+  <link rel="stylesheet" href="css/styles.css"> <!-- Acesse o CSS corretamente a partir da pasta public -->
+</head>
+<body>
+  <header>
+    <h1>Ministério do Esporte</h1>
+    <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="IMG1">
+  </header>
+
+  <% if (typeof error !== 'undefined') { %>
+    <div class="error-message"><%= error %></div>
+  <% } %>  
+  <div class="cadastro-container">
+    <img src="images/ASSINATURAS_ESPORTE__PRINCIPAL VERTICAL.png" class="logo" alt="Ministério do Esporte">
+    <form action="/cadastro" method="POST">
+      <input type="text" name="nome_completo" placeholder="Digite seu nome completo" required>
+      <input type="email" name="email" placeholder="Digite seu e-mail" required>
+      <input type="text" name="cpf" placeholder="Digite seu CPF" maxlength="14" required>
+      <input type="password" name="senha" placeholder="Digite sua senha" required>
+
+        <!-- Dropdown para selecionar o nível de acesso -->
+  <label for="nivel_acesso">Nível de Acesso:</label>
+  <select name="nivel_acesso" id="nivel_acesso" required>
+    <option value="1">Básico</option>
+    <option value="2">Médio</option>
+    <option value="3">Administrador (acesso total)</option>
+  </select>
+      <button type="submit">Cadastrar</button>
+    </form>
+
+    <p>Já tem uma conta? <a href="/login">Faça login aqui</a>.</p>
+  </div>
+
+
+  <footer>
+    <p>&copy; 2024 Ministério do Esporte</p>
+  </footer>
+</body>
+
+</html>

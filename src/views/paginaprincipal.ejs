@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Página Inicial</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <script>
+      document.addEventListener("DOMContentLoaded", () => {
+    const menuItems = document.querySelectorAll(".sidebar ul li");
+
+    menuItems.forEach(item => {
+      item.addEventListener("click", function () {
+        // Alterna a classe "active" apenas no item clicado
+        this.classList.toggle("active");
+
+        // Fecha outros submenus (opcional)
+        menuItems.forEach(otherItem => {
+          if (otherItem !== this) {
+            otherItem.classList.remove("active");
+          }
+        });
+      });
+    });
+  });
+
+  function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    const content = document.querySelector('.content');
+    sidebar.classList.toggle('open');
+    content.classList.toggle('expanded');
+  }
+  </script>
+</head>
+<body>
+  <!-- Cabeçalho -->
+  <header>
+    <button class="menu-btn" onclick="toggleSidebar()">
+      <i class="fas fa-bars"></i>
+    </button>
+    <h1>Ministério do Esporte</h1>
+    <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="IMG1">
+  </header>
+
+  <!-- Sidebar -->
+  <div class="sidebar">
+    <div class="user-info">
+      <h2>Bem-vindo, <%= user.nome_completo %></h2>
+      <p>Nível de acesso: <%= user.nivel_acesso %></p>
+    </div>
+    <ul>
+      <% if (user.nivel_acesso >= 1) { %>
+        <li class="menu-item">
+          <i class="fas fa-folder"></i> Formalização
+          <ul class="submenu hidden">
+            <li><a href="Documentações.html">OSC/Sociedade Civil</a></li>
+            <li><a href="Formulario_convênio.html">Entidades Públicas</a></li>
+          </ul>
+        </li>
+      <% } %>
+  
+      <% if (user.nivel_acesso >= 2) { %>
+        <li class="menu-item">
+          <i class="fas fa-file-alt"></i> Acompanhamento
+          <ul class="submenu hidden">
+            <li><a href="Formulário_Relma.html">Ficha RTMA</a></li>
+            <li><a href="Visita_in_Loco.html">Ficha de Acompanhamento</a></li>
+          </ul>
+        </li>
+      <% } %>
+  
+      <% if (user.nivel_acesso >= 3) { %>
+        <li>
+          <a href="pre-page2"><i class="fas fa-star"></i> Mérito - Análise de Projeto</a>
+        </li>
+        <li>
+          <a href="admin-dashboard.html"><i class="fas fa-user-shield"></i> Painel Administrativo</a>
+        </li>
+      <% } %>
+    </ul>
+  </div>
+
+  <!-- Conteúdo Principal -->
+  <div class="content">
+    <iframe src="https://www.in.gov.br/leiturajornal?secao=dou3&data=hoje" title="Diário Oficial da União"></iframe>
+  </div>
+
+  <!-- Rodapé -->
+  <footer>
+    <p>&copy; 2024 Ministério do Esporte</p>
+  </footer>
+</body>
+</html>

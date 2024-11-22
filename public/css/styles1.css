@@ -1,0 +1,162 @@
+/* Estilo Geral */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #eef2f3;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+header.header-login {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 20px;
+    background-color: #005CAA;
+    color: white;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+header.header-login h1 {
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+header.header-login .logo-header {
+    max-width: 120px;
+    height: auto;
+}
+
+/* Container Principal */
+.cadastro-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    flex-grow: 1; /* Expande verticalmente */
+    text-align: center;
+    background-color: white;
+    max-width: 400px;
+    margin: 50px auto;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.cadastro-container .logo {
+    max-width: 150px;
+    height: auto;
+    margin-bottom: 20px;
+}
+
+.cadastro-container h2 {
+    color: #005CAA;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+}
+
+.cadastro-container p {
+    font-size: 1rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.cadastro-container form {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 15px;
+}
+
+form input {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+form button {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+    background-color: #005CAA;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+form button:hover {
+    background-color: #003d80;
+    transform: translateY(-2px);
+}
+
+a.btn {
+    display: inline-block;
+    padding: 12px 20px;
+    font-size: 14px;
+    background-color: #005CAA;
+    color: white;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+}
+
+a.btn:hover {
+    background-color: #003d80;
+}
+
+/* Mensagem de Erro */
+.error-message {
+    color: red;
+    font-size: 14px;
+    margin-top: 10px;
+}
+
+/* Rodapé */
+footer {
+    text-align: center;
+    padding: 10px;
+    background-color: #0033A0;
+    color: white;
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Responsividade */
+@media (max-width: 768px) {
+    header.header-login {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    header.header-login .logo-header {
+        max-width: 100px;
+    }
+
+    .cadastro-container .logo {
+        max-width: 100px;
+    }
+
+    .cadastro-container {
+        max-width: 300px;
+    }
+
+    form input {
+        padding: 10px;
+        font-size: 12px;
+    }
+
+    form button, a.btn {
+        padding: 10px;
+        font-size: 12px;
+    }
+}
