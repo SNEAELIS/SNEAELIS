@@ -28,12 +28,12 @@ app.use(express.urlencoded({ extended: true }));
 // Rotas
 app.use('/', useRoutes);
 
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 
 exports.cadastrarUsuario = async (req, res) => {
   const { nome_completo, email, cpf, senha } = req.body;
   const codigoVerificacao = gerarCodigoVerificacao();
-  const senhaHash = await bcrypt.hash(senha, 10); // Gera o hash da senha
+  const senhaHash = await bcryptjs.hash(senha, 10); // Gera o hash da senha
 
   try {
     await pool.query(

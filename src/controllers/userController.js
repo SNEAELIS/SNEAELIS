@@ -1,6 +1,6 @@
 const pool = require('../../config/db');
 const nodemailer = require('nodemailer');
-const bcrypt = require('bcrypt');
+const bcryptjs = require('bcryptjs');
 
 // Configuração do nodemailer com Gmail
 const transporter = nodemailer.createTransport({
@@ -93,7 +93,7 @@ exports.loginUsuario = async (req, res) => {
       const user = result.rows[0];
       console.log('Usuário encontrado:', user);
 
-      const senhaValida = await bcrypt.compare(senha, user.senha);
+      const senhaValida = await bcryptjs.compare(senha, user.senha);
       if (!senhaValida) {
           console.log('Senha inválida para o usuário:', email);
           return res.render('login', { error: 'Usuário ou senha incorretos.' });
