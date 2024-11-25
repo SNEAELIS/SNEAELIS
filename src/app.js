@@ -6,7 +6,7 @@ const pool = require('../config/db');
 
 async function criarTabelaUsuarios() {
   const query = `
-    CREATE TABLE IF NOT EXISTS usuarios (
+    CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       nome_completo VARCHAR(255) NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
@@ -20,9 +20,9 @@ async function criarTabelaUsuarios() {
 
   try {
     await pool.query(query);
-    console.log('Tabela usuarios criada ou já existe.');
+    console.log('Tabela users criada ou já existe.');
   } catch (err) {
-    console.error('Erro ao criar a tabela usuarios:', err);
+    console.error('Erro ao criar a tabela users:', err);
   }
 }
 
