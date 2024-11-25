@@ -4,6 +4,15 @@ const useRoutes = require('./routes/useRoutes');
 const session = require('express-session');
 const pool = require('../config/db');
 
+async function habilitarPgcrypto() {
+  try {
+    await pool.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
+    console.log('Extensão pgcrypto habilitada ou já existente.');
+  } catch (err) {
+    console.error('Erro ao habilitar pgcrypto:', err);
+  }
+}
+
 async function criarTabelaUsuarios() {
   const query = `
     CREATE TABLE IF NOT EXISTS users (
@@ -26,19 +35,25 @@ async function criarTabelaUsuarios() {
   }
 }
 
-criarTabelaUsuarios();
+// Habilita a extensão e cria a tabela
+(async () => {
+  await habilitarPgcrypto();
+  await criarTabelaUsuarios();
+})();
 
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-app.use(session({
-  secret: 'segredo_super_seguranca', // Substitua por uma chave segura
-  resave: false,
-  saveUninitialized: true,
-  cookie: { secure: false }  
-}));
+app.use(
+  session({
+    secret: 'segredo_super_seguranca', // Substitua por uma chave segura
+    resave: false,
+    saveUninitialized: true,
+    cookie: { secure: false },
+  })
+);
 
 // Configuração do EJS como view engine
 app.set('view engine', 'ejs');
