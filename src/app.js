@@ -2,7 +2,7 @@ const express = require('express');
 const path = require('path'); // Para lidar com os caminhos absolutos
 const useRoutes = require('./routes/useRoutes');
 const session = require('express-session');
-const pool = require('./config/db');
+const pool = require('../config/db');
 
 async function criarTabelaUsuarios() {
   const query = `
