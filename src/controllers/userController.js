@@ -1,6 +1,8 @@
-const pool = require('../../config/db');
+const getPool = require('../../config/db'); // Importa a função para obter o pool
 const nodemailer = require('nodemailer');
 const bcryptjs = require('bcryptjs');
+
+let pool = getPool(); // Obtém o pool configurado dinamicamente
 
 // Configuração do nodemailer com Gmail
 const transporter = nodemailer.createTransport({
@@ -18,7 +20,8 @@ const gerarCodigoVerificacao = () => Math.floor(10000 + Math.random() * 90000).t
 
 // Controlador para cadastrar usuário
 exports.cadastrarUsuario = async (req, res) => {
-  const { nome_completo, email, cpf, senha, nivel_acesso } = req.body; // Inclua o nível de acesso no cadastro
+  pool = getPool(); // Atualiza o pool antes da operação
+  const { nome_completo, email, cpf, senha, nivel_acesso } = req.body;
   const codigoVerificacao = gerarCodigoVerificacao();
 
   try {
@@ -52,10 +55,10 @@ exports.cadastrarUsuario = async (req, res) => {
 
 // Controlador para verificar código de verificação
 exports.verificarCodigo = async (req, res) => {
+  pool = getPool(); // Atualiza o pool antes da operação
   const { email, codigo } = req.body;
 
   try {
-    // Atualiza o status de verificado no banco de dados
     const result = await pool.query(
       `UPDATE users SET verificado = TRUE 
        WHERE email = $1 AND codigo_verificacao = $2 RETURNING *`,
@@ -63,53 +66,50 @@ exports.verificarCodigo = async (req, res) => {
     );
 
     if (result.rowCount === 0) {
-      // Renderiza a página de verificação com erro
       return res.status(400).render('verificar', { email, error: 'Código de verificação inválido ou expirado.' });
     }
 
-    // Renderiza uma página de sucesso após a verificação
     res.render('verificacao-sucesso', { email });
   } catch (error) {
     console.error('Erro ao verificar código:', error);
     res.status(500).render('verificar', { email, error: 'Erro ao verificar código.' });
   }
-// Controlador para autenticar o usuário
-
 };
 
+// Controlador para autenticar o usuário
 exports.loginUsuario = async (req, res) => {
+  pool = getPool(); // Atualiza o pool antes da operação
   const { email, senha } = req.body;
 
   try {
-      console.log(`Tentativa de login com email: ${email}`);
+    console.log(`Tentativa de login com email: ${email}`);
 
-      const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
 
-      if (result.rowCount === 0) {
-          console.log('Usuário não encontrado no banco de dados.');
-          return res.render('login', { error: 'Usuário ou senha incorretos.' });
-      }
+    if (result.rowCount === 0) {
+      console.log('Usuário não encontrado no banco de dados.');
+      return res.render('login', { error: 'Usuário ou senha incorretos.' });
+    }
 
-      const user = result.rows[0];
-      console.log('Usuário encontrado:', user);
+    const user = result.rows[0];
+    console.log('Usuário encontrado:', user);
 
-      const senhaValida = await bcryptjs.compare(senha, user.senha);
-      if (!senhaValida) {
-          console.log('Senha inválida para o usuário:', email);
-          return res.render('login', { error: 'Usuário ou senha incorretos.' });
-      }
+    const senhaValida = await bcryptjs.compare(senha, user.senha);
+    if (!senhaValida) {
+      console.log('Senha inválida para o usuário:', email);
+      return res.render('login', { error: 'Usuário ou senha incorretos.' });
+    }
 
-      // Salve o usuário na sessão
-      req.session.user = {
-          nome_completo: user.nome_completo,
-          nivel_acesso: user.nivel_acesso,
-          email: user.email,
-      };
+    req.session.user = {
+      nome_completo: user.nome_completo,
+      nivel_acesso: user.nivel_acesso,
+      email: user.email,
+    };
 
-      console.log(`Login bem-sucedido para o usuário: ${email}`);
-      res.redirect('/paginaprincipal');
+    console.log(`Login bem-sucedido para o usuário: ${email}`);
+    res.redirect('/paginaprincipal');
   } catch (error) {
-      console.error('Erro ao processar login:', error);
-      res.render('login', { error: 'Erro interno. Por favor, tente novamente.' });
+    console.error('Erro ao processar login:', error);
+    res.render('login', { error: 'Erro interno. Por favor, tente novamente.' });
   }
 };

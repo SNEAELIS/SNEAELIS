@@ -1,12 +1,14 @@
 const express = require('express');
-const path = require('path'); // Para lidar com os caminhos absolutos
+const path = require('path');
 const useRoutes = require('./routes/useRoutes');
 const session = require('express-session');
-const pool = require('../config/db');
+const getPool = require('../config/db'); // Importa a função para obter o pool dinâmico
+
+let pool;
 
 async function habilitarPgcrypto() {
   try {
-    await pool.query(`CREATE EXTENSION IF NOT EXISTS pgcrypto;`);
+    await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
     console.log('Extensão pgcrypto habilitada ou já existente.');
   } catch (err) {
     console.error('Erro ao habilitar pgcrypto:', err);
@@ -29,16 +31,21 @@ async function criarTabelaUsuarios() {
 
   try {
     await pool.query(query);
-    console.log('Tabela users criada ou já existe.');
+    console.log('Tabela users criada ou já existente.');
   } catch (err) {
     console.error('Erro ao criar a tabela users:', err);
   }
 }
 
-// Habilita a extensão e cria a tabela
 (async () => {
-  await habilitarPgcrypto();
-  await criarTabelaUsuarios();
+  pool = getPool(); // Obtemos o pool configurado dinamicamente
+  try {
+    await habilitarPgcrypto();
+    await criarTabelaUsuarios();
+  } catch (err) {
+    console.error('Erro ao configurar o banco de dados:', err);
+    process.exit(1);
+  }
 })();
 
 const app = express();
@@ -48,7 +55,7 @@ app.use(express.json());
 
 app.use(
   session({
-    secret: 'segredo_super_seguranca', // Substitua por uma chave segura
+    secret: 'segredo_super_seguranca',
     resave: false,
     saveUninitialized: true,
     cookie: { secure: false },
@@ -57,39 +64,14 @@ app.use(
 
 // Configuração do EJS como view engine
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views')); // Define o caminho para a pasta de views
+app.set('views', path.join(__dirname, 'views'));
 
 // Middleware para servir arquivos estáticos
-app.use(express.static(path.join(__dirname, '../public'))); // Para acessar CSS e imagens
-
-// Middleware para manipular requisições POST
-app.use(express.urlencoded({ extended: true }));
+app.use(express.static(path.join(__dirname, '../public')));
 
 // Rotas
 app.use('/', useRoutes);
 
-const bcryptjs = require('bcryptjs');
-
-exports.cadastrarUsuario = async (req, res) => {
-  const { nome_completo, email, cpf, senha } = req.body;
-  const codigoVerificacao = gerarCodigoVerificacao();
-  const senhaHash = await bcryptjs.hash(senha, 10); // Gera o hash da senha
-
-  try {
-    await pool.query(
-      `INSERT INTO users (nome_completo, email, cpf, senha, codigo_verificacao) 
-       VALUES ($1, $2, $3, $4, $5)`,
-      [nome_completo, email, cpf, senhaHash, codigoVerificacao]
-    );
-
-    res.status(200).send('Cadastro realizado com sucesso!');
-  } catch (error) {
-    console.error('Erro ao cadastrar usuário:', error);
-    res.status(500).send('Erro ao cadastrar usuário.');
-  }
-};
-
-// Inicializa o servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Servidor rodando na porta ${PORT}`);

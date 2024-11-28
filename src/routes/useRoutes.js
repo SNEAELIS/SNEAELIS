@@ -1,5 +1,7 @@
 const express = require('express');
 const router = express.Router();
+const xlsx = require('xlsx');
+const path = require('path');
 const { cadastrarUsuario, verificarCodigo, loginUsuario } = require('../controllers/userController');
 const { verificarNivelAcesso } = require('../middleware/auth');
 
@@ -66,6 +68,48 @@ router.get('/pre-page2', (req, res) => {
 
 router.get('/formulario-merito', (req, res) => {
   res.render('Formulario-merito');
+});
+
+router.get('/dashboard-pesquisa', (req, res) => {
+  const user = req.session.user; // Verifica o usuário na sessão
+  if (!user) {
+    return res.redirect('/login'); // Redireciona para login se não estiver autenticado
+  }
+  res.render('dashboard-pesquisa', { user }); // Renderiza a página com os dados do usuário
+});
+
+
+router.get('/api/pesquisa-preco', (req, res) => {
+  try {
+    const filePath = path.resolve(__dirname, '../../data/Planilha_Custo.xlsx');
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = 'Resultado (3)';
+    const worksheet = workbook.Sheets[sheetName];
+
+    if (!worksheet) {
+      throw new Error(`A aba "${sheetName}" não foi encontrada.`);
+    }
+
+    const data = xlsx.utils.sheet_to_json(worksheet).map(row => ({
+      META: row['META'] || '',
+      ETAPA: row['ETAPA'] || '',
+      CLASSIFICACAO: row['CLASSIFICAÇÃO'] || '',
+      MODALIDADE: row['MODALIDADE ESPORTIVA'] || '',
+      ITEM_PADRONIZADO: row['ITEM Padronizado'] || '',
+      TIPO_DESPESA: row['TIPO DE DESPESA'] || '',
+      NATUREZA_DESPESA: row['NATUREZA DE DESPESA'] || '',
+      QUANTIDADE: parseInt(row['QUANTIDADE'], 10) || 0,
+      VALOR_UNITARIO: parseFloat(row['VALOR UNITÁRIO']) || 0, // Corrige valores NaN
+      UF: row['UF'] || '',
+      DATA_BASE: row['DATA BASE'] || '',
+    }));
+
+    console.log("Dados enviados para o frontend:", data); // Debug para verificar os dados
+    res.json(data);
+  } catch (error) {
+    console.error('Erro ao processar a planilha:', error.message);
+    res.status(500).json({ error: error.message });
+  }
 });
 
 module.exports = router; // Certifique-se de exportar o roteador
