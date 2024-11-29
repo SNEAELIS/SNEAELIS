@@ -82,8 +82,6 @@ router.get('/dashboard-pesquisa', (req, res) => {
 router.get('/api/pesquisa-preco', (req, res) => {
   try {
     const filePath = path.resolve(__dirname, '../../data/Planilha_Custo.xlsx');
-    console.log("Caminho do arquivo:", filePath); // Log para verificar o caminho
-
     const workbook = xlsx.readFile(filePath);
     const sheetName = 'Resultado (3)';
     const worksheet = workbook.Sheets[sheetName];
@@ -94,24 +92,24 @@ router.get('/api/pesquisa-preco', (req, res) => {
 
     const data = xlsx.utils.sheet_to_json(worksheet).map(row => ({
       META: row['META'] || '',
-      UF_ENTIDADE: (row['UF'] || row['UF_ENTIDADE'] || '').trim().toUpperCase(),
-      VALOR_UNITARIO: parseFloat(row['VALOR UNITÁRIO']) || 0
+      ETAPA: row['ETAPA'] || '',
+      CLASSIFICACAO: row['CLASSIFICAÇÃO'] || '',
+      MODALIDADE: row['MODALIDADE ESPORTIVA'] || '',
+      ITEM_PADRONIZADO: row['ITEM Padronizado'] || '',
+      TIPO_DESPESA: row['TIPO DE DESPESA'] || '',
+      NATUREZA_DESPESA: row['NATUREZA DE DESPESA'] || '',
+      QUANTIDADE: parseInt(row['QUANTIDADE'], 10) || 0,
+      VALOR_UNITARIO: parseFloat(row['VALOR UNITARIO']) || 0,
+      UF_ENTIDADE: (row['UF'] || '').trim().toUpperCase(),
+      DATA_BASE: row['DATA BASE'] || '',
     }));
 
-    console.log("Dados carregados com sucesso:", data); // Log dos dados processados
+    console.log("Dados enviados para o frontend:", data); // Log para validar
     res.json(data);
   } catch (error) {
     console.error('Erro ao processar a planilha:', error.message);
     res.status(500).json({ error: error.message });
   }
 });
-
-fetch('/api/pesquisa-preco')
-  .then(response => {
-    if (!response.ok) throw new Error(`HTTP Error! status: ${response.status}`);
-    return response.json();
-  })
-  .then(data => console.log("Dados recebidos:", data))
-  .catch(error => console.error("Erro na API:", error));
 
 module.exports = router; // Certifique-se de exportar o roteador

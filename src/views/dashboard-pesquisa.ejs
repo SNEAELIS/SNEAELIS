@@ -201,7 +201,7 @@ header h4 {
     }
 
     const normalizedData = data.map(item => {
-      const uf = (item.UF || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+      const uf = (item.UF_ENTIDADE || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
       return {
         META: item.META || "-",
         ETAPA: item.ETAPA || "-",
@@ -211,7 +211,7 @@ header h4 {
         TIPO_DESPESA: item.TIPO_DESPESA || "-",
         QUANTIDADE: parseInt(item.QUANTIDADE) || 0,
         VALOR_UNITARIO: parseFloat(item.VALOR_UNITARIO) || 0,
-        UF: uf || "Sem UF",
+        UF: item.UF_ENTIDADE|| "Sem UF",
         DATA_BASE: item.DATA_BASE || "-"
       };
     });
@@ -247,7 +247,7 @@ header h4 {
           data: "VALOR_UNITARIO",
           render: val => `R$ ${val.toFixed(2).replace(".", ",")}`
         },
-        { data: "UF" },
+        { data: "UF_ENTIDADE" },
         { data: "DATA_BASE" }
       ],
       dom: 'Bfrtip',
@@ -415,3 +415,4 @@ header h4 {
   
 </body>
 </html>
+
