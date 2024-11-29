@@ -15,92 +15,138 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css" />
   <style>
     body {
-      background-color: #f4f4f9;
+      background-color: #f8f9fa;
       font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     }
-   
     header {
-    background-color: #005CAA;
-    color: white;
-    padding-top: 60px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    position: fixed;
-    width: 100%;
-    top: 0;
-    z-index: 1000;
-    height: 60px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    }
-    #map {
-      height: 500px;
-      margin-top: 20px;
-      border-radius: 8px;
-    }
+  background-color: #005CAA;
+  color: white;
+  padding: 15px 20px;
+  display: flex;
+  align-items: center; /* Alinha verticalmente */
+  justify-content: space-between; /* Espaçamento entre título e logo */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: fixed; /* Fixa no topo */
+  top: 0; /* Garante que está no topo */
+  left: 0; /* Remove deslocamentos laterais */
+  width: 100%; /* Ocupa toda a largura */
+  z-index: 1000; /* Fica acima de outros elementos */
+}
+
+header h4 {
+  margin: 0;
+  font-size: 1.5rem; /* Tamanho ajustado do texto */
+  line-height: 1; /* Melhor alinhamento vertical */
+}
+
+.logo-header {
+  max-height: 40px;
+  margin-left: auto; /* Garante que a logo fique alinhada à direita */
+}
     .container {
-      margin-top: 20px;
+      margin-top: 100px;
     }
-    .table-container, .chart-container, .map-container, .filter-container {
+
+    .card {
       background: white;
-      padding: 20px;
-      border-radius: 8px;
+      border: none;
+      border-radius: 10px;
       box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      padding: 20px;
       margin-bottom: 20px;
+    }
+
+    #map {
+      height: 400px;
+      border-radius: 8px;
+    }
+
+    .summary-container .card {
+      text-align: center;
+    }
+
+    .summary-container .card h4 {
+      font-size: 1.5rem;
+      margin-bottom: 10px;
+    }
+
+    .summary-container .card p {
+      font-size: 1.2rem;
+      font-weight: bold;
+      color: #005CAA;
+    }
+
+    table {
+      font-size: 0.9rem;
     }
   </style>
 </head>
+<header>
+    <h4>Ministério do Esporte</h4>
+    <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="Logo Ministério do Esporte">
+</header>
 <body>
-    <header>
-        <h4>Ministério do Esporte</h4>
-        <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="IMG1">
-      </header>
-
   <div class="container">
     <!-- Filtros -->
-    <div class="filter-container">
-      <h2>Filtros</h2>
-      <div class="row mb-3">
-        <div class="col-md-6">
+    <div class="card">
+      <h5>Filtros</h5>
+      <div class="row">
+        <div class="col-md-5">
+          <label for="ufFilter" class="form-label">UF</label>
           <select id="ufFilter" class="form-select">
             <option value="">Todos os UFs</option>
           </select>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-5">
+          <label for="itemFilter" class="form-label">Itens Padronizados</label>
           <select id="itemFilter" class="form-select">
             <option value="">Todos os Itens Padronizados</option>
           </select>
         </div>
+        <div class="col-md-2 d-flex align-items-end">
+          <button id="resetFilters" class="btn btn-outline-primary w-100">Limpar Filtros</button>
+        </div>
       </div>
-      <button id="resetFilters" class="btn btn-secondary">Voltar</button>
     </div>
 
     <!-- Resumo dos Valores -->
-    <div class="summary-container text-center">
-      <h2>Resumo dos Valores</h2>
-      <div class="row">
-        <div class="col-md-4"><h4>Mínimo</h4><p id="min-value">R$ 0,00</p></div>
-        <div class="col-md-4"><h4>Média</h4><p id="avg-value">R$ 0,00</p></div>
-        <div class="col-md-4"><h4>Mediana</h4><p id="median-value">R$ 0,00</p></div>
+    <div class="row summary-container">
+      <div class="col-md-4">
+        <div class="card">
+          <h4>Mínimo</h4>
+          <p id="min-value">R$ 0,00</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card">
+          <h4>Média</h4>
+          <p id="avg-value">R$ 0,00</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card">
+          <h4>Mediana</h4>
+          <p id="median-value">R$ 0,00</p>
+        </div>
       </div>
     </div>
 
     <!-- Gráfico -->
-    <div class="chart-container">
-      <h2><i class="fas fa-chart-column"></i> Itens Aprovados por UF</h2>
+    <div class="card">
+      <h5>Itens Aprovados por UF</h5>
       <canvas id="itemChart"></canvas>
     </div>
 
     <!-- Mapa -->
-    <div class="map-container">
-      <h2><i class="fas fa-map-marked-alt"></i> Distribuição Geográfica</h2>
+    <div class="card">
+      <h5>Distribuição Geográfica</h5>
       <div id="map"></div>
     </div>
 
     <!-- Tabela -->
-    <div class="table-container">
-      <h2><i class="fas fa-table"></i> Dados de Pesquisa</h2>
-      <table class="table table-striped table-hover table-bordered" id="price-table">
+    <div class="card">
+      <h5>Dados de Pesquisa</h5>
+      <table class="table table-striped table-bordered" id="price-table">
         <thead>
           <tr>
             <th>META</th>
@@ -109,7 +155,6 @@
             <th>MODALIDADE ESPORTIVA</th>
             <th>ITEM PADRONIZADO</th>
             <th>TIPO DE DESPESA</th>
-            <th>NATUREZA DE DESPESA</th>
             <th>QUANTIDADE</th>
             <th>VALOR UNITÁRIO (R$)</th>
             <th>UF</th>
@@ -118,167 +163,255 @@
         </thead>
         <tbody></tbody>
       </table>
+      <div class="export-buttons">
+        <button id="exportPDF" class="btn btn-danger">Baixar PDF</button>
+        <button id="exportExcel" class="btn btn-success">Baixar Excel</button>
+      </div>
     </div>
   </div>
 
+  <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.22/jspdf.plugin.autotable.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", async () => {
-      try {
-        const response = await fetch("/api/pesquisa-preco");
-        const data = await response.json();
-  
-        // Preencher filtros dinâmicos
-        const ufFilter = document.querySelector("#ufFilter");
-        const itemFilter = document.querySelector("#itemFilter");
-  
-        const uniqueUFs = [...new Set(data.map(item => item.UF))];
-        const uniqueItems = [...new Set(data.map(item => item.ITEM_PADRONIZADO))];
-  
-        uniqueUFs.forEach(uf => {
-          ufFilter.innerHTML += `<option value="${uf}">${uf}</option>`;
-        });
-  
-        uniqueItems.forEach(item => {
-          itemFilter.innerHTML += `<option value="${item}">${item}</option>`;
-        });
-  
-        // DataTable configuration
-        const table = $('#price-table').DataTable({
-          data,
-          columns: [
-            { data: "META" },
-            { data: "ETAPA" },
-            { data: "CLASSIFICAÇÃO" },
-            { data: "MODALIDADE" },
-            { data: "ITEM_PADRONIZADO" },
-            { data: "TIPO_DESPESA" },
-            { data: "NATUREZA_DESPESA" },
-            { data: "QUANTIDADE" },
-            {
-              data: "VALOR_UNITARIO",
-              render: val => parseFloat(val || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
-            },
-            { data: "UF" },
-            { data: "DATA_BASE" },
-          ]
-        });
-  
-        // Chart.js configuration
-        const ctx = document.getElementById("itemChart").getContext("2d");
-        const chart = new Chart(ctx, {
-          type: "bar",
-          data: {
-            labels: [],
-            datasets: [{
-              label: "Itens Aprovados",
-              data: [],
-              backgroundColor: "rgba(54, 162, 235, 0.6)"
-            }]
-          }
-        });
-  
-        // Leaflet map setup
-        const map = L.map("map").setView([-15.78, -47.93], 4);
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
-        const markersLayer = L.layerGroup().addTo(map);
-  
-        const coordinates = {
-        AC: [-9.974, -67.807], // Acre
-        AL: [-9.648, -35.711], // Alagoas
-        AM: [-3.119, -60.021], // Amazonas
-        AP: [0.034, -51.069],  // Amapá
-        BA: [-12.971, -38.501], // Bahia
-        CE: [-3.717, -38.543], // Ceará
-        DF: [-15.794, -47.882], // Distrito Federal
-        ES: [-20.315, -40.312], // Espírito Santo
-        GO: [-16.686, -49.264], // Goiás
-        MA: [-2.530, -44.307],  // Maranhão
-        MT: [-12.971, -55.665], // Mato Grosso
-        MS: [-20.448, -54.629], // Mato Grosso do Sul
-        MG: [-19.917, -43.934], // Minas Gerais
-        PA: [-1.455, -48.490],  // Pará
-        PB: [-7.239, -35.880],  // Paraíba
-        PE: [-8.047, -34.882],  // Pernambuco
-        PI: [-5.094, -42.803],  // Piauí
-        PR: [-25.428, -49.273], // Paraná
-        RJ: [-22.906, -43.176], // Rio de Janeiro
-        RN: [-5.794, -35.211],  // Rio Grande do Norte
-        RO: [-8.760, -63.900],  // Rondônia
-        RR: [2.822, -60.675],   // Roraima
-        RS: [-30.034, -51.218], // Rio Grande do Sul
-        SC: [-27.595, -48.548], // Santa Catarina
-        SE: [-10.947, -37.073], // Sergipe
-        SP: [-23.550, -46.633], // São Paulo
-        TO: [-10.175, -48.298]  // Tocantins
-        };
-  
-        // Update summary, chart, and map
-        const updateSummary = (filteredData) => {
-          const values = filteredData.map(item => parseFloat(item.VALOR_UNITARIO) || 0);
-          const min = Math.min(...values) || 0;
-          const avg = values.reduce((sum, val) => sum + val, 0) / values.length || 0;
-          const median = values.sort((a, b) => a - b)[Math.floor(values.length / 2)] || 0;
-  
-          document.getElementById("min-value").textContent = `R$ ${min.toFixed(2).replace('.', ',')}`;
-          document.getElementById("avg-value").textContent = `R$ ${avg.toFixed(2).replace('.', ',')}`;
-          document.getElementById("median-value").textContent = `R$ ${median.toFixed(2).replace('.', ',')}`;
-        };
-  
-        const updateChart = (filteredData) => {
-          const ufCounts = filteredData.reduce((acc, item) => {
-            acc[item.UF] = (acc[item.UF] || 0) + 1;
-            return acc;
-          }, {});
-  
-          chart.data.labels = Object.keys(ufCounts);
-          chart.data.datasets[0].data = Object.values(ufCounts);
-          chart.update();
-        };
-  
-        const updateMap = (filteredData) => {
-          markersLayer.clearLayers();
-          const ufCounts = filteredData.reduce((acc, item) => {
-            acc[item.UF] = (acc[item.UF] || 0) + 1;
-            return acc;
-          }, {});
-  
-          Object.entries(coordinates).forEach(([uf, coord]) => {
-            if (ufCounts[uf]) {
-              const marker = L.marker(coord).addTo(markersLayer);
-              marker.bindPopup(`UF: ${uf}<br>Itens: ${ufCounts[uf]}`);
-            }
-          });
-        };
-  
-        const applyFilters = () => {
-          const filteredData = data.filter(item =>
-            (!ufFilter.value || item.UF === ufFilter.value) &&
-            (!itemFilter.value || item.ITEM_PADRONIZADO === itemFilter.value)
-          );
-          table.clear().rows.add(filteredData).draw();
-          updateSummary(filteredData);
-          updateChart(filteredData);
-          updateMap(filteredData);
-        };
-  
-        ufFilter.addEventListener("change", applyFilters);
-        itemFilter.addEventListener("change", applyFilters);
-        document.querySelector("#resetFilters").addEventListener("click", () => {
-          ufFilter.value = "";
-          itemFilter.value = "";
-          applyFilters();
-        });
-  
-        applyFilters();
-      } catch (err) {
-        console.error("Erro ao carregar os dados:", err);
+  try {
+    const coordinates = {
+      AC: [-9.974, -67.807], AL: [-9.648, -35.711], AM: [-3.119, -60.021], AP: [0.034, -51.069],
+      BA: [-12.971, -38.501], CE: [-3.717, -38.543], DF: [-15.794, -47.882], ES: [-20.315, -40.312],
+      GO: [-16.686, -49.264], MA: [-2.530, -44.307], MT: [-12.971, -55.665], MS: [-20.448, -54.629],
+      MG: [-19.917, -43.934], PA: [-1.455, -48.490], PB: [-7.239, -35.880], PE: [-8.047, -34.882],
+      PI: [-5.094, -42.803], PR: [-25.428, -49.273], RJ: [-22.906, -43.176], RN: [-5.794, -35.211],
+      RO: [-8.760, -63.900], RR: [2.822, -60.675], RS: [-30.034, -51.218], SC: [-27.595, -48.548],
+      SE: [-10.947, -37.073], SP: [-23.550, -46.633], TO: [-10.175, -48.298]
+    };
+
+    const response = await fetch("/api/pesquisa-preco");
+    const data = await response.json();
+
+    if (!Array.isArray(data) || data.length === 0) {
+      alert("Nenhum dado disponível para exibição.");
+      return;
+    }
+
+    const normalizedData = data.map(item => {
+      const uf = (item.UF || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim().toUpperCase();
+      return {
+        META: item.META || "-",
+        ETAPA: item.ETAPA || "-",
+        CLASSIFICACAO: item.CLASSIFICACAO || "-",
+        MODALIDADE: item.MODALIDADE || "-",
+        ITEM_PADRONIZADO: item.ITEM_PADRONIZADO || "Sem Item",
+        TIPO_DESPESA: item.TIPO_DESPESA || "-",
+        QUANTIDADE: parseInt(item.QUANTIDADE) || 0,
+        VALOR_UNITARIO: parseFloat(item.VALOR_UNITARIO) || 0,
+        UF: uf || "Sem UF",
+        DATA_BASE: item.DATA_BASE || "-"
+      };
+    });
+
+    const ufFilter = document.querySelector("#ufFilter");
+    const itemFilter = document.querySelector("#itemFilter");
+    const modalidadeFilter = document.createElement("select");
+    modalidadeFilter.id = "modalidadeFilter";
+    modalidadeFilter.className = "form-select mb-3";
+    modalidadeFilter.innerHTML = `<option value="">Todas as Modalidades</option>`;
+
+    const uniqueUFs = [...new Set(normalizedData.map(item => item.UF))].filter(uf => uf !== "Sem UF");
+    const uniqueItems = [...new Set(normalizedData.map(item => item.ITEM_PADRONIZADO))].filter(item => item !== "Sem Item");
+    const uniqueModalidades = [...new Set(normalizedData.map(item => item.MODALIDADE))].filter(mod => mod !== "-");
+
+    uniqueUFs.forEach(uf => ufFilter.innerHTML += `<option value="${uf}">${uf}</option>`);
+    uniqueItems.forEach(item => itemFilter.innerHTML += `<option value="${item}">${item}</option>`);
+    uniqueModalidades.forEach(mod => modalidadeFilter.innerHTML += `<option value="${mod}">${mod}</option>`);
+
+    document.querySelector(".card .row").insertAdjacentElement("beforebegin", modalidadeFilter);
+
+    const table = $('#price-table').DataTable({
+      data: normalizedData,
+      columns: [
+        { data: "META" },
+        { data: "ETAPA" },
+        { data: "CLASSIFICACAO" },
+        { data: "MODALIDADE" },
+        { data: "ITEM_PADRONIZADO" },
+        { data: "TIPO_DESPESA" },
+        { data: "QUANTIDADE" },
+        {
+          data: "VALOR_UNITARIO",
+          render: val => `R$ ${val.toFixed(2).replace(".", ",")}`
+        },
+        { data: "UF" },
+        { data: "DATA_BASE" }
+      ],
+      dom: 'Bfrtip',
+      buttons: ['searchPanes'],
+      searchPanes: {
+        cascadePanes: true
       }
     });
+
+    const map = L.map("map").setView([-15.78, -47.93], 4);
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
+    const markersLayer = L.layerGroup().addTo(map);
+
+    const updateMap = filteredData => {
+      markersLayer.clearLayers();
+      const ufCounts = {};
+
+      filteredData.forEach(item => {
+        ufCounts[item.UF] = (ufCounts[item.UF] || 0) + item.QUANTIDADE;
+      });
+
+      Object.entries(ufCounts).forEach(([uf, count]) => {
+        const coord = coordinates[uf];
+        if (coord) {
+          const marker = L.marker(coord).addTo(markersLayer)
+            .bindPopup(`<b>UF:</b> ${uf}<br><b>Itens:</b> ${count}`);
+          
+          marker.on("click", () => {
+            ufFilter.value = uf; 
+            applyFilters();
+          });
+        }
+      });
+    };
+
+    const ctx = document.getElementById("itemChart").getContext("2d");
+    let chart;
+
+    const updateChart = filteredData => {
+      const ufCounts = {};
+
+      filteredData.forEach(item => {
+        ufCounts[item.UF] = (ufCounts[item.UF] || 0) + item.QUANTIDADE;
+      });
+
+      const labels = Object.keys(ufCounts);
+      const data = Object.values(ufCounts);
+
+      if (chart) chart.destroy();
+      chart = new Chart(ctx, {
+        type: "bar",
+        data: {
+          labels,
+          datasets: [{
+            label: "Itens Aprovados",
+            data,
+            backgroundColor: "rgba(0, 123, 255, 0.5)",
+            borderColor: "rgba(0, 123, 255, 1)",
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          plugins: {
+            legend: { display: false }
+          },
+          scales: {
+            x: { title: { display: true, text: "UF" } },
+            y: { title: { display: true, text: "Quantidade" } }
+          }
+        }
+      });
+    };
+
+    const updateSummary = filteredData => {
+      const values = filteredData.map(item => item.VALOR_UNITARIO);
+      const min = Math.min(...values).toFixed(2);
+      const avg = (values.reduce((sum, val) => sum + val, 0) / values.length).toFixed(2);
+      const median = values.sort((a, b) => a - b)[Math.floor(values.length / 2)] || 0;
+
+      document.getElementById("min-value").textContent = `R$ ${min.replace(".", ",")}`;
+      document.getElementById("avg-value").textContent = `R$ ${avg.replace(".", ",")}`;
+      document.getElementById("median-value").textContent = `R$ ${median.toFixed(2).replace(".", ",")}`;
+    };
+
+    const applyFilters = () => {
+      const ufValue = ufFilter.value;
+      const itemValue = itemFilter.value;
+      const modalidadeValue = modalidadeFilter.value;
+
+      const filteredData = normalizedData.filter(item =>
+        (!ufValue || item.UF === ufValue) &&
+        (!itemValue || item.ITEM_PADRONIZADO === itemValue) &&
+        (!modalidadeValue || item.MODALIDADE === modalidadeValue)
+      );
+
+      table.clear().rows.add(filteredData).draw();
+      updateSummary(filteredData);
+      updateMap(filteredData);
+      updateChart(filteredData);
+
+      return filteredData; // Retorna os dados filtrados
+    };
+
+    ufFilter.addEventListener("change", applyFilters);
+    itemFilter.addEventListener("change", applyFilters);
+    modalidadeFilter.addEventListener("change", applyFilters);
+    document.querySelector("#resetFilters").addEventListener("click", () => {
+      ufFilter.value = "";
+      itemFilter.value = "";
+      modalidadeFilter.value = "";
+      applyFilters();
+    });
+
+    // Botões de exportação
+    const exportPDFButton = document.createElement("button");
+    exportPDFButton.id = "exportPDF";
+    exportPDFButton.textContent = "Baixar PDF";
+    exportPDFButton.className = "btn btn-danger me-2";
+
+    const exportExcelButton = document.createElement("button");
+    exportExcelButton.id = "exportExcel";
+    exportExcelButton.textContent = "Baixar Excel";
+    exportExcelButton.className = "btn btn-success";
+
+    const tableCard = document.querySelector(".card");
+    const exportButtonsContainer = document.createElement("div");
+    exportButtonsContainer.className = "mt-3 d-flex justify-content-end";
+    exportButtonsContainer.appendChild(exportPDFButton);
+    exportButtonsContainer.appendChild(exportExcelButton);
+    tableCard.appendChild(exportButtonsContainer);
+
+    exportPDFButton.addEventListener("click", () => {
+      const jsPDF = window.jspdf.jsPDF;
+      const pdf = new jsPDF();
+      const filteredData = applyFilters();
+      const headers = Object.keys(filteredData[0]);
+      const rows = filteredData.map(item => headers.map(header => item[header]));
+
+      pdf.text("Dados de Pesquisa", 10, 10);
+      pdf.autoTable({
+        head: [headers],
+        body: rows,
+        startY: 20,
+      });
+      pdf.save("dados_pesquisa.pdf");
+    });
+
+    exportExcelButton.addEventListener("click", () => {
+      const XLSX = window.XLSX;
+      const filteredData = applyFilters();
+      const worksheet = XLSX.utils.json_to_sheet(filteredData);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Dados de Pesquisa");
+      XLSX.writeFile(workbook, "dados_pesquisa.xlsx");
+    });
+
+    applyFilters();
+  } catch (err) {
+    console.error("Erro ao carregar os dados:", err);
+    alert("Erro ao carregar os dados. Tente novamente mais tarde.");
+  }
+});
   </script>
+  
 </body>
 </html>
