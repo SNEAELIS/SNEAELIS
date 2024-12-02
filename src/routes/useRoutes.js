@@ -71,8 +71,7 @@ router.get('/formulario-merito', (req, res) => {
 });
 
 router.get('/Ficha_Frequencia', (req, res) => {
-  console.log('Rota /Ficha_Frequencia acessada'); // Log de depuração
-  res.render('Ficha_Frequencia', { user: req.session?.user || {} });
+  res.render('Ficha_Frequencia'); // Renderiza o template EJS com dados do usuário
 });
 
 
@@ -96,6 +95,7 @@ router.get('/api/pesquisa-preco', (req, res) => {
       throw new Error(`A aba "${sheetName}" não foi encontrada.`);
     }
 
+    // Conversão dos dados para JSON
     const data = xlsx.utils.sheet_to_json(worksheet).map(row => ({
       META: row['META'] || '',
       ETAPA: row['ETAPA'] || '',
@@ -103,14 +103,13 @@ router.get('/api/pesquisa-preco', (req, res) => {
       MODALIDADE: row['MODALIDADE ESPORTIVA'] || '',
       ITEM_PADRONIZADO: row['ITEM Padronizado'] || '',
       TIPO_DESPESA: row['TIPO DE DESPESA'] || '',
-      NATUREZA_DESPESA: row['NATUREZA DE DESPESA'] || '',
       QUANTIDADE: parseInt(row['QUANTIDADE'], 10) || 0,
-      VALOR_UNITARIO: parseFloat(row['VALOR UNITARIO']) || 0,
-      UF_ENTIDADE: (row['UF'] || '').trim().toUpperCase(),
-      DATA_BASE: row['DATA BASE'] || '',
+      VALOR_UNITARIO: parseFloat(row['VALOR UNITÁRIO']) || 0,
+      UF_ENTIDADE: (row['UF_ENTIDADE'] || '').trim().toUpperCase(),
+      DATA_BASE: row['DATA BASE'] || ''
     }));
 
-    console.log("Dados enviados para o frontend:", data); // Log para validar
+    console.log("Dados enviados ao front-end:", data.slice(0, 5)); // Log dos primeiros 5 registros para validação
     res.json(data);
   } catch (error) {
     console.error('Erro ao processar a planilha:', error.message);
