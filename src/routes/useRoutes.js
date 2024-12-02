@@ -70,6 +70,12 @@ router.get('/formulario-merito', (req, res) => {
   res.render('Formulario-merito');
 });
 
+router.get('/Ficha_Frequencia', (req, res) => {
+  console.log('Rota /Ficha_Frequencia acessada'); // Log de depuração
+  res.render('Ficha_Frequencia', { user: req.session?.user || {} });
+});
+
+
 router.get('/dashboard-pesquisa', (req, res) => {
   const user = req.session.user; // Verifica o usuário na sessão
   if (!user) {

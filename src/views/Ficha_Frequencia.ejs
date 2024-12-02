@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha de Frequência</title>
+  <style>
+    /* Global Styles */
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      background-color: #f4f4f9;
+      color: #333;
+    }
+
+    header {
+      background: linear-gradient(90deg, #0056b3, #0078d7);
+      color: #fff;
+      padding: 20px 15px;
+      text-align: center;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 2rem;
+    }
+
+    header p {
+      margin: 5px 0 0;
+      font-size: 1.2rem;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    .form-section {
+      background: #fff;
+      border-radius: 10px;
+      padding: 30px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      max-width: 700px;
+      margin: 20px auto;
+    }
+
+    .form-section h2 {
+      color: #0056b3;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .form-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: bold;
+    }
+
+    input, select, button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 1rem;
+    }
+
+    button {
+      background-color: #0056b3;
+      color: #fff;
+      cursor: pointer;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    button:hover {
+      background-color: #004494;
+    }
+
+    footer {
+      text-align: center;
+      padding: 20px;
+      background: #333;
+      color: #fff;
+    }
+
+    @media (max-width: 768px) {
+      header h1 {
+        font-size: 1.5rem;
+      }
+
+      header p {
+        font-size: 1rem;
+      }
+
+      .form-section {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="header-container">
+      <h1>Ficha de Frequência</h1>
+      <p>Monitore o progresso e a execução de projetos de longo prazo.</p>
+    </div>
+  </header>
+  <main>
+    <section class="form-section">
+      <h2>Selecione o Tipo de Ficha</h2>
+      <form id="fichaForm">
+        <div class="form-group">
+          <label for="opcaoFicha">Tipo de Ficha de Frequência:</label>
+          <select id="opcaoFicha" name="tipoFicha" required>
+            <option value="" disabled selected>Escolha uma opção</option>
+            <option value="estudantes">Ficha de Frequência para Estudantes</option>
+            <option value="profissionais">Ficha de Frequência para Profissionais</option>
+          </select>
+        </div>
+        <div id="formularioFicha" class="formulario-oculto">
+          <!-- Formulários dinâmicos serão carregados aqui -->
+        </div>
+        <div class="button-group">
+          <button type="button" id="gerarPdf" class="btn">Gerar PDF</button>
+        </div>
+      </form>
+    </section>
+  </main>
+  <footer>
+    <p>&copy; 2024 Ministério do Esporte - Monitoramento de Projetos</p>
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const selectFicha = document.getElementById("opcaoFicha");
+      const formularioFicha = document.getElementById("formularioFicha");
+      const gerarPdf = document.getElementById("gerarPdf");
+
+      selectFicha.addEventListener("change", function () {
+        formularioFicha.innerHTML = ""; // Limpa o conteúdo anterior
+
+        if (this.value === "estudantes") {
+          formularioFicha.innerHTML = `
+            <h3>Ficha de Frequência para Estudantes</h3>
+            <div class="form-group">
+              <label for="nomeEstudante">Nome do Estudante:</label>
+              <input type="text" id="nomeEstudante" name="nomeEstudante" required>
+            </div>
+            <div class="form-group">
+              <label for="turma">Turma:</label>
+              <input type="text" id="turma" name="turma" required>
+            </div>
+            <div class="form-group">
+              <label for="frequencia">Dias de Frequência:</label>
+              <input type="number" id="frequencia" name="frequencia" required>
+            </div>
+          `;
+        } else if (this.value === "profissionais") {
+          formularioFicha.innerHTML = `
+            <h3>Ficha de Frequência para Profissionais</h3>
+            <div class="form-group">
+              <label for="nomeProfissional">Nome do Profissional:</label>
+              <input type="text" id="nomeProfissional" name="nomeProfissional" required>
+            </div>
+            <div class="form-group">
+              <label for="cargo">Cargo:</label>
+              <input type="text" id="cargo" name="cargo" required>
+            </div>
+            <div class="form-group">
+              <label for="diasTrabalhados">Dias Trabalhados:</label>
+              <input type="number" id="diasTrabalhados" name="diasTrabalhados" required>
+            </div>
+          `;
+        }
+      });
+
+      gerarPdf.addEventListener("click", () => {
+        const doc = new jspdf.jsPDF();
+        const formElements = document.querySelectorAll("#formularioFicha input");
+        let content = "Ficha de Frequência\n\n";
+
+        formElements.forEach((element) => {
+          content += `${element.previousElementSibling.innerText}: ${element.value}\n`;
+        });
+
+        doc.text(content, 10, 10);
+        doc.save("Ficha_de_Frequencia.pdf");
+      });
+    });
+  </script>
+</body>
+</html>
