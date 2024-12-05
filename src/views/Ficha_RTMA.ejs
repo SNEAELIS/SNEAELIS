@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ficha RTMA - Atualizada</title>
+  <link rel="stylesheet" href="/css/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+    }
+    header {
+      background-color: #0056b3;
+      color: white;
+      text-align: center;
+      padding: 20px 0;
+    }
+    main {
+      margin: 20px auto;
+      max-width: 800px;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    form h2 {
+      margin-bottom: 15px;
+      color: #0056b3;
+    }
+    form div {
+      margin-bottom: 15px;
+    }
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 5px;
+    }
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #ddd;
+      border-radius: 5px;
+      font-size: 14px;
+    }
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: #0056b3;
+    }
+    button {
+      background-color: #0056b3;
+      color: white;
+      font-weight: bold;
+      border: none;
+      cursor: pointer;
+    }
+    button:hover {
+      background-color: #003d80;
+    }
+    .row {
+      display: flex;
+      gap: 20px;
+    }
+    .row div {
+      flex: 1;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Ficha RTMA</h1>
+  </header>
+  <main>
+    <form action="/Ficha_RTMA" method="POST" enctype="multipart/form-data">
+      <!-- 1. Dados e Informações da Parceria -->
+      <h2>1 - Dados e Informações da Parceria</h2>
+      <div>
+        <label for="osc">OSC (Organização da Sociedade Civil):</label>
+        <input type="text" id="osc" name="osc" required>
+      </div>
+      <div>
+        <label for="processo">Processo:</label>
+        <input type="text" id="processo" name="processo" required>
+      </div>
+      <div>
+        <label for="termo_fomento">Termo de Fomento:</label>
+        <input type="text" id="termo_fomento" name="termo_fomento" required>
+      </div>
+      <div class="row">
+        <div>
+          <label for="termo_sei">Termo (SEI):</label>
+          <input type="text" id="termo_sei" name="termo_sei">
+        </div>
+        <div>
+          <label for="dou_sei">DOU (SEI):</label>
+          <input type="text" id="dou_sei" name="dou_sei">
+        </div>
+      </div>
+
+      <!-- 2. Informações do Projeto -->
+      <h2>2 - Informações do Projeto</h2>
+      <div>
+        <label for="nome_projeto">Nome do Projeto:</label>
+        <input type="text" id="nome_projeto" name="nome_projeto" required>
+      </div>
+      <div>
+        <label for="coordenador_projeto">Coordenador do Projeto:</label>
+        <input type="text" id="coordenador_projeto" name="coordenador_projeto" required>
+      </div>
+      <div>
+        <label for="municipio">Município:</label>
+        <input type="text" id="municipio" name="municipio" required>
+      </div>
+      <div>
+        <label for="estado">Estado (UF):</label>
+        <input type="text" id="estado" name="estado" required>
+      </div>
+
+      <!-- 3. Dados do Monitoramento -->
+      <h2>3 - Dados do Monitoramento</h2>
+      <div class="row">
+        <div>
+          <label for="data_monitoramento">Data do Monitoramento:</label>
+          <input type="date" id="data_monitoramento" name="data_monitoramento" required>
+        </div>
+        <div>
+          <label for="responsavel_monitoramento">Responsável pelo Monitoramento:</label>
+          <input type="text" id="responsavel_monitoramento" name="responsavel_monitoramento" required>
+        </div>
+      </div>
+      <div>
+        <label for="local_monitoramento">Local do Monitoramento:</label>
+        <input type="text" id="local_monitoramento" name="local_monitoramento" required>
+      </div>
+
+      <!-- 4. Atividades, Resultados e Custos -->
+      <h2>4 - Atividades e Resultados</h2>
+      <div>
+        <label for="atividades">Atividades Realizadas:</label>
+        <textarea id="atividades" name="atividades" rows="3" required></textarea>
+      </div>
+      <div>
+        <label for="resultados">Resultados Obtidos:</label>
+        <textarea id="resultados" name="resultados" rows="3" required></textarea>
+      </div>
+      <h2>5 - Custos e Despesas</h2>
+      <div>
+        <label for="custo_estimado">Custo Estimado (R$):</label>
+        <input type="number" step="0.01" id="custo_estimado" name="custo_estimado" required>
+      </div>
+      <div>
+        <label for="custo_real">Custo Real (R$):</label>
+        <input type="number" step="0.01" id="custo_real" name="custo_real" required>
+      </div>
+
+      <!-- 6. Observações -->
+      <h2>6 - Observações</h2>
+      <div>
+        <label for="dificuldades">Dificuldades Encontradas:</label>
+        <textarea id="dificuldades" name="dificuldades" rows="3"></textarea>
+      </div>
+      <div>
+        <label for="observacoes">Outras Observações:</label>
+        <textarea id="observacoes" name="observacoes" rows="3"></textarea>
+      </div>
+
+      <!-- 7. Dados Complementares -->
+      <h2>7 - Dados Complementares</h2>
+      <div>
+        <label for="fotos_videos">Registros Fotográficos e Vídeos:</label>
+        <input type="file" id="fotos_videos" name="fotos_videos" multiple>
+      </div>
+      <div>
+        <label for="documentos">Documentos Adicionais:</label>
+        <input type="file" id="documentos" name="documentos" multiple>
+      </div>
+
+      <!-- Botão -->
+      <button type="submit">Salvar e Baixar</button>
+    </form>
+  </main>
+</body>
+</html>

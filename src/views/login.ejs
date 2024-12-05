@@ -2,10 +2,39 @@
 <html lang="pt-br">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"> <!-- Para garantir que a página seja responsiva -->
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Login</title>
   <link rel="stylesheet" href="css/styles2.css">
-  <link rel="stylesheet" href="css/styles.css"> <!-- Acesse o CSS corretamente a partir da pasta public -->
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    /* Estilo do botão aprimorado */
+    .btn-simulacao {
+      position: fixed;
+      bottom: 60px; /* Posição ajustada para ficar mais acima */
+      right: 20px;
+      background: linear-gradient(135deg, #007BFF, #00C6FF); /* Gradiente de cor */
+      color: white;
+      border: none;
+      padding: 15px 25px;
+      border-radius: 12px;
+      box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s, box-shadow 0.3s;
+    }
+
+    .btn-simulacao:hover {
+      background: linear-gradient(135deg, #0056b3, #0094cc); /* Gradiente no hover */
+      transform: scale(1.1); /* Efeito de zoom */
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2); /* Sombra mais forte */
+    }
+
+    .btn-simulacao:active {
+      transform: scale(1.05); /* Redução sutil ao clicar */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); /* Sombra reduzida */
+    }
+  </style>
 </head>
 <body>
   <header>
@@ -14,38 +43,42 @@
   </header>
 
   <div class="login-container">
-    <img src="images/ASSINATURAS_ESPORTE__PRINCIPAL VERTICAL.png" class="logo" alt="Ministério do Esporte"> <!-- Acesse a imagem corretamente a partir da pasta public -->
-    
+    <img src="images/ASSINATURAS_ESPORTE__PRINCIPAL VERTICAL.png" class="logo" alt="Ministério do Esporte">
+
     <form action="/login" method="POST">
       <input type="text" name="email" placeholder="E-mail" required>
       <input type="password" name="senha" placeholder="Senha" required>
-      <!-- Botão de login -->
       <button type="submit">Entrar</button>
-      <!-- Botão GOV.BR -->
-      <button class="btn-govbr" type="" onclick="showGovBrMessage()">
+      <button class="btn-govbr" type="button" onclick="showGovBrMessage()">
         <img src="images/govbr.png" alt="Ícone GOV.BR">
       </button>
 
       <% if (typeof error !== 'undefined' && error) { %>
         <p style="color: red;"><%= error %></p>
       <% } %>
-
     </form>
 
-    <!-- Link para a página de cadastro -->
     <p><a href="/cadastro" class="link-cadastro">Não tem uma conta? Cadastre-se aqui</a></p>
   </div>
+
+  <!-- Botão aprimorado -->
+  <button class="btn-simulacao" onclick="fazerSimulacao()">
+    Fazer Simulação de Material e RH para Projetos
+  </button>
 
   <footer>
     <p>&copy; 2024 Ministério do Esporte</p>
   </footer>
 
   <script>
-    // Exibe mensagem ao clicar no botão
+
+function fazerSimulacao() {
+    window.location.href = '/simulacao'; // Rota para a página de simulação
+  }
+
     function showGovBrMessage() {
       alert('Função disponível em breve!');
     }
   </script>
-
 </body>
 </html>

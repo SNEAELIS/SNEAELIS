@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Resultado da Simulação</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f4f9;
+      margin: 0;
+      padding: 0;
+      text-align: center;
+    }
+
+    .resultado-container {
+      max-width: 600px;
+      margin: 30px auto;
+      background: white;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    h2 {
+      color: #0056b3;
+    }
+
+    p {
+      font-size: 18px;
+    }
+  </style>
+</head>
+<body>
+  <div class="resultado-container">
+    <h2>Resultado da Simulação</h2>
+    <p>Tipo de Projeto: <%= tipoProjeto %></p>
+    <p>Quantidade: <%= quantidade %></p>
+    <p>Custo Unitário: R$<%= custoUnitario %></p>
+    <p><strong>Total: R$<%= total %></strong></p>
+  </div>
+</body>
+</html>

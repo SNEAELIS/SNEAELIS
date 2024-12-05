@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Página Inicial</title>
+    <link rel="stylesheet" href="style.css/style.css">
+</head>
+<script>
+    // Função para abrir e fechar a sidebar em telas menores
+    function toggleSidebar() {
+        const sidebar = document.querySelector('.sidebar');
+        const content = document.querySelector('.content');
+        sidebar.classList.toggle('open');
+        content.classList.toggle('collapsed');
+    }
+
+    function toggleSection(sectionId) {
+        const section = document.getElementById(sectionId);
+        section.classList.toggle('hidden');
+    }
+</script>
+
+<body>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Cabeçalho -->
+    <header>
+        <h1>Ministério do Esporte</h1>
+        <img src="img/Imagem1.png" alt="IMG1" width="10%">
+    </header>
+
+    <div class="sidebar">
+        <ul>
+            <li onclick="toggleSection('formalizacao')">
+                <i class="fas fa-folder"></i> Formalização
+            </li>
+            <ul id="formalizacao" class="hidden">
+                <li><a href="Documentações.html">OSC/Sociedade Civil</a></li>
+                <li><a href="Formulario_convênio.html">Entidades Públicas</a></li>
+            </ul>
+            <li onclick="toggleSection('acompanhamento')">
+                <i class="fas fa-file-alt"></i> Acompanhamento
+            </li>
+            <ul id="acompanhamento" class="hidden">
+                <li><a href="Formulário_Relma.html">Ficha Relmas</a></li>
+            </ul>
+        </ul>
+    </div>
+
+    <div class="container">
+        <div class="option-container">
+            <h1>Seleção de Declaração</h1>
+            <p>Declarações Padronizadas</p>
+
+            <!-- Botões para escolher entre Termo de Fomento ou Convênio -->
+            <a href="Formulario.html" class="btn">Gerar Declarações Manualmente</a>
+        </div>
+        <div class="option-container">
+            <p>Declarações Padronizadas MESP</p>
+
+            <!-- Botões para escolher entre Termo de Fomento ou Convênio -->
+            <a href="Declaraçãoautomática.html" class="btn">Declarações automáticas</a>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Ministério do Esporte</p>
+    
+        <!-- Link para o arquivo JS externo -->
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+        <script src="Config.js/script.js"></script>
+    </body>
+    </html>

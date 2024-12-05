@@ -74,6 +74,20 @@ router.get('/Ficha_Frequencia', (req, res) => {
   res.render('Ficha_Frequencia'); // Renderiza o template EJS com dados do usuário
 });
 
+router.get('/Formulario_Documentacoes', (req, res) => {
+  res.render('Formulario_Documentacoes');
+});
+
+router.get('/simulacao', (req, res) => {
+  res.render('simulacao'); // Renderiza a página simulacao.ejs
+});
+
+router.post('/simulacao/resultado', (req, res) => {
+  const { tipo, quantidade, custo } = req.body;
+  const total = parseFloat(quantidade) * parseFloat(custo);
+
+  res.render('resultado', { tipo, quantidade, custo, total });
+});
 
 router.get('/dashboard-pesquisa', (req, res) => {
   const user = req.session.user; // Verifica o usuário na sessão
@@ -83,6 +97,52 @@ router.get('/dashboard-pesquisa', (req, res) => {
   res.render('dashboard-pesquisa', { user }); // Renderiza a página com os dados do usuário
 });
 
+// Rota para renderizar a página do formulário Ficha RTMA
+router.get('/Ficha_RTMA', (req, res) => {
+  res.render('Ficha_RTMA'); // Certifique-se de que o arquivo EJS existe
+});
+
+
+router.post('/Ficha_RTMA', async (req, res) => {
+  const formData = req.body;
+
+  // Carregar a planilha original
+  const workbook = new ExcelJS.Workbook();
+  const filePath = path.join(__dirname, 'templates', 'Ficha_Técnica_Template.xlsx');
+  
+  try {
+    await workbook.xlsx.readFile(filePath);
+    const worksheet = workbook.getWorksheet('Planilha1');
+
+    // Preencher os campos na planilha
+    worksheet.getCell('A3').value = formData.osc; // OSC
+    worksheet.getCell('A4').value = formData.processo; // Processo
+    worksheet.getCell('A5').value = formData.termo_fomento; // Termo de Fomento
+    worksheet.getCell('G5').value = formData.termo_sei; // Termo (SEI)
+    worksheet.getCell('H5').value = formData.dou_sei; // DOU (SEI)
+
+    worksheet.getCell('A8').value = formData.data_monitoramento; // Data do Monitoramento
+    worksheet.getCell('B8').value = formData.responsavel_monitoramento; // Responsável
+    worksheet.getCell('C8').value = formData.local_monitoramento; // Local
+
+    worksheet.getCell('A12').value = formData.atividades; // Atividades Realizadas
+    worksheet.getCell('A14').value = formData.resultados; // Resultados Obtidos
+
+    worksheet.getCell('A18').value = formData.dificuldades; // Dificuldades
+    worksheet.getCell('A20').value = formData.observacoes; // Observações
+
+    // Salvar e enviar o arquivo para download
+    const outputPath = path.join(__dirname, 'output', 'Ficha_RTMA_Preenchida.xlsx');
+    await workbook.xlsx.writeFile(outputPath);
+
+    res.download(outputPath, 'Ficha_RTMA_Preenchida.xlsx', () => {
+      fs.unlinkSync(outputPath); // Remove o arquivo após download
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Erro ao gerar a planilha.');
+  }
+});
 
 router.get('/api/pesquisa-preco', (req, res) => {
   try {
@@ -116,5 +176,6 @@ router.get('/api/pesquisa-preco', (req, res) => {
     res.status(500).json({ error: error.message });
   }
 });
+
 
 module.exports = router; // Certifique-se de exportar o roteador

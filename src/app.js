@@ -4,6 +4,7 @@ const useRoutes = require('./routes/useRoutes');
 const session = require('express-session');
 const getPool = require('../config/db'); // Importa a função para obter o pool dinâmico
 
+
 let pool;
 
 async function habilitarPgcrypto() {
