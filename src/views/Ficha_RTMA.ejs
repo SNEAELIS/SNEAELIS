@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Ficha RTMA - Atualizada</title>
+  <title>Ficha Técnica de Monitoramento - Projeto</title>
   <link rel="stylesheet" href="/css/styles.css">
   <style>
     body {
@@ -20,17 +20,20 @@
     }
     main {
       margin: 20px auto;
-      max-width: 800px;
+      max-width: 1200px;
       background: #fff;
       padding: 20px;
       border-radius: 8px;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
     }
-    form h2 {
-      margin-bottom: 15px;
-      color: #0056b3;
+    section {
+      margin-bottom: 20px;
     }
-    form div {
+    h2 {
+      color: #0056b3;
+      margin-bottom: 10px;
+    }
+    .form-group {
       margin-bottom: 15px;
     }
     label {
@@ -59,127 +62,162 @@
     button:hover {
       background-color: #003d80;
     }
-    .row {
-      display: flex;
-      gap: 20px;
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 15px;
     }
-    .row div {
-      flex: 1;
+    th, td {
+      border: 1px solid #ddd;
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Ficha RTMA</h1>
+    <h1>Ficha Técnica de Monitoramento - Projeto</h1>
   </header>
   <main>
-    <form action="/Ficha_RTMA" method="POST" enctype="multipart/form-data">
-      <!-- 1. Dados e Informações da Parceria -->
-      <h2>1 - Dados e Informações da Parceria</h2>
-      <div>
-        <label for="osc">OSC (Organização da Sociedade Civil):</label>
-        <input type="text" id="osc" name="osc" required>
-      </div>
-      <div>
-        <label for="processo">Processo:</label>
-        <input type="text" id="processo" name="processo" required>
-      </div>
-      <div>
-        <label for="termo_fomento">Termo de Fomento:</label>
-        <input type="text" id="termo_fomento" name="termo_fomento" required>
-      </div>
-      <div class="row">
-        <div>
-          <label for="termo_sei">Termo (SEI):</label>
-          <input type="text" id="termo_sei" name="termo_sei">
+    <form action="/submitFicha" method="POST" enctype="multipart/form-data">
+      <!-- 1 - Dados e Informações da Parceria -->
+      <section>
+        <h2>1 - Dados e Informações da Parceria</h2>
+        <div class="form-group">
+          <label for="osc">OSC:</label>
+          <input type="text" id="osc" name="osc" required>
         </div>
-        <div>
-          <label for="dou_sei">DOU (SEI):</label>
-          <input type="text" id="dou_sei" name="dou_sei">
+        <div class="form-group">
+          <label for="processo">Processo:</label>
+          <input type="text" id="processo" name="processo" required>
         </div>
-      </div>
-
-      <!-- 2. Informações do Projeto -->
-      <h2>2 - Informações do Projeto</h2>
-      <div>
-        <label for="nome_projeto">Nome do Projeto:</label>
-        <input type="text" id="nome_projeto" name="nome_projeto" required>
-      </div>
-      <div>
-        <label for="coordenador_projeto">Coordenador do Projeto:</label>
-        <input type="text" id="coordenador_projeto" name="coordenador_projeto" required>
-      </div>
-      <div>
-        <label for="municipio">Município:</label>
-        <input type="text" id="municipio" name="municipio" required>
-      </div>
-      <div>
-        <label for="estado">Estado (UF):</label>
-        <input type="text" id="estado" name="estado" required>
-      </div>
-
-      <!-- 3. Dados do Monitoramento -->
-      <h2>3 - Dados do Monitoramento</h2>
-      <div class="row">
-        <div>
-          <label for="data_monitoramento">Data do Monitoramento:</label>
-          <input type="date" id="data_monitoramento" name="data_monitoramento" required>
+        <div class="form-group">
+          <label for="termo_fomento">Termo de Fomento:</label>
+          <input type="text" id="termo_fomento" name="termo_fomento" required>
         </div>
-        <div>
-          <label for="responsavel_monitoramento">Responsável pelo Monitoramento:</label>
-          <input type="text" id="responsavel_monitoramento" name="responsavel_monitoramento" required>
+        <div class="form-group">
+          <label for="objeto">Objeto:</label>
+          <textarea id="objeto" name="objeto" rows="3" required></textarea>
         </div>
-      </div>
-      <div>
-        <label for="local_monitoramento">Local do Monitoramento:</label>
-        <input type="text" id="local_monitoramento" name="local_monitoramento" required>
-      </div>
+        <div class="form-group">
+          <label for="valor_pactuado">Valor Pactuado (R$):</label>
+          <input type="number" id="valor_pactuado" name="valor_pactuado" step="0.01" required>
+        </div>
+        <div class="form-group">
+          <label for="vigencia_inicio">Vigência (Início):</label>
+          <input type="date" id="vigencia_inicio" name="vigencia_inicio" required>
+        </div>
+        <div class="form-group">
+          <label for="vigencia_fim">Vigência (Fim):</label>
+          <input type="date" id="vigencia_fim" name="vigencia_fim" required>
+        </div>
+        <div class="form-group">
+          <label for="emenda">Emenda Nº:</label>
+          <input type="text" id="emenda" name="emenda">
+        </div>
+        <div class="form-group">
+          <label for="parlamentar">Parlamentar:</label>
+          <input type="text" id="parlamentar" name="parlamentar">
+        </div>
+        <div class="form-group">
+          <label for="prorrogacao">Prorrogação de Ofício (Dias):</label>
+          <input type="number" id="prorrogacao" name="prorrogacao">
+        </div>
+      </section>
 
-      <!-- 4. Atividades, Resultados e Custos -->
-      <h2>4 - Atividades e Resultados</h2>
-      <div>
-        <label for="atividades">Atividades Realizadas:</label>
-        <textarea id="atividades" name="atividades" rows="3" required></textarea>
-      </div>
-      <div>
-        <label for="resultados">Resultados Obtidos:</label>
-        <textarea id="resultados" name="resultados" rows="3" required></textarea>
-      </div>
-      <h2>5 - Custos e Despesas</h2>
-      <div>
-        <label for="custo_estimado">Custo Estimado (R$):</label>
-        <input type="number" step="0.01" id="custo_estimado" name="custo_estimado" required>
-      </div>
-      <div>
-        <label for="custo_real">Custo Real (R$):</label>
-        <input type="number" step="0.01" id="custo_real" name="custo_real" required>
-      </div>
+      <!-- 2 - Valores Efetivamente Transferidos -->
+      <section>
+        <h2>2 - Valores Efetivamente Transferidos</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Nº</th>
+              <th>Orçamento</th>
+              <th>Nota de Empenho (SEI)</th>
+              <th>Ordem Bancária</th>
+              <th>Valor (R$)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>1</td>
+              <td><input type="text" name="orcamento_1"></td>
+              <td><input type="text" name="nota_empenho_1"></td>
+              <td><input type="text" name="ordem_bancaria_1"></td>
+              <td><input type="number" step="0.01" name="valor_1"></td>
+            </tr>
+            <tr>
+              <td>2</td>
+              <td><input type="text" name="orcamento_2"></td>
+              <td><input type="text" name="nota_empenho_2"></td>
+              <td><input type="text" name="ordem_bancaria_2"></td>
+              <td><input type="number" step="0.01" name="valor_2"></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-      <!-- 6. Observações -->
-      <h2>6 - Observações</h2>
-      <div>
-        <label for="dificuldades">Dificuldades Encontradas:</label>
-        <textarea id="dificuldades" name="dificuldades" rows="3"></textarea>
-      </div>
-      <div>
-        <label for="observacoes">Outras Observações:</label>
-        <textarea id="observacoes" name="observacoes" rows="3"></textarea>
-      </div>
+      <!-- 3 - Descrição do Cumprimento das Metas -->
+      <section>
+        <h2>3 - Descrição do Cumprimento das Metas</h2>
+        <table>
+          <thead>
+            <tr>
+              <th>Etapas</th>
+              <th>Previsto (R$)</th>
+              <th>Executado (R$)</th>
+              <th>% Executado</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Contratação de Pessoal</td>
+              <td><input type="number" step="0.01" name="previsto_pessoal"></td>
+              <td><input type="number" step="0.01" name="executado_pessoal"></td>
+              <td><input type="number" step="0.01" name="percentual_pessoal"></td>
+            </tr>
+            <tr>
+              <td>Material Gráfico</td>
+              <td><input type="number" step="0.01" name="previsto_material"></td>
+              <td><input type="number" step="0.01" name="executado_material"></td>
+              <td><input type="number" step="0.01" name="percentual_material"></td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
 
-      <!-- 7. Dados Complementares -->
-      <h2>7 - Dados Complementares</h2>
-      <div>
-        <label for="fotos_videos">Registros Fotográficos e Vídeos:</label>
-        <input type="file" id="fotos_videos" name="fotos_videos" multiple>
-      </div>
-      <div>
-        <label for="documentos">Documentos Adicionais:</label>
-        <input type="file" id="documentos" name="documentos" multiple>
-      </div>
+      <!-- 4 - Atividades Realizadas -->
+      <section>
+        <h2>4 - Atividades Realizadas</h2>
+        <div class="form-group">
+          <label for="atividades">Atividades Propostas:</label>
+          <textarea id="atividades" name="atividades" rows="3" required></textarea>
+        </div>
+        <div class="form-group">
+          <label for="status_atividades">Status:</label>
+          <input type="text" id="status_atividades" name="status_atividades">
+        </div>
+      </section>
 
-      <!-- Botão -->
-      <button type="submit">Salvar e Baixar</button>
+      <!-- Botão de Envio -->
+      <button type="submit">Salvar e Enviar</button>
     </form>
   </main>
+  <script>
+    // Função para calcular o % Executado
+    function calculatePercentage(previstoId, executadoId, percentualId) {
+      const previsto = parseFloat(document.getElementById(previstoId).value) || 0;
+      const executado = parseFloat(document.getElementById(executadoId).value) || 0;
+
+      const percentual = previsto > 0 ? ((executado / previsto) * 100).toFixed(2) : '0.00';
+
+      document.getElementById(percentualId).value = `${percentual}%`;
+    }
+    
+  </script>
 </body>
 </html>
