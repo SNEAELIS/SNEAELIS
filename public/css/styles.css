@@ -13,17 +13,37 @@ body {
     height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
     position: fixed;
     top: 60px;
     left: 0;
     width: 250px;
     height: calc(100% - 60px);
-    background-color: #2c3e50;
+    background: linear-gradient(135deg, #2c3e50, #34495e);
+    color: #ecf0f1;
     padding-top: 20px;
     overflow-y: auto;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.2);
     transition: transform 0.3s ease;
+}
+
+.sidebar .user-info {
+    padding: 20px;
+    background: #1a252f;
+    text-align: center;
+    border-bottom: 1px solid #2c3e50;
+    border-radius: 0 0 10px 10px;
+}
+
+.sidebar .user-info h2 {
+    font-size: 1.2rem;
+    margin-bottom: 5px;
+    color: #e2e1dd;
+}
+
+.sidebar .user-info p {
+    font-size: 0.9rem;
+    color: #bdc3c7;
 }
 
 .sidebar ul {
@@ -33,52 +53,63 @@ body {
 }
 
 .sidebar ul li {
-    color: white;
     padding: 15px 20px;
     cursor: pointer;
-    display: flex;
+    display: block; 
     align-items: center;
-    border-bottom: 1px solid #34495e;
-    font-size: 16px;
+    font-size: 1rem;
+    transition: background 0.3s ease;
+    border-bottom: 1px solid #2c3e50;
     position: relative;
-    flex-direction: column; /* Força o layout vertical */
 }
 
 .sidebar ul li i {
     margin-right: 10px;
+    font-size: 1.2rem;
+    color: #f0efee;
+}
+
+.sidebar ul li:hover {
+    background-color: #1a252f;
+    border-left: 5px solid #f1c40f;
 }
 
 /* Submenu */
 .sidebar ul .submenu {
-    display: none; /* Ocultar por padrão */
-    padding-left: 20px; /* Indentar os itens do submenu */
-    margin-top: 10px; /* Adiciona espaçamento entre o menu principal e o submenu */
-    flex-direction: column; /* Exibe os itens do submenu em coluna */
-    background-color: #34495e;
+    display: none;
+    position: relative; /* Garante que o submenu apareça logo abaixo */
+    background-color: #1a252f;
+    padding-left: 30px; /* Indenta os itens do submenu */
+    margin-top: 5px;    /* Espaçamento entre o item principal e o submenu */
 }
 
 .sidebar ul li.active .submenu {
-    display: flex; /* Exibe o submenu */
+    display: block;
 }
 
 .sidebar ul .submenu li {
-    padding: 10px 0; /* Espaçamento vertical para os itens */
-    font-size: 14px; /* Reduz o tamanho da fonte para submenus */
+    padding: 10px 0;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #2c3e50;
 }
 
 .sidebar ul .submenu li a {
-    color: #ddd; /* Cor do texto nos submenus */
+    color: #ddd;
     text-decoration: none;
+    display: block;
+    padding: 5px 10px;
+    transition: background 0.3s ease;
 }
 
 .sidebar ul .submenu li a:hover {
-    color: #fff; /* Texto branco ao passar o mouse */
+    color: #fff;
+    background-color: #2c3e50;
+    border-radius: 5px;
 }
 
 .sidebar ul li:hover {
     background-color: #34495e;
 }
-
 .sidebar ul li a {
     text-decoration: none;
     color: white;
@@ -86,14 +117,13 @@ body {
     align-items: center;
     gap: 10px;
 }
+.sidebar ul li .toggle-icon {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+}
 
-/* Informações do Usuário */
-.sidebar .user-info {
-    padding: 15px;
-    background-color: #004494;
-    color: white;
-    text-align: center;
-    margin-bottom: 10px;
+.sidebar ul li.active .toggle-icon {
+    transform: rotate(90deg);
 }
 
 /* Conteúdo Principal */

@@ -4,6 +4,7 @@ const xlsx = require('xlsx');
 const path = require('path');
 const { cadastrarUsuario, verificarCodigo, loginUsuario } = require('../controllers/userController');
 const { verificarNivelAcesso } = require('../middleware/auth');
+const app = require('../app')
 
 // Rota principal
 router.get('/', (req, res) => {
@@ -70,12 +71,16 @@ router.get('/formulario-merito', (req, res) => {
   res.render('Formulario-merito');
 });
 
+router.get('/Formulario_Documentacoes', (req, res) =>{
+  res.render('Formulario_Documentacoes');
+});
+
 router.get('/Ficha_Frequencia', (req, res) => {
   res.render('Ficha_Frequencia'); // Renderiza o template EJS com dados do usuário
 });
 
-router.get('/Formulario_Documentacoes', (req, res) => {
-  res.render('Formulario_Documentacoes');
+router.get('/Formulario_convenio', (req, res) => {
+  res.render('Formulario_convenio');
 });
 
 router.get('/simulacao', (req, res) => {
@@ -100,6 +105,10 @@ router.get('/dashboard-pesquisa', (req, res) => {
 // Rota para renderizar a página do formulário Ficha RTMA
 router.get('/Ficha_RTMA', (req, res) => {
   res.render('Ficha_RTMA'); // Certifique-se de que o arquivo EJS existe
+});
+
+router.get('/Formulario', (req, res) => {
+  res.render('Formulario'); // Certifique-se que o arquivo .ejs está em 'views'
 });
 
 

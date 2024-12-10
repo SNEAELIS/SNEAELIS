@@ -63,6 +63,7 @@ app.use(
   })
 );
 
+
 // Configuração do EJS como view engine
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
@@ -70,8 +71,15 @@ app.set('views', path.join(__dirname, 'views'));
 // Middleware para servir arquivos estáticos
 app.use(express.static(path.join(__dirname, '../public')));
 
-// Rotas
+app.use((req, res, next) => {
+  if (req.path.endsWith('.js')) {
+    res.type('application/javascript');
+  }
+  next();
+});
+
 app.use('/', useRoutes);
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

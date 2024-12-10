@@ -3,71 +3,383 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Página Inicial</title>
-    <link rel="stylesheet" href="style.css/style.css">
+    <title>Gerar Atestado de Capacidade Técnica</title>
+    <!-- Link para o arquivo CSS externo -->
 </head>
-<script>
-    // Função para abrir e fechar a sidebar em telas menores
-    function toggleSidebar() {
-        const sidebar = document.querySelector('.sidebar');
-        const content = document.querySelector('.content');
-        sidebar.classList.toggle('open');
-        content.classList.toggle('collapsed');
-    }
+<style>
+    /* Reset Básico */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-    function toggleSection(sectionId) {
-        const section = document.getElementById(sectionId);
-        section.classList.toggle('hidden');
-    }
-</script>
+body {
+  font-family: 'Arial', sans-serif;
+  background-color: #f4f4f9;
+  color: #333;
+  line-height: 1.6;
+  padding: 0 20px;
+}
 
+/* Header */
+header {
+    background-color: #005CAA;
+    color: white;
+    padding: 10px 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: fixed;
+    width: 100%;
+    top: 0;
+    z-index: 1000;
+    height: 60px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+header h1 {
+    font-size: 1.2rem;
+    white-space: nowrap;
+}
+
+header img {
+    max-width: 150px;
+    height: auto;
+}
+
+/* Container Principal */
+.container {
+  background: #fff;
+  margin: 30px auto;
+  padding: 30px;
+  border-radius: 10px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  max-width: 800px;
+}
+
+/* Títulos */
+h2 {
+  font-size: 1.5rem;
+  color: #007bff;
+  border-bottom: 2px solid #007bff;
+  padding-bottom: 5px;
+  margin-bottom: 20px;
+}
+
+/* Formulário */
+form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.form-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.form-row .half-width {
+  flex: 1;
+  min-width: 200px;
+}
+
+.form-row .full-width {
+  width: 100%;
+}
+
+/* Inputs */
+input[type="text"],
+input[type="number"],
+button {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  font-size: 1rem;
+  transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input[type="text"]:focus,
+input[type="number"]:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.2);
+  outline: none;
+}
+
+/* Botões */
+button {
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #fff;
+  cursor: pointer;
+  font-weight: bold;
+  text-transform: uppercase;
+  transition: transform 0.2s, box-shadow 0.3s;
+}
+
+button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+}
+
+button a {
+  color: #fff;
+  text-decoration: none;
+}
+
+/* Botões de Grupo */
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+/* Mensagem de Carregamento */
+#loadingMessage {
+  text-align: center;
+  font-weight: bold;
+  color: #007bff;
+}
+
+/* Rodapé */
+footer {
+  text-align: center;
+  padding: 15px;
+  margin-top: 30px;
+  background-color: #007bff;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.9rem;
+}
+
+/* Responsividade */
+@media (max-width: 600px) {
+  .form-row {
+    flex-direction: column;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+.button-container {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  margin-top: 30px;
+}
+
+/* Estilização dos botões */
+.button-container button {
+  width: 100%;
+  padding: 15px;
+  font-size: 1.2rem;
+  background: linear-gradient(135deg, #007bff, #0056b3);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  text-transform: uppercase;
+  font-weight: bold;
+  transition: transform 0.2s, box-shadow 0.3s;
+  cursor: pointer;
+}
+
+.button-container button:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 15px rgba(0, 123, 255, 0.4);
+}
+
+/* Estilização específica para links dentro dos botões */
+.button-container button a {
+  color: #fff;
+  text-decoration: none;
+  display: inline-block;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  padding: 15px;
+  font-size: 1.2rem;
+}
+
+</style>
 <body>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+
     <!-- Cabeçalho -->
     <header>
         <h1>Ministério do Esporte</h1>
-        <img src="img/Imagem1.png" alt="IMG1" width="10%">
+        <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="IMG1">
     </header>
 
-    <div class="sidebar">
-        <ul>
-            <li onclick="toggleSection('formalizacao')">
-                <i class="fas fa-folder"></i> Formalização
-            </li>
-            <ul id="formalizacao" class="hidden">
-                <li><a href="Documentações.html">OSC/Sociedade Civil</a></li>
-                <li><a href="Formulario_convênio.html">Entidades Públicas</a></li>
-            </ul>
-            <li onclick="toggleSection('acompanhamento')">
-                <i class="fas fa-file-alt"></i> Acompanhamento
-            </li>
-            <ul id="acompanhamento" class="hidden">
-                <li><a href="Formulário_Relma.html">Ficha Relmas</a></li>
-            </ul>
-        </ul>
-    </div>
-
     <div class="container">
-        <div class="option-container">
-            <h1>Seleção de Declaração</h1>
-            <p>Declarações Padronizadas</p>
 
-            <!-- Botões para escolher entre Termo de Fomento ou Convênio -->
-            <a href="Formulario.html" class="btn">Gerar Declarações Manualmente</a>
-        </div>
-        <div class="option-container">
-            <p>Declarações Padronizadas MESP</p>
+        <h2>Atestado e Declarações</h2>
 
-            <!-- Botões para escolher entre Termo de Fomento ou Convênio -->
-            <a href="Declaraçãoautomática.html" class="btn">Declarações automáticas</a>
-        </div>
+        <form id="declaracoesForm">
+            <!-- Dados do dirigente da entidade -->
+            <h2>Dados do dirigente da entidade</h2>
+            <div class="form-row">
+                <div class="half-width">
+                    <label for="dirigente">Nome Completo:</label>
+                    <input type="text" id="dirigente" name="Nome do Dirigente" maxlength="100" required>
+                </div>
+                <div class="half-width">
+                    <label for="cpf">CPF (apenas números):</label>
+                    <input type="text" id="cpf" name="CPF do Dirigente" maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" placeholder="000.000.000-00" oninput="formatarCPF(this)" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="half-width">
+                    <label for="rg">RG:</label>
+                    <input type="text" id="rg" name="RG do Dirigente" maxlength="20" required>
+                </div>
+                <div class="half-width">
+                    <label for="orgao">Órgão Expedidor:</label>
+                    <input type="text" id="orgao" name="Órgão Expedidor" maxlength="10" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="half-width">
+                    <label for="cargoDirigente">Cargo:</label>
+                    <input type="text" id="cargoDirigente" name="Cargo do Dirigente" maxlength="50" required>
+                </div>
+            </div>
+        
+            <!-- Dados da entidade -->
+            <h2>Dados da entidade</h2>
+            <div class="form-row">
+                <div class="half-width">
+                    <label for="entidade">Nome:</label>
+                    <input type="text" id="entidade" name="Nome da Entidade" maxlength="100" required>
+                </div>
+                <div class="half-width">
+                    <label for="cnpj">CNPJ (apenas números):</label>
+                    <input type="text" id="cnpj" name="CNPJ da Entidade" maxlength="18" pattern="\d{2}\.\d{3}\.\d{3}/\d{4}-\d{2}" placeholder="00.000.000/0000-00" oninput="formatCNPJ(this)" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="full-width">
+                    <label for="endereco">Endereço Completo:</label>
+                    <input type="text" id="endereco" name="Endereço Completo da Sede" maxlength="200" required>
+                </div>
+            </div>
+            <div class="form-row">
+                <div class="half-width">
+                    <label for="uf">UF:</label>
+                    <input type="text" id="uf" name="UF da Entidade" maxlength="2" pattern="[A-Za-z]{2}" placeholder="EX" required>
+                </div>
+                <div class="half-width">
+                    <label for="municipio">Município:</label>
+                    <input type="text" id="municipio" name="Município da Entidade" maxlength="100" required>
+                </div>
+            </div>
+        
+            <!-- Dados da Proposta e Objeto -->
+            <h2>Dados da Proposta</h2>
+            <div class="form-row">
+                <div class="half-width">
+                    <label for="proposta">Nº da Proposta:</label>
+                    <input type="text" id="proposta" name="Número da Proposta" maxlength="20" required>
+                </div>
+                <div class="half-width">
+                    <label for="objeto">Objeto:</label>
+                    <input type="text" id="objeto" name="Objeto" maxlength="200" required>
+                </div>
+            </div>
+        
+            <!-- Coordenador Geral -->
+            <h2>Coordenador Geral</h2>
+            <div class="form-row">
+                <label>O Coordenador Geral será cedido pelo proponente?</label>
+            </div>
+            <div class="form-row button-group">
+                <button type="button" onclick="mostrarCoordenador('Sim')">Sim</button>
+                <button type="button" onclick="mostrarCoordenador('Não')">Não</button>
+            </div>
+        
+            <!-- Seção que aparece somente se "Sim" for selecionado -->
+            <div id="coordenadorFields" class="hidden">
+                <div class="form-row">
+                    <div class="half-width">
+                        <label for="nomeCoordenador">Nome Completo:</label>
+                        <input type="text" id="nomeCoordenador" name="Nome do Coordenador" maxlength="100" required>
+                    </div>
+                    <div class="half-width">
+                        <label for="cpfCoordenador">CPF (apenas números):</label>
+                        <input type="text" id="cpfCoordenador" name="CPF do Coordenador" maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" placeholder="000.000.000-00" oninput="formatarCPF(this)" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="half-width">
+                        <label for="rgCoordenador">RG:</label>
+                        <input type="text" id="rgCoordenador" name="RG do Coordenador" maxlength="20" required>
+                    </div>
+                    <div class="half-width">
+                        <label for="orgaoExpedidorCoordenador">Órgão Expedidor:</label>
+                        <input type="text" id="orgaoExpedidorCoordenador" name="Órgão Expedidor do Coordenador" maxlength="10" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="half-width">
+                        <label for="nomePrograma">Programa:</label>
+                        <input type="text" id="nomePrograma" name="Programa" maxlength="100" required>
+                    </div>
+                </div>
+            </div>
+        </form>
+        
+
+        </form>
+        <!-- Botão para gerar PDF -->
+        <div class="button-container">
+            <button id="botaoGerarPDF">
+              <i class="fas fa-file-pdf"></i> Gerar PDFs
+            </button>
+            
+            <button id="botaoGerarAtestadoPDF">
+              <i class="fas fa-file-signature"></i> Gerar PDF Atestado de Capacidade Técnica
+            </button>
+            
+            <button id="botaoVincularDirigentes">
+              <a href="Formulario2.html"><i class="fas fa-user-plus"></i> Vincular Dirigentes</a>
+            </button>
+          </div>
+        <div id="loadingMessage" style="display:none; color:blue; margin-top:10px;">
+            Aguarde um momento, o download está sendo processado...
+        </div>      
     </div>
-
+    </div>
     <footer>
         <p>&copy; 2024 Ministério do Esporte</p>
-    
-        <!-- Link para o arquivo JS externo -->
-        <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-        <script src="Config.js/script.js"></script>
-    </body>
-    </html>
+    </footer>
+
+    <script>
+        function mostrarCoordenador(opcao) {
+          const coordenadorFields = document.getElementById('coordenadorFields');
+      
+          if (opcao === 'Sim') {
+            coordenadorFields.classList.remove('hidden');
+          } else {
+            coordenadorFields.classList.add('hidden');
+            // Opcional: Limpar os campos se "Não" for selecionado
+            document.getElementById('nomeCoordenador').value = '';
+            document.getElementById('cpfCoordenador').value = '';
+            document.getElementById('rgCoordenador').value = '';
+            document.getElementById('orgaoExpedidorCoordenador').value = '';
+            document.getElementById('nomePrograma').value = '';
+          }
+        }
+      </script>
+      
+
+    <!-- Link para o arquivo JS externo -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+    <script src="/js/Script/script.js"></script>
+
+</body>
+</html>

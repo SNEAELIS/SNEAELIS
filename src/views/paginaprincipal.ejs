@@ -31,6 +31,12 @@
         sidebar.classList.toggle('open');
         content.classList.toggle('expanded');
       }
+
+      document.querySelectorAll('.menu-item').forEach(item => {
+    item.addEventListener('click', () => {
+      item.classList.toggle('active');
+    });
+  });
   </script>
 </head>
 <body>
@@ -55,7 +61,7 @@
           <i class="fas fa-folder"></i> Formalização
           <ul class="submenu hidden">
             <li><a href="Formulario_Documentacoes">OSC/Sociedade Civil</a></li>
-            <li><a href="Formulario_convênio.html">Entidades Públicas</a></li>
+            <li><a href="Formulario_convenio">Entidades Públicas</a></li>
           </ul>
         </li>
       <% } %>
