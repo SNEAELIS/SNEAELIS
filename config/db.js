@@ -1,4 +1,6 @@
 const { Pool } = require('pg');
+const cors = require('cors');
+const express = require('express');
 
 const remoteConfig = {
   connectionString: 'postgresql://users_4t7z_user:DlUHjtOhLtrvaWm3bvGRCu7uqVQ3PiH8@dpg-ct0ent1u0jms73c4dslg-a.oregon-postgres.render.com/users_4t7z',

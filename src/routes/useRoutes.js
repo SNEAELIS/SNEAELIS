@@ -54,6 +54,7 @@ router.get('/acompanhamento', verificarNivelAcesso(2), (req, res) => {
 });
 
 router.get('/admin-dashboard', verificarNivelAcesso(3), (req, res) => {
+  console.log("Acessando /admin-dashboard");
   res.render('admin-dashboard', { nivel_acesso: req.session.nivel_acesso });
 });
 
@@ -81,6 +82,10 @@ router.get('/Ficha_Frequencia', (req, res) => {
 
 router.get('/Formulario_convenio', (req, res) => {
   res.render('Formulario_convenio');
+});
+
+router.get('/formulario-dirigente', (req, res) => {
+  res.render('formulario-dirigente'); // Certifique-se de que o arquivo 'formulario-dirigente.ejs' existe em 'views'
 });
 
 router.get('/simulacao', (req, res) => {

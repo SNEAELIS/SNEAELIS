@@ -3,6 +3,7 @@ const path = require('path');
 const useRoutes = require('./routes/useRoutes');
 const session = require('express-session');
 const getPool = require('../config/db'); // Importa a função para obter o pool dinâmico
+const cors = require('cors');
 
 
 let pool;
@@ -80,6 +81,20 @@ app.use((req, res, next) => {
 
 app.use('/', useRoutes);
 
+// Middleware
+app.use(cors());
+app.use(express.json());
+
+// Rota para buscar dados do banco
+app.get('/users', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT * FROM usuarios'); // Ajuste o nome da tabela
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Erro ao buscar dados:', err.message);
+    res.status(500).json({ error: 'Erro ao buscar dados do banco remoto' });
+  }
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

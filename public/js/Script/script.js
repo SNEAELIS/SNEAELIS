@@ -187,54 +187,6 @@ var docDefinition = {
 
         { text: '', pageBreak: 'after' }, // Quebra de página
 
-        // Título centralizado em duas linhas
-        {
-            text: 'DECLARAÇÃO DOS ARTS. 26, 27 DO DECRETO Nº 8.726 DE 2016',
-            style: 'header',
-            alignment: 'center',
-            margin: [0, 0, 0, 10] // Margem inferior de 10
-        },
-        {
-            text: 'E DO ART. 39 DA LEI Nº 13.019 DE 2014',
-            style: 'header',
-            alignment: 'center',
-            margin: [0, 0, 0, 20] // Margem inferior de 20
-        },
-
-        // Texto principal justificado
-        {
-            text: [
-                `Eu, ${dirigente}, portador da carteira de identidade nº ${rg}, expedida pelo ${orgaoEmissor}, CPF nº ${cpf}, na condição de representante legal da ${entidade}, inscrito(a) no CNPJ sob o nº ${cnpj}, declaro para os devidos fins, nos termos do art. 26 caput inciso VII e art. 27 do Decreto nº 8.726 de 2016 e do art. 39 incisos III ao VII da Lei nº 13.019 de 2014, que os dirigentes abaixo relacionados não incorrem em qualquer das vedações previstas em lei.\n\n`,
-                `I - Não são membros de Poder ou do Ministério Público ou dirigentes de órgão ou entidade da Administração Pública Federal;\n`,
-                `II – Não são cônjuges ou parentes de membros de Poder ou dirigentes de entidade da Administração Pública Federal;\n`,
-                `III - Não contratarão com recursos da parceria para prestação de serviços servidor ou empregado público, inclusive comissionados ou parentes;\n`,
-                `IV - Não serão remunerados a qualquer título com os recursos repassados membros do Ministério Público, dirigentes de órgãos públicos ou pessoas com condenações relativas a crimes contra a administração pública;\n`,
-                `V – Não tiveram as contas rejeitadas pela Administração Pública nos últimos cinco anos;\n`,
-                `VI – Não foram punidos com sanções de suspensão, declaração de inidoneidade ou qualquer outra sanção prevista em lei.\n\n`,
-                'Por ser expressão da verdade, firmo a presente declaração.'
-            ],
-            alignment: 'justify', // Justificação do texto
-            fontSize: 12,
-            margin: [0, 0, 0, 40] // Margem inferior
-        },
-
-        // Local e data
-        {
-            text: `${municipio}/${uf}, na data da assinatura digital.`,
-            alignment: 'left',
-            fontSize: 12,
-            margin: [0, 0, 0, 20] // Margem inferior antes da assinatura
-        },
-
-            {
-                text: `${cargoDirigente}\n\n`,
-                alignment: 'center', // Centraliza o cargo do dirigente
-                fontSize: 12,
-                margin: [0, 0, 0, 20]
-            },
-
-        { text: '', pageBreak: 'after' }, // Quebra de página
-
 
         // Título centralizado
         {

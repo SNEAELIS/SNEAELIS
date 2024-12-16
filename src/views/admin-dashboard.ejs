@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard de Usuários</title>
+</head>
+<body>
+  <h1>Dashboard de Usuários</h1>
+  <button onclick="listarUsuarios()">Listar Usuários</button>
+  <table border="1" id="tabela-usuarios">
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Nome</th>
+        <th>Email</th>
+        <th>Ações</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script>
+    async function listarUsuarios() {
+      const resposta = await fetch('http://localhost:3000/usuarios');
+      const usuarios = await resposta.json();
+      const tabela = document.querySelector('#tabela-usuarios tbody');
+      tabela.innerHTML = '';
+
+      usuarios.forEach(user => {
+        const row = `
+          <tr>
+            <td>${user.id}</td>
+            <td>${user.nome}</td>
+            <td>${user.email}</td>
+            <td>
+              <button onclick="alterarUsuario(${user.id})">Alterar</button>
+              <button onclick="excluirUsuario(${user.id})">Excluir</button>
+              <button onclick="resetarSenha(${user.id})">Resetar Senha</button>
+            </td>
+          </tr>
+        `;
+        tabela.innerHTML += row;
+      });
+    }
+
+    async function alterarUsuario(id) {
+      const nome = prompt('Digite o novo nome:');
+      const email = prompt('Digite o novo email:');
+      await fetch(`http://localhost:3000/usuarios/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ nome, email })
+      });
+      listarUsuarios();
+    }
+
+    async function excluirUsuario(id) {
+      if (confirm('Tem certeza que deseja excluir?')) {
+        await fetch(`http://localhost:3000/usuarios/${id}`, { method: 'DELETE' });
+        listarUsuarios();
+      }
+    }
+
+    async function resetarSenha(id) {
+      await fetch(`http://localhost:3000/usuarios/reset/${id}`, { method: 'PUT' });
+      alert('Senha resetada para "123456".');
+      listarUsuarios();
+    }
+  </script>
+</body>
+</html>

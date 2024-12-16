@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerar Atestado de Capacidade Técnica</title>
+    
+    <!-- CSS Embutido -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f4f4f4;
+            color: #333;
+        }
+
+        header {
+            background-color: #004080;
+            color: #fff;
+            padding: 1em;
+            text-align: center;
+        }
+
+        header img {
+            display: block;
+            margin: 0 auto;
+            margin-top: 10px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 2em auto;
+            padding: 2em;
+            background-color: #fff;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            border-radius: 5px;
+        }
+
+        h2 {
+            color: #004080;
+        }
+
+        label {
+            display: block;
+            margin: 10px 0 5px;
+        }
+
+        input[type="text"],
+        input[type="number"] {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 1em;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+
+        input[type="checkbox"] {
+            margin-right: 10px;
+        }
+
+        button {
+            background-color: #004080;
+            color: #fff;
+            padding: 10px 15px;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-top: 1em;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #003366;
+        }
+
+        .container1 {
+            text-align: center;
+            margin-top: 2em;
+        }
+
+        footer {
+            background-color: #004080;
+            color: #fff;
+            text-align: center;
+            padding: 1em 0;
+            position: fixed;
+            bottom: 0;
+            width: 100%;
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Cabeçalho -->
+    <header>
+        <h1>Ministério do Esporte</h1>
+        <img src="img/Imagem1.png" alt="IMG1" width="10%">
+    </header>
+
+    <div class="container">
+        <h2>Opções de Ajuste</h2>
+
+        <!-- Adicionar campo para o nome da entidade -->
+        <label for="nomeEntidade">Nome da Entidade:</label>
+        <input type="text" id="nomeEntidade" required>
+
+        <!-- Adicionar checkboxes para opções adicionais -->
+        <label>
+            <input type="checkbox" id="contasRejeitadas">
+            A entidade teve contas rejeitadas
+        </label>
+        <br>
+        <label>
+            <input type="checkbox" id="improbidadeAdministrativa">
+            A entidade possui histórico de improbidade administrativa
+        </label>
+
+        <h2>Dados Gerais</h2>
+        <form id="declaracoesForm">
+            <label for="numDirigentes">Informe o número de dirigentes:</label>
+            <input type="number" id="numDirigentes" name="numDirigentes" min="1" max="10">
+            <button type="button" onclick="gerarCampos()">Gerar Campos</button>
+        </form>
+
+        <form id="dirigentesForm">
+            <div id="camposDirigentes"></div>
+        </form>
+
+        <div class="container1">
+            <button id="botaoGerarPDF" onclick="gerarPDF()">Gerar PDF Art 26/27</button>
+        </div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Ministério do Esporte</p>
+    </footer>
+
+    <!-- Links para as bibliotecas PDFMake -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js"></script>
+
+    <script src="/js/script3.js"></script>
+
+</body>
+</html>
