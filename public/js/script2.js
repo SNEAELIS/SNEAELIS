@@ -128,9 +128,9 @@ const declaracoesCompletas = [
             
             O(s) projeto(s)/ação(es) descrito(s) foi(ram) executado(s) com qualidade, não existindo, até a presente data, fatos que desabonem a conduta e a responsabilidade da entidade com as obrigações assumidas, confirmando assim a capacidade técnica e operacional para a execução do que foi proposto.
             
-            Município, [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+            [MUNICIPIO]/[UF], na data da assinatura.
             
-            ____________________________________________________
+            
             [NOME]
             [CARGO_DIRIGENTE]
         `
@@ -170,9 +170,9 @@ const declaracoesCompletas = [
         Atividade: [ATIVIDADE]  
         Natureza da despesa: [NATUREZA_DESPESA]  
 
-        Município, [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+        [MUNICIPIO]/[UF], na data da assinatura.
 
-        ___________________________________________________
+        
 
         [NOME]  
         [CARGO_DIRIGENTE]
@@ -185,9 +185,9 @@ const declaracoesCompletas = [
 
         Por ser expressão da verdade, firmo a presente declaração.
 
-        Município, [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+        [MUNICIPIO]/[UF], na data da assinatura.
 
-        ______________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -197,9 +197,9 @@ const declaracoesCompletas = [
         content: `
         Eu, [NOME], CPF [CPF], RG [RG], expedido pelo [ORGAO_EMISSOR] / [UF], cargo [CARGO_DIRIGENTE], declaro, sob as penas da lei, em especial a do art. 299 do Código Penal Brasileiro, na qualidade de representante legal do Proponente, que as Empresas a serem contratadas no âmbito do Convênio a ser celebrado com o Ministério do Esporte - MESP, sob o número da Proposta nº [PROPOSTA], não possuem em seu quadro societário, cônjuge ou companheiro, bem como, vínculo de parentesco, colateral ou por afinidade, até o terceiro grau, ou de natureza técnica, comercial, econômica, financeira, trabalhista e civil.
 
-        Município, [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+        [MUNICIPIO]/[UF], na data da assinatura.
 
-        ______________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -219,9 +219,9 @@ const declaracoesCompletas = [
         
         Por ser expressão da verdade, firmo a presente declaração.
         
-        [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        ____________________________________________________
+       
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -235,9 +235,9 @@ const declaracoesCompletas = [
             
         Por ser expressão da verdade, firmo a presente declaração.
             
-        [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+        [MUNICIPIO]/[UF], na data da assinatura.
             
-        ___________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -247,9 +247,9 @@ const declaracoesCompletas = [
         content: `
         Declaro para os devidos fins de celebração de Convênios e na qualidade de representante legal do proponente junto ao Ministério do Esporte - MESP, que a proposta inserida no Sistema Eletrônico Transferegov sob o nº [PROPOSTA] e demais informações foram apresentados para apreciação SOMENTE junto a esse órgão e em nenhum outro ente da administração pública, ficando, portanto, sujeito às sanções civis, administrativas e penais cabíveis no caso de comprovada a falsidade ideológica.
         
-        [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        ____________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -263,9 +263,9 @@ const declaracoesCompletas = [
         
         Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
-        [MUNICIPIO] / [UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        _____________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -279,9 +279,9 @@ const declaracoesCompletas = [
         
         Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
-        [MUNICIPIO] / [UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        _____________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -295,9 +295,9 @@ const declaracoesCompletas = [
         
         Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
-        [MUNICIPIO] / [UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+       [MUNICIPIO]/[UF], na data da assinatura.
         
-        ______________________________________________________
+        
         [NOME]
         Chefe do Poder Executivo ou Secretário de Finanças
         `
@@ -307,9 +307,9 @@ const declaracoesCompletas = [
         content: `
         Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR] / [UF], CPF [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ nº [CNPJ], DECLARO ao Ministério do Esporte - MESP, que a entidade a qual represento não recebe recursos financeiros de outra entidade para a mesma finalidade na execução das ações apresentadas e especificadas na Proposta N° [PROPOSTA], cadastrada no Sistema Eletrônico Transferegov, para [OBJETO], evitando desta forma a sobreposição de recursos.
         
-        Município, [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        ___________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -321,9 +321,9 @@ const declaracoesCompletas = [
         
         Por ser expressão da verdade, firmo a presente declaração.
         
-        [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        __________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -341,9 +341,9 @@ const declaracoesCompletas = [
         
         Por ser expressão da verdade, firmo a presente declaração.
         
-        [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        ......................................................................................................
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -357,9 +357,9 @@ const declaracoesCompletas = [
         
         Por ser expressão da verdade, firmo a presente declaração.
         
-        [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        ________________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -369,9 +369,9 @@ const declaracoesCompletas = [
         content: `
         Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR] / [UF], CPF [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ nº [CNPJ], responsabilizo-me pela disponibilização do(s) espaço(s) físico(s), apto(s) e compatível(is) para o atendimento do público-alvo. Além disso, apresentarei a(s) cessão(ões) de espaço físico, se for o caso, a fim de não causar qualquer impedimento no desenvolvimento das atividades junto aos beneficiados, no(s) núcleo(s) do [PROGRAMA].
         
-        [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+        [MUNICIPIO]/[UF], na data da assinatura.
         
-        _________________________________________________________
+        
         [NOME]
         [CARGO_DIRIGENTE]
         `
@@ -397,9 +397,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -418,9 +418,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -441,9 +441,9 @@ const declaracoesEspecificas = {
 
             Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
-            [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+            [MUNICIPIO]/[UF], na data da assinatura.
 
-            ______________________________________________________
+            
             [NOME]
             Chefe do Poder Executivo (ou Secretário de Finanças)
         `
@@ -461,9 +461,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças ou de Educação)
             `
@@ -481,9 +481,9 @@ const declaracoesEspecificas = {
 
             Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
-            [CIDADE/UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+            [MUNICIPIO]/[UF], na data da assinatura.
 
-            ______________________________________________________
+            
             [NOME DO RESPONSÁVEL]
             Chefe do Poder Executivo ou (Secretário de Finanças)
         `
@@ -503,9 +503,9 @@ const declaracoesEspecificas = {
             - Pagamento dos Profissionais: no mês seguinte da prestação dos serviços; e
             - Pagamento dos Encargos Sociais e/ou Trabalhistas: deverá acompanhar periodicidade dos pagamentos realizados aos recursos humanos vinculados.
 
-            [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+            [MUNICIPIO]/[UF], na data da assinatura
 
-            ______________________________________________________
+            
             [NOME]
             [CARGO_DIRIGENTE]
         ` 
@@ -516,9 +516,9 @@ const declaracoesEspecificas = {
                 Eu, [NOME], ([CARGO_DIRIGENTE]), portador do CPF n.º [CPF], na condição de representante legal do [ENTIDADE], inscrita no CNPJ nº [CNPJ], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [ENTIDADE], 
                 possui condições orçamentárias para arcar com as despesas dela decorrentes e meios que garantem a sustentabilidade do objeto, quando se tratar da aquisição de bens de capital.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ________________________________________________________
+                
                 [NOME]
                 [CARGO_DIRIGENTE]
             `
@@ -528,41 +528,41 @@ const declaracoesEspecificas = {
         {
             title: "DECLARAÇÃO DE CONFORMIDADE EM ACESSIBILIDADE",
             content: `
-                Eu, [NOME DO REPRESENTANTE LEGAL], portador do CPF n.º [CPF REPRESENTANTE LEGAL], na qualidade de representante legal do [NOME DO MUNICÍPIO], 
+                Eu, [NOME DO REPRESENTANTE LEGAL], portador do CPF n.º [CPF], na qualidade de representante legal do [NOME DO MUNICÍPIO], 
                 inscrito no CNPJ sob o n.º [CNPJ MUNICÍPIO], DECLARO que serão garantidos os meios necessários para acessibilidade de pessoas com deficiência 
                 ou com mobilidade reduzida, e dá outras providências ao projeto, nos termos da Lei nº 10.098, de 19 de dezembro de 2000 e demais legislações e normativas aplicáveis.
                 
                 DECLARO, outrossim, sob as penas da lei, estar plenamente ciente do teor e da extensão desta declaração e deter plenos poderes e informações para firmá-la.
     
-                [MUNICÍPIO/UF], [DIA] de [MÊS] de [ANO].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ________________________________________________________
+                
                 [NOME DO RESPONSÁVEL LEGAL DO MUNICÍPIO]
-                [CARGO]
+                [CARGO_DIRIGENTE]
             `
         },
         {
             title: "DECLARAÇÃO DE SUSTENTABILIDADE DO OBJETO",
             content: `
-            Eu, [NOME DO REPRESENTANTE LEGAL], ([CARGO]), portador do CPF n.º [CPF REPRESENTANTE LEGAL], na condição de representante legal do [NOME DO MUNICÍPIO], inscrita no CNPJ nº [CNPJ MUNICÍPIO], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [NOME DO MUNICÍPIO], 
+            Eu, [NOME DO REPRESENTANTE LEGAL], ([CARGO_DIRIGENTE]), portador do CPF n.º [CPF], na condição de representante legal do [NOME DO MUNICÍPIO], inscrita no CNPJ nº [CNPJ MUNICÍPIO], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [NOME DO MUNICÍPIO], 
             possui condições orçamentárias para arcar com as despesas dela decorrentes e meios que garantem a sustentabilidade do objeto, quando se tratar da aquisição de bens de capital.
 
-            [MUNICÍPIO/UF], [DIA] de [MÊS] de [ANO].
+            [MUNICIPIO]/[UF], na data da assinatura.
 
-            ________________________________________________________
+            
             [NOME DO RESPONSÁVEL LEGAL DO MUNICÍPIO]
-            [CARGO]
+            [CARGO_DIRIGENTE]
         `
         },
         {
             title: "DECLARAÇÃO DE CUSTEIO DA INSTALAÇÃO DOS EQUIPAMENTOS",
             content: `
-                Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], [CPF REPRESENTANTE LEGAL], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], declaro o compromisso de:Dispor de recursos financeiros para custear a instalação dos equipamentos pactuados na proposta n° [PROPOSTA].
+                Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], declaro o compromisso de:Dispor de recursos financeiros para custear a instalação dos equipamentos pactuados na proposta n° [PROPOSTA].
                 Por ser expressão da verdade, firmo a presente declaração.
     
-                [MUNICÍPIO/UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+                
                 [NOME]
                 [CARGO_DIRIGENTE]
             `
@@ -572,7 +572,7 @@ const declaracoesEspecificas = {
         {
             title: "DECLARAÇÃO DE CIÊNCIA DOS REQUISITOS PARA CONTRATAÇÃO DE RECURSOS HUMANOS",
             content: `
-            Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
+            Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
             na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], no que diz respeito à contratação de recursos humanos, declaro ter ciência de que:
             
             1. A forma de contratação necessitará de análise da Consultoria Jurídica da Entidade Convenente, a qual deverá observar as orientações contidas no Acórdão n.º 2588/2017 TCU  Plenário, Portaria Conjunta MGI/MF/AGU n.º 33, de 30 de agosto de 2023 e demais legislações pertinentes.
@@ -583,9 +583,9 @@ const declaracoesEspecificas = {
                 - Pagamento dos Profissionais: no mês seguinte da prestação dos serviços; e
                 - Pagamento dos Encargos Sociais e/ou Trabalhistas: deverá acompanhar a periodicidade dos pagamentos realizados aos recursos humanos vinculados.
 
-            [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+            [MUNICIPIO]/[UF], na data da assinatura.
 
-            ......................................................................................................
+            
             [NOME]
             [CARGO_DIRIGENTE]
         `
@@ -593,14 +593,14 @@ const declaracoesEspecificas = {
         {
             title: "TERMO DE COMPROMISSO",
             content: `
-                Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
+                Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
                 na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], indico para a atribuição de Coordenador Geral do Programa ([NOME_PROGRAMA]), 
                 o servidor [NOME_SERVIDOR], RG nº [IDENTIDADE_SERVIDOR], CPF [CPF_SERVIDOR], vinculado a esta Entidade como [VINCULO_SERVIDOR], 
                 possuindo a qualificação exigida para desenvolvimento do(a) [NOME_PROGRAMA], devidamente comprovada, com dedicação de 40 horas semanais junto ao Programa.
     
-                [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ________________________________________________________
+                
                 [NOME]
                 [CARGO_DIRIGENTE]
             `
@@ -621,9 +621,9 @@ const declaracoesEspecificas = {
                 - Pagamento dos Profissionais: no mês seguinte da prestação dos serviços; e
                 - Pagamento dos Encargos Sociais e/ou Trabalhistas: deverá acompanhar a periodicidade dos pagamentos realizados aos recursos humanos vinculados.
 
-            [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+            [MUNICIPIO]/[UF], na data da assinatura.
 
-            ......................................................................................................
+            
             [NOME]
             [CARGO_DIRIGENTE]
         `
@@ -631,14 +631,14 @@ const declaracoesEspecificas = {
         {
             title: "TERMO DE COMPROMISSO",
             content: `
-            Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
+            Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
             na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], indico para a atribuição de Coordenador Geral do Programa ([NOME_PROGRAMA]), 
             o servidor [NOME_SERVIDOR], RG nº [IDENTIDADE_SERVIDOR], CPF [CPF_SERVIDOR], vinculado a esta Entidade como [VINCULO_SERVIDOR], 
             possuindo a qualificação exigida para desenvolvimento do(a) [NOME_PROGRAMA], devidamente comprovada, com dedicação de 40 horas semanais junto ao Programa.
 
-            [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+            [MUNICIPIO]/[UF], na data de assinatura.
 
-            ________________________________________________________
+            
             [NOME]
             [CARGO_DIRIGENTE]
         `
@@ -659,9 +659,9 @@ const declaracoesEspecificas = {
         
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+                [MUNICIPIO]/[UF], na data da assinatura.
         
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -679,9 +679,9 @@ const declaracoesEspecificas = {
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
 
-                ______________________________________________________
+               
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças ou de Educação)
             ` 
@@ -699,9 +699,9 @@ const declaracoesEspecificas = {
         
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
-               [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+               [MUNICIPIO]/[UF], na data da assinatura..
         
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo ou (Secretário de Finanças)
             `
@@ -718,9 +718,9 @@ const declaracoesEspecificas = {
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
 
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -739,9 +739,9 @@ const declaracoesEspecificas = {
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
 
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -758,9 +758,9 @@ const declaracoesEspecificas = {
         
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
-               [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+               [MUNICIPIO]/[UF], na data da assinatura.
         
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -768,16 +768,16 @@ const declaracoesEspecificas = {
         {
             title: "DECLARAÇÃO DE ADIMPLÊNCIA",
             content: `
-                Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
+                Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
                 na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], DECLARO, no uso das atribuições que me foram delegadas e sob as penas da lei, que a presente Entidade:
 
                 Não está inadimplente com a União, inclusive no que tange às contribuições de que tratam os artigos 195 e 239 da Constituição Federal (contribuições dos empregados para a seguridade social, contribuições para o PIS/PASEP e contribuições para o FGTS, com relação a recursos anteriormente recebidos da Administração Pública Federal, por meio de convênios, contratos, acordos, ajustes, subvenções sociais, contribuições, auxílios e similares).
 
                 Por ser expressão da verdade, firmo a presente declaração.
 
-                [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+                [MUNICIPIO]/[UF], na data da assinatura.
 
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -796,9 +796,9 @@ const declaracoesEspecificas = {
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
 
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo
             `
@@ -818,9 +818,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -834,9 +834,9 @@ const declaracoesEspecificas = {
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
 
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo ou (Secretário de Finanças ou de Educação)
             `
@@ -850,9 +850,9 @@ const declaracoesEspecificas = {
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
 
-                ______________________________________________________
+
                 [NOME]
                 Chefe do Poder Executivo ou (Secretário de Finanças)
             `
@@ -866,9 +866,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -882,9 +882,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+                
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -898,9 +898,8 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -908,15 +907,14 @@ const declaracoesEspecificas = {
         {
             title: "DECLARAÇÃO DE ADIMPLÊNCIA",
             content: `
-                Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], DECLARO, no uso das atribuições que me foram delegadas e sob as penas da lei, que a presente Entidade:
+                Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], DECLARO, no uso das atribuições que me foram delegadas e sob as penas da lei, que a presente Entidade:
     
                 Não está inadimplente com a União, inclusive no que tange às contribuições de que tratam os artigos 195 e 239 da Constituição Federal (contribuições dos empregados para a seguridade social, contribuições para o PIS/PASEP e contribuições para o FGTS, com relação a recursos anteriormente recebidos da Administração Pública Federal, por meio de convênios, contratos, acordos, ajustes, subvenções sociais, contribuições, auxílios e similares).
     
                 Por ser expressão da verdade, firmo a presente declaração.
     
-                [MUNICIPIO], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+                [MUNICIPIO], na data da assinatura.
     
-                ______________________________________________________
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -933,9 +931,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+
                 [NOME]
                 Chefe do Poder Executivo
             `
@@ -943,25 +941,25 @@ const declaracoesEspecificas = {
         {
             title: "DECLARAÇÃO DE SUSTENTABILIDADE DO OBJETO",
             content: `
-                Eu, [NOME], [CARGO], portador do CPF n.º [CPF], na condição de representante legal do(a) [MUNICIPIO], inscrita no CNPJ nº [CNPJ], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [MUNICIPIO] possui condições orçamentárias 
+                Eu, [NOME], [CARGO_DIRIGENTE], portador do CPF n.º [CPF], na condição de representante legal do(a) [MUNICIPIO], inscrita no CNPJ nº [CNPJ], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [MUNICIPIO] possui condições orçamentárias 
                 para arcar com as despesas dela decorrentes e meios que garantem a sustentabilidade do objeto, quando se tratar da aquisição de bens de capital.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ________________________________________________________
+                
                 [NOME]
-                [CARGO]
+                [CARGO_DIRIGENTE]
             `
         },
         {
             title: "DECLARAÇÃO DE CUSTEIO DA INSTALAÇÃO DOS EQUIPAMENTOS",
             content: `
-                Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], [CPF REPRESENTANTE LEGAL], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], declaro o compromisso de:Dispor de recursos financeiros para custear a instalação dos equipamentos pactuados na proposta n° [PROPOSTA].
+                Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], declaro o compromisso de:Dispor de recursos financeiros para custear a instalação dos equipamentos pactuados na proposta n° [PROPOSTA].
                 Por ser expressão da verdade, firmo a presente declaração.
     
                 [MUNICÍPIO/UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
     
-                ______________________________________________________
+
                 [NOME]
                 [CARGO_DIRIGENTE]
             `
@@ -975,11 +973,11 @@ const declaracoesEspecificas = {
     
                 DECLARO, outrossim, sob as penas da lei, estar plenamente ciente do teor e da extensão desta declaração e deter plenos poderes e informações para firmá-la.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ________________________________________________________
+
                 [NOME]
-                [CARGO]
+                [CARGO_DIRIGENTE]
             `
         },
     ],
@@ -993,35 +991,34 @@ const declaracoesEspecificas = {
     
                 DECLARO, outrossim, sob as penas da lei, estar plenamente ciente do teor e da extensão desta declaração e deter plenos poderes e informações para firmá-la.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ________________________________________________________
                 [NOME]
-                [CARGO]
+                [CARGO_DIRIGENTE]
             `
         },
         {
             title: "DECLARAÇÃO DE SUSTENTABILIDADE DO OBJETO",
             content: `
-                Eu, [NOME], [CARGO], portador do CPF n.º [CPF], na condição de representante legal do(a) [MUNICIPIO], inscrita no CNPJ nº [CNPJ], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [MUNICIPIO] possui condições orçamentárias 
+                Eu, [NOME], [CARGO_DIRIGENTE], portador do CPF n.º [CPF], na condição de representante legal do(a) [MUNICIPIO], inscrita no CNPJ nº [CNPJ], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [MUNICIPIO] possui condições orçamentárias 
                 para arcar com as despesas dela decorrentes e meios que garantem a sustentabilidade do objeto, quando se tratar da aquisição de bens de capital.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ________________________________________________________
+               
                 [NOME]
-                [CARGO]
+                [CARGO_DIRIGENTE]
             `
         },
         {
             title: "DECLARAÇÃO DE CUSTEIO DA INSTALAÇÃO DOS EQUIPAMENTOS",
             content: `
-                Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], [CPF REPRESENTANTE LEGAL], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], declaro o compromisso de:Dispor de recursos financeiros para custear a instalação dos equipamentos pactuados na proposta n° [PROPOSTA].
+                Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], declaro o compromisso de:Dispor de recursos financeiros para custear a instalação dos equipamentos pactuados na proposta n° [PROPOSTA].
                 Por ser expressão da verdade, firmo a presente declaração.
     
-                [MUNICÍPIO/UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+
                 [NOME]
                 [CARGO_DIRIGENTE]
             `
@@ -1039,9 +1036,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL]
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+               
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -1055,9 +1052,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+
                 [NOME]
                 Chefe do Poder Executivo ou (Secretário de Finanças ou de Educação)
             `
@@ -1071,9 +1068,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+
                 [NOME]
                 Chefe do Poder Executivo ou (Secretário de Finanças)
             `
@@ -1087,9 +1084,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinautra.
     
-                ______________________________________________________
+
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `
@@ -1103,9 +1100,9 @@ const declaracoesEspecificas = {
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
-                [MUNICIPIO]/[UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], na data da assinatura.
     
-                ______________________________________________________
+
                 [NOME]
                 Chefe do Poder Executivo (ou Secretário de Finanças)
             `

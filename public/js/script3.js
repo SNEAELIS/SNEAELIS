@@ -3,6 +3,7 @@
 function gerarCampos() {
     const numDirigentes = document.getElementById('numDirigentes').value;
     const container = document.getElementById('camposDirigentes');
+    const enderecoEntidade = document.getElementById('enderecoEntidade').value;
     container.innerHTML = ''; // Limpa os campos anteriores
 
     // Gera os campos para cada dirigente
@@ -48,6 +49,7 @@ function gerarPDF() {
     const contasRejeitadas = document.getElementById('contasRejeitadas').checked;
     const improbidadeAdministrativa = document.getElementById('improbidadeAdministrativa').checked;
     const numDirigentes = document.getElementById('numDirigentes').value;
+    const enderecoEntidade = document.getElementById('enderecoEntidade').value;
     const camposDirigentes = [];
 
     // Coleta os dados inseridos nos campos para cada dirigente
@@ -118,7 +120,7 @@ function gerarPDF() {
             { text: textoImprobidadeAdministrativa, margin: [10, 5], alignment: 'justify', color: 'red' },
 
             // Informações finais
-            { text: '\nLocal-UF, ____ de ______________ de 20___.\n\n', alignment: 'center', margin: [0, 40] },
+            { text: `\n${enderecoEntidade}, na data da assinatura.\n\n`, alignment: 'center', margin: [0, 40] },
             { text: '...........................................................................................', alignment: 'center', margin: [0, 40] },
             { text: '(Nome e Cargo do Representante Legal da OSC)', alignment: 'center', margin: [0, 10] }
         ],
