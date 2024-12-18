@@ -513,7 +513,7 @@ const declaracoesEspecificas = {
         {
             title: "DECLARAÇÃO DE SUSTENTABILIDADE DO OBJETO",
             content: `
-                Eu, [NOME], ([CARGO_DIRIGENTE]), portador do CPF n.º [CPF], na condição de representante legal do [ENTIDADE], inscrita no CNPJ nº [CNPJ], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [ENTIDADE], 
+                Eu, [NOME], [CARGO_DIRIGENTE], portador do CPF n.º [CPF], na condição de representante legal do [ENTIDADE], inscrita no CNPJ nº [CNPJ], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [ENTIDADE], 
                 possui condições orçamentárias para arcar com as despesas dela decorrentes e meios que garantem a sustentabilidade do objeto, quando se tratar da aquisição de bens de capital.
     
                 [MUNICIPIO]/[UF], na data da assinatura.
@@ -528,8 +528,8 @@ const declaracoesEspecificas = {
         {
             title: "DECLARAÇÃO DE CONFORMIDADE EM ACESSIBILIDADE",
             content: `
-                Eu, [NOME DO REPRESENTANTE LEGAL], portador do CPF n.º [CPF], na qualidade de representante legal do [NOME DO MUNICÍPIO], 
-                inscrito no CNPJ sob o n.º [CNPJ MUNICÍPIO], DECLARO que serão garantidos os meios necessários para acessibilidade de pessoas com deficiência 
+                Eu, [NOME], portador do CPF n.º [CPF], na qualidade de representante legal do [MUNICIPIO], 
+                inscrito no CNPJ sob o n.º [CNPJ], DECLARO que serão garantidos os meios necessários para acessibilidade de pessoas com deficiência 
                 ou com mobilidade reduzida, e dá outras providências ao projeto, nos termos da Lei nº 10.098, de 19 de dezembro de 2000 e demais legislações e normativas aplicáveis.
                 
                 DECLARO, outrossim, sob as penas da lei, estar plenamente ciente do teor e da extensão desta declaração e deter plenos poderes e informações para firmá-la.
@@ -537,20 +537,20 @@ const declaracoesEspecificas = {
                 [MUNICIPIO]/[UF], na data da assinatura.
     
                 
-                [NOME DO RESPONSÁVEL LEGAL DO MUNICÍPIO]
+                [NOME]
                 [CARGO_DIRIGENTE]
             `
         },
         {
             title: "DECLARAÇÃO DE SUSTENTABILIDADE DO OBJETO",
             content: `
-            Eu, [NOME DO REPRESENTANTE LEGAL], ([CARGO_DIRIGENTE]), portador do CPF n.º [CPF], na condição de representante legal do [NOME DO MUNICÍPIO], inscrita no CNPJ nº [CNPJ MUNICÍPIO], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [NOME DO MUNICÍPIO], 
+            Eu, [NOME], [CARGO_DIRIGENTE], portador do CPF n.º [CPF], na condição de representante legal do [MUNICÍPIO], inscrita no CNPJ nº [CNPJ], DECLARO perante o Ministério do Esporte, para fins de celebração de convênio, que o [MUNICÍPIO], 
             possui condições orçamentárias para arcar com as despesas dela decorrentes e meios que garantem a sustentabilidade do objeto, quando se tratar da aquisição de bens de capital.
 
             [MUNICIPIO]/[UF], na data da assinatura.
 
             
-            [NOME DO RESPONSÁVEL LEGAL DO MUNICÍPIO]
+            [NOME]
             [CARGO_DIRIGENTE]
         `
         },
@@ -594,9 +594,9 @@ const declaracoesEspecificas = {
             title: "TERMO DE COMPROMISSO",
             content: `
                 Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
-                na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], indico para a atribuição de Coordenador Geral do Programa ([NOME_PROGRAMA]), 
-                o servidor [NOME_SERVIDOR], RG nº [IDENTIDADE_SERVIDOR], CPF [CPF_SERVIDOR], vinculado a esta Entidade como [VINCULO_SERVIDOR], 
-                possuindo a qualificação exigida para desenvolvimento do(a) [NOME_PROGRAMA], devidamente comprovada, com dedicação de 40 horas semanais junto ao Programa.
+                na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], indico para a atribuição de Coordenador Geral do Programa [PROGRAMA], 
+                o servidor [NOME], RG nº [RG], CPF [CPF], vinculado a esta Entidade como [CARGO_DIRIGENTE], 
+                possuindo a qualificação exigida para desenvolvimento do(a) [PROGRAMA], devidamente comprovada, com dedicação de 40 horas semanais junto ao Programa.
     
                 [MUNICIPIO]/[UF], na data da assinatura.
     
@@ -610,7 +610,7 @@ const declaracoesEspecificas = {
         {
             title: "DECLARAÇÃO DE CIÊNCIA DOS REQUISITOS PARA CONTRATAÇÃO DE RECURSOS HUMANOS",
             content: `
-            Eu, [NOME], portador da carteira de identidade nº [IDENTIDADE], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
+            Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
             na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], no que diz respeito à contratação de recursos humanos, declaro ter ciência de que:
             
             1. A forma de contratação necessitará de análise da Consultoria Jurídica da Entidade Convenente, a qual deverá observar as orientações contidas no Acórdão n.º 2588/2017 TCU Plenário, Portaria Conjunta MGI/MF/AGU n.º 33, de 30 de agosto de 2023 e demais legislações pertinentes.
@@ -631,17 +631,17 @@ const declaracoesEspecificas = {
         {
             title: "TERMO DE COMPROMISSO",
             content: `
-            Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
-            na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], indico para a atribuição de Coordenador Geral do Programa ([NOME_PROGRAMA]), 
-            o servidor [NOME_SERVIDOR], RG nº [IDENTIDADE_SERVIDOR], CPF [CPF_SERVIDOR], vinculado a esta Entidade como [VINCULO_SERVIDOR], 
-            possuindo a qualificação exigida para desenvolvimento do(a) [NOME_PROGRAMA], devidamente comprovada, com dedicação de 40 horas semanais junto ao Programa.
-
-            [MUNICIPIO]/[UF], na data de assinatura.
-
-            
-            [NOME]
-            [CARGO_DIRIGENTE]
-        `
+                Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], CPF [CPF], 
+                na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], indico para a atribuição de Coordenador Geral do Programa [PROGRAMA], 
+                o servidor [NOME], RG nº [RG], CPF [CPF], vinculado a esta Entidade como [CARGO_DIRIGENTE], 
+                possuindo a qualificação exigida para desenvolvimento do(a) [PROGRAMA], devidamente comprovada, com dedicação de 40 horas semanais junto ao Programa.
+    
+                [MUNICIPIO]/[UF], na data da assinatura.
+    
+                
+                [NOME]
+                [CARGO_DIRIGENTE]
+            `
         },
         {
             title: "DECLARAÇÃO DE REGULARIDADE NO CUMPRIMENTO DE LIMITES DA LRF",
@@ -957,7 +957,7 @@ const declaracoesEspecificas = {
                 Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR]/[UF], [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ Nº [CNPJ], declaro o compromisso de:Dispor de recursos financeiros para custear a instalação dos equipamentos pactuados na proposta n° [PROPOSTA].
                 Por ser expressão da verdade, firmo a presente declaração.
     
-                [MUNICÍPIO/UF], [DIA_ATUAL] de [MES_ATUAL] de [ANO_ATUAL].
+                [MUNICIPIO]/[UF], NA DATA DA ASSINATURA.
     
 
                 [NOME]
@@ -1135,7 +1135,7 @@ function gerarPDF() {
     const conteudoEspecifico = declaracoesEspecificasSelecionadas.map(declaracao => ({
         stack: [
             { text: declaracao.title, style: 'header', margin: [0, 10, 0, 10] },
-            { text: substituirPlaceholders(declaracao.content, dados), style: 'normal' }
+            { text: substituirPlaceholders(declaracao.content, dados), style: 'normal', alignment: 'justify' }
         ],
         pageBreak: 'after'
     }));
