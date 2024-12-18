@@ -26,7 +26,7 @@ let pool;
     const res = await pool.query('SELECT NOW()');
     console.log('Conexão bem-sucedida com o banco remoto:', res.rows[0]);
   } catch (remoteErr) {
-    console.error('Erro ao conectar ao banco remoto:', remoteErr);
+    console.error('Erro ao conectar ao banco remoto:', remoteErr.message);
 
     try {
       console.log('Tentando conectar ao banco local...');
@@ -34,7 +34,7 @@ let pool;
       const res = await pool.query('SELECT NOW()');
       console.log('Conexão bem-sucedida com o banco local:', res.rows[0]);
     } catch (localErr) {
-      console.error('Erro ao conectar ao banco local:', localErr);
+      console.error('Erro ao conectar ao banco local:', localErr.message);
       process.exit(1);
     }
   }
