@@ -4,10 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Formulário Técnico - Projeto/Evento</title>
+    <!-- Link para estilos externos -->
     <link rel="stylesheet" href="/public/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Reset padrão */
+        /* Reset e Configurações Globais */
         * {
             margin: 0;
             padding: 0;
@@ -19,15 +20,18 @@
             background-color: #f4f7f9;
             color: #333;
             line-height: 1.6;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
         }
 
-        /* Header */
+        /* Cabeçalho */
         header {
             background-color: #005CAA;
-            color: white;
+            color: #fff;
             display: flex;
-            align-items: center;
             justify-content: space-between;
+            align-items: center;
             padding: 20px 30px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
         }
@@ -35,67 +39,52 @@
         header h1 {
             font-size: 1.8em;
             font-weight: bold;
-            margin: 0;
         }
 
         .logo-header {
             height: 50px;
         }
 
-        /* Container principal */
+        /* Conteúdo Principal */
         .container {
             max-width: 1200px;
             margin: 30px auto;
-            background: #ffffff;
+            padding: 20px;
+            background: #fff;
             border-radius: 10px;
             box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-            padding: 20px;
-            flex: 1;
         }
 
-        html, body {
-            height: 100%;
-            margin: 0;
-            display: flex;
-            flex-direction: column;
-        }
-
-        /* Abas */
+        /* Abas de Navegação */
         .tabs {
             display: flex;
-            flex-wrap: wrap;
             border-bottom: 3px solid #005CAA;
-            margin-bottom: 20px;
             background-color: #f4f7f9;
         }
 
         .tab {
             flex: 1;
             text-align: center;
-            padding: 15px 10px;
+            padding: 15px;
             cursor: pointer;
-            background-color: #ffffff;
+            background-color: #fff;
             color: #005CAA;
             font-weight: bold;
+            transition: all 0.3s ease;
             border-right: 1px solid #ddd;
-            transition: background-color 0.3s, color 0.3s;
         }
 
         .tab:last-child {
             border-right: none;
         }
 
-        .tab:hover {
-            background-color: #e8f0ff;
-        }
-
-        .tab.active {
+        .tab:hover, .tab.active {
             background-color: #005CAA;
-            color: #ffffff;
-            border-bottom: 3px solid #ffffff;
+            color: #fff;
+            border-bottom: 3px solid #fff;
         }
 
-        /* Conteúdo das abas */
+        /* Conteúdo das Abas */
         .tab-content {
             display: none;
             padding: 20px;
@@ -107,18 +96,14 @@
         }
 
         @keyframes fadeIn {
-            from {
-                opacity: 0;
-            }
-            to {
-                opacity: 1;
-            }
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
 
         /* Formulários */
         form label {
             display: block;
-            margin-bottom: 5px;
+            margin-bottom: 8px;
             font-weight: bold;
             color: #005CAA;
         }
@@ -132,7 +117,6 @@
             border: 1px solid #ddd;
             border-radius: 5px;
             font-size: 16px;
-            color: #555;
         }
 
         form input:focus,
@@ -145,14 +129,14 @@
 
         form button {
             background-color: #005CAA;
-            color: white;
+            color: #fff;
             padding: 12px 25px;
             border: none;
             border-radius: 5px;
-            cursor: pointer;
             font-size: 16px;
             font-weight: bold;
-            transition: all 0.3s ease;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
         form button:hover {
@@ -161,17 +145,15 @@
 
         #submitAll {
             margin: 20px auto;
-            display: block;
             background-color: #28a745;
             color: white;
             padding: 15px 30px;
             font-size: 18px;
             font-weight: bold;
-            text-align: center;
             border: none;
             border-radius: 8px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: background-color 0.3s ease;
         }
 
         #submitAll:hover {
@@ -182,7 +164,7 @@
         footer {
             text-align: center;
             background-color: #005CAA;
-            color: white;
+            color: #fff;
             padding: 15px;
             font-size: 0.9em;
         }
@@ -194,7 +176,6 @@
             }
 
             .tab {
-                flex: none;
                 text-align: left;
                 padding: 10px 15px;
                 border-bottom: 1px solid #ddd;
