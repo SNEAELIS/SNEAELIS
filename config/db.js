@@ -19,25 +19,39 @@ const localConfig = {
 
 let pool;
 
-(async () => {
+async function habilitarPgcrypto(pool) {
   try {
-    console.log('Tentando conectar ao banco remoto...');
-    pool = new Pool(remoteConfig);
-    const res = await pool.query('SELECT NOW()');
-    console.log('Conexão bem-sucedida com o banco remoto:', res.rows[0]);
-  } catch (remoteErr) {
-    console.error('Erro ao conectar ao banco remoto:', remoteErr.message);
+    await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
+    console.log('Extensão pgcrypto habilitada com sucesso.');
+  } catch (err) {
+    console.error('Erro ao habilitar pgcrypto:', err.message);
+    throw err;
+  }
+}
 
-    try {
-      console.log('Tentando conectar ao banco local...');
-      pool = new Pool(localConfig);
-      const res = await pool.query('SELECT NOW()');
-      console.log('Conexão bem-sucedida com o banco local:', res.rows[0]);
-    } catch (localErr) {
-      console.error('Erro ao conectar ao banco local:', localErr.message);
+async function connectToDatabase(config, name) {
+  try {
+    console.log(`Tentando conectar ao banco ${name}...`);
+    pool = new Pool(config);
+    const res = await pool.query('SELECT NOW()');
+    console.log(`Conexão bem-sucedida com o banco ${name}:`, res.rows[0]);
+    return true;
+  } catch (err) {
+    console.error(`Erro ao conectar ao banco ${name}:`, err.message);
+    return false;
+  }
+}
+
+(async () => {
+  const remoteConnected = await connectToDatabase(remoteConfig, 'remoto');
+
+  if (!remoteConnected) {
+    const localConnected = await connectToDatabase(localConfig, 'local');
+    if (!localConnected) {
+      console.error('Falha ao conectar a ambos os bancos de dados. Encerrando aplicação.');
       process.exit(1);
     }
   }
 })();
 
-module.exports = () => pool; // Garante que o pool atualizado seja exportado
+module.exports = () => pool;
