@@ -228,7 +228,7 @@
                 <fieldset>
                     <legend>1.1 Identificação da Proponente</legend>
                     <label for="cnpjProponente">CNPJ da Proponente:</label>
-                    <input type="text" id="cnpjProponente" name="cnpjProponente" required>
+                    <input type="text" id="cnpjProponente" name="cnpjProponente" required onblur="buscarDadosCNPJ()">
                     <label for="nomeProponente">Nome da Proponente:</label>
                     <input type="text" id="nomeProponente" name="nomeProponente" required>
                     <label for="nomeDirigente">Nome do Dirigente:</label>
@@ -237,8 +237,10 @@
                     <input type="text" id="telefoneDirigente" name="telefoneDirigente" required>
                     <label for="emailDirigente">E-mail:</label>
                     <input type="email" id="emailDirigente" name="emailDirigente" required>
+                    <label for="proposalNumber">Número da Proposta:</label>
+                    <input type="text" id="proposalNumber" name="proposalNumber" required>
                 </fieldset>
-                <button type="button" onclick="saveTab('tab1')">Salvar Informações Gerais</button>
+                <button type="button" onclick="saveTab('tab1')">Salvar</button>
             </form>
         </div>
 
@@ -456,7 +458,7 @@
     <form id="formTab16">
         <label for="modalidadesProjeto">Modalidades Oferecidas:</label>
         <textarea id="modalidadesProjeto" name="modalidadesProjeto" rows="4" placeholder="Descreva as modalidades esportivas ou atividades oferecidas pelo projeto." required></textarea>
-        <button type="button" onclick="saveTab('formTab16')">Salvar</button>
+        <button type="button" onclick="saveTab('tab16')">Salvar</button>
     </form>
 </div>
 
@@ -562,12 +564,12 @@
 <!-- Abas para 3.8 Divulgação -->
 <div class="tab-content" id="tab21">
     <h3>3.8 Divulgação</h3>
-    <form id="formTab17">
+    <form id="formTab21">
         <label for="meiosDivulgacao">Meios de Divulgação:</label>
         <label><input type="checkbox" name="meiosDivulgacao[]" value="internet"> Internet</label>
         <label><input type="checkbox" name="meiosDivulgacao[]" value="carros"> Carros de Som</label>
         <label><input type="checkbox" name="meiosDivulgacao[]" value="cartazes"> Cartazes</label>
-        <button type="button" onclick="saveTab('tab17')">Salvar</button>
+        <button type="button" onclick="saveTab('tab21')">Salvar</button>
     </form>
     </div>
 
@@ -580,6 +582,51 @@
       </footer>
 
     <script>
+        function saveTab(tabId) {
+            const form = document.querySelector(`#form${tabId}`);
+
+            if (!form) {
+                console.error(`Erro: Formulário não encontrado para a aba ${tabId}`);
+                alert(`Erro: Formulário não encontrado para a aba ${tabId}`);
+                return;
+            }
+
+            try {
+                const formData = new FormData(form);
+                
+                // Exibir os dados do formulário no console para depuração
+                const data = Object.fromEntries(formData.entries());
+                console.log(`Dados da aba ${tabId}:`, data);
+
+                alert(`Informações da aba ${tabId} salvas com sucesso!`);
+            } catch (error) {
+                console.error(`Erro ao criar FormData para a aba ${tabId}:`, error);
+                alert(`Erro ao salvar dados da aba ${tabId}: ${error.message}`);
+            }
+        }
+        async function buscarDadosCNPJ() {
+            const cnpjInput = document.getElementById('cnpjProponente');
+            const cnpj = cnpjInput.value.replace(/\D/g, ''); // Remove pontos e barras
+
+            try {
+                const response = await fetch(`http://localhost:3000/buscar-cnpj/${cnpj}`);
+                
+                if (!response.ok) {
+                    throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
+                }
+
+                const dados = await response.json();
+
+                document.getElementById('nomeProponente').value = dados.nome;
+                document.getElementById('nomeDirigente').value = dados.qsa ? dados.qsa[0].nome : '';
+                document.getElementById('telefoneDirigente').value = dados.telefone;
+                document.getElementById('emailDirigente').value = dados.email;
+
+            } catch (error) {
+                console.error('Erro:', error);
+                alert(`Erro ao buscar os dados da entidade: ${error.message}`);
+            }
+        }
         // Alternar entre as abas
         const tabs = document.querySelectorAll(".tab");
         const contents = document.querySelectorAll(".tab-content");
@@ -595,18 +642,15 @@
         });
 
         // Salvar dados por aba
-        function saveTab(tabId) {
-            const form = document.getElementById(`form${tabId}`);
-            const formData = new FormData(form);
-
-            const data = {};
-            formData.forEach((value, key) => {
-                data[key] = value;
-            });
-
-            console.log(`Dados da ${tabId} salvos:`, data);
-            alert(`Informações da ${tabId} salvas com sucesso!`);
-        }
+        function saveTab() {
+    const form = document.querySelector('#meuFormulario'); // Certifique-se que o ID é o correto.
+    if (!form || !(form instanceof HTMLFormElement)) {
+        console.error('O formulário não foi encontrado ou não é do tipo esperado.');
+        return;
+    }
+    const formData = new FormData(form);
+    console.log([...formData.entries()]); // Para verificar os dados capturados.
+}
 
         // Enviar todos os dados do formulário
         function submitAll() {

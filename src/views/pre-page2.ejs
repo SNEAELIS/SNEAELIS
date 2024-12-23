@@ -102,6 +102,17 @@
 
         document.getElementById("resultSection").classList.remove("hidden"); // Exibe a seção de resultados
     }
+
+    document.addEventListener("DOMContentLoaded", () => {
+    // Recupera o número da proposta salvo no localStorage
+    const savedProposalNumber = localStorage.getItem("savedProposalNumber");
+
+    if (savedProposalNumber) {
+        document.getElementById("proposalNumber").value = savedProposalNumber;
+        // Opcional: Submeter automaticamente o formulário de consulta
+        document.getElementById("searchForm").dispatchEvent(new Event("submit"));
+    }
+});
 </script>
 
 </body>

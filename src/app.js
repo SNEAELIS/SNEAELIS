@@ -79,6 +79,44 @@ app.use((req, res, next) => {
   next();
 });
 
+// Rota para buscar projeto por número da proposta
+app.get('/api/projetos/:proposalNumber', (req, res) => {
+  const { proposalNumber } = req.params;
+
+  // Simulação de busca no banco de dados
+  const projetos = {
+      "222": { proposalNumber: "222", objeto: "Evento Esportivo", status: "Aprovado" },
+      "333": { proposalNumber: "333", objeto: "Projeto Cultural", status: "Em Análise" },
+  };
+
+  const projeto = projetos[proposalNumber];
+
+  if (projeto) {
+      res.json(projeto);
+  } else {
+      res.status(404).json({ error: "Projeto não encontrado." });
+  }
+});
+
+app.get('/buscar-cnpj/:cnpj', async (req, res) => {
+  const { cnpj } = req.params;
+  console.log(`Buscando dados para o CNPJ: ${cnpj}`);
+
+  try {
+      const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpj}`);
+      console.log(`Status da resposta da API externa: ${response.status}`);
+      
+      if (!response.ok) {
+          throw new Error(`Erro na API externa: ${response.status} ${response.statusText}`);
+      }
+
+      const data = await response.json();
+      res.json(data);
+  } catch (error) {
+      console.error('Erro ao buscar dados da API externa:', error);
+      res.status(500).json({ error: 'Erro ao buscar os dados da entidade.' });
+  }
+});
 app.use('/', useRoutes);
 
 // Middleware
