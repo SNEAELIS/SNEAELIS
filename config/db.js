@@ -3,18 +3,18 @@ const cors = require('cors');
 const express = require('express');
 
 const remoteConfig = {
-  connectionString: 'postgresql://users_4t7z_user:DlUHjtOhLtrvaWm3bvGRCu7uqVQ3PiH8@dpg-ct0ent1u0jms73c4dslg-a/users_4t7z',
+  connectionString: process.env.REMOTE_DB_URL,
   ssl: { rejectUnauthorized: false },
   idleTimeoutMillis: 30000,
   connectionTimeoutMillis: 30000,
 };
 
 const localConfig = {
-  user: 'postgres',
-  host: 'localhost',
-  database: 'site_login',
-  password: '1234',
-  port: 5432,
+  user: process.env.LOCAL_DB_USER || 'postgres',
+  host: process.env.LOCAL_DB_HOST || 'localhost',
+  database: process.env.LOCAL_DB_NAME || 'site_login',
+  password: process.env.LOCAL_DB_PASSWORD || '1234',
+  port: process.env.LOCAL_DB_PORT || 5432,
 };
 
 let pool;
@@ -32,9 +32,11 @@ async function habilitarPgcrypto(pool) {
 async function connectToDatabase(config, name) {
   try {
     console.log(`Tentando conectar ao banco ${name}...`);
-    pool = new Pool(config);
-    const res = await pool.query('SELECT NOW()');
+    const testPool = new Pool(config);
+    const res = await testPool.query('SELECT NOW()');
     console.log(`Conexão bem-sucedida com o banco ${name}:`, res.rows[0]);
+    await habilitarPgcrypto(testPool);
+    pool = testPool;
     return true;
   } catch (err) {
     console.error(`Erro ao conectar ao banco ${name}:`, err.message);
@@ -52,6 +54,26 @@ async function connectToDatabase(config, name) {
       process.exit(1);
     }
   }
+
+  // Fechar o pool ao encerrar o aplicativo
+  process.on('SIGINT', async () => {
+    console.log('Encerrando pool de conexões...');
+    if (pool) await pool.end();
+    process.exit(0);
+  });
+
+  // Servidor Express
+  const app = express();
+  app.use(cors());
+  app.use(express.json());
+
+  app.get('/', (req, res) => {
+    res.send('Servidor rodando!');
+  });
+
+  app.listen(10000, () => {
+    console.log('Servidor rodando na porta 10000');
+  });
 })();
 
 module.exports = () => pool;
