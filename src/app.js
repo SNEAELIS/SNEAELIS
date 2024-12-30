@@ -123,6 +123,48 @@ app.use('/', useRoutes);
 app.use(cors());
 app.use(express.json());
 
+app.post('/salvar-projeto', (req, res) => {
+  const { numeroProposta, nomeProponente } = req.body;
+
+  // Verifica se os campos obrigatórios estão presentes
+  if (!numeroProposta || !nomeProponente) {
+      return res.status(400).json({ error: "Campos obrigatórios ausentes." });
+  }
+
+  // Adiciona o novo projeto à lista
+  const novoProjeto = { id: Date.now().toString(), numeroProposta, nomeProponente };
+  projetos.push(novoProjeto);
+
+  res.status(201).json({ message: "Projeto salvo com sucesso!", projeto: novoProjeto });
+});
+
+let projetos = [];
+
+app.get('/listar-projetos', (req, res) => {
+  res.json(projetos); // Retorna os dados dos projetos
+});
+
+app.get('/baixar-projeto/:id', (req, res) => {
+  const projeto = projetos.find(p => p.id === req.params.id);
+  if (!projeto) return res.status(404).send('Projeto não encontrado.');
+
+  // Exemplo de criação de documento Word
+  const doc = new Document({
+      sections: [
+          {
+              children: [
+                  new Paragraph({ text: `Projeto: ${projeto.proposalNumber}`, heading: HeadingLevel.HEADING_1 }),
+                  new Paragraph({ text: `Proponente: ${projeto.nomeProponente}` }),
+              ],
+          },
+      ],
+  });
+
+  Packer.toBuffer(doc).then(buffer => {
+      res.setHeader('Content-Disposition', 'attachment; filename=projeto.docx');
+      res.send(buffer);
+  });
+});
 // Rota para buscar dados do banco
 app.get('/users', async (req, res) => {
   try {

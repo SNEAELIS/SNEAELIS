@@ -20,6 +20,7 @@ const localConfig = {
 let pool;
 
 async function habilitarPgcrypto(pool) {
+  if (!pool) throw new Error('Pool de conexão não inicializado.');
   try {
     await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto');
     console.log('Extensão pgcrypto habilitada com sucesso.');

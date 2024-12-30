@@ -8,189 +8,268 @@
     <link rel="stylesheet" href="/public/css/styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <style>
-        /* Reset e Configurações Globais */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+        /* =========================== Global Reset =========================== */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f9;
-            color: #333;
-            line-height: 1.6;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-        }
+body {
+    font-family: 'Roboto', sans-serif;
+    background: linear-gradient(135deg, #f0f4ff, #d9e8ff);
+    color: #333;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
 
-        /* Cabeçalho */
-        header {
-            background-color: #005CAA;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 20px 30px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-        }
+/* =========================== Header =========================== */
+header {
+    background-color: #002766;
+    color: #fff;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 40px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
 
-        header h1 {
-            font-size: 1.8em;
-            font-weight: bold;
-        }
+header h1 {
+    font-size: 2em;
+    font-weight: 700;
+}
 
-        .logo-header {
-            height: 50px;
-        }
+.logo-header {
+    height: 60px;
+}
 
-        /* Conteúdo Principal */
-        .container {
-            max-width: 1200px;
-            margin: 30px auto;
-            padding: 20px;
-            background: #fff;
-            border-radius: 10px;
-            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-        }
+/* =========================== Main Content =========================== */
+.container {
+    max-width: 1200px;
+    margin: 50px auto;
+    padding: 30px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
 
-        /* Abas de Navegação */
-        .tabs {
-            display: flex;
-            border-bottom: 3px solid #005CAA;
-            background-color: #f4f7f9;
-        }
+/* =========================== Tabs =========================== */
+.tabs {
+    display: flex;
+    border-bottom: 2px solid #002766;
+    background-color: #e6f0ff;
+    border-radius: 12px 12px 0 0;
+    overflow-x: auto;
+}
 
-        .tab {
-            flex: 1;
-            text-align: center;
-            padding: 15px;
-            cursor: pointer;
-            background-color: #fff;
-            color: #005CAA;
-            font-weight: bold;
-            transition: all 0.3s ease;
-            border-right: 1px solid #ddd;
-        }
+.tab {
+    flex: 1;
+    text-align: center;
+    padding: 15px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 600;
+    color: #002766;
+    background-color: #e6f0ff;
+    border-right: 1px solid #d1d5db;
+    transition: all 0.3s ease-in-out;
+}
 
-        .tab:last-child {
-            border-right: none;
-        }
+.tab:last-child {
+    border-right: none;
+}
 
-        .tab:hover, .tab.active {
-            background-color: #005CAA;
-            color: #fff;
-            border-bottom: 3px solid #fff;
-        }
+.tab:hover,
+.tab.active {
+    background-color: #002766;
+    color: #ffffff;
+    border-bottom: 2px solid #ffffff;
+}
 
-        /* Conteúdo das Abas */
-        .tab-content {
-            display: none;
-            padding: 20px;
-            animation: fadeIn 0.3s ease-in-out;
-        }
+.tab-content {
+    display: none;
+    padding: 30px;
+    animation: fadeIn 0.4s ease-in-out;
+}
 
-        .tab-content.active {
-            display: block;
-        }
+.tab-content.active {
+    display: block;
+}
 
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 
-        /* Formulários */
-        form label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-            color: #005CAA;
-        }
+/* =========================== Forms =========================== */
+form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
 
-        form input,
-        form textarea,
-        form select {
-            width: 100%;
-            padding: 12px;
-            margin-bottom: 15px;
-            border: 1px solid #ddd;
-            border-radius: 5px;
-            font-size: 16px;
-        }
+fieldset {
+    border: 2px solid #002766;
+    border-radius: 12px;
+    padding: 25px;
+    background-color: #f8faff;
+}
 
-        form input:focus,
-        form textarea:focus,
-        form select:focus {
-            border-color: #005CAA;
-            outline: none;
-            box-shadow: 0 0 5px rgba(0, 92, 170, 0.2);
-        }
+legend {
+    font-weight: bold;
+    color: #002766;
+    font-size: 1.2em;
+    padding: 0 12px;
+}
 
-        form button {
-            background-color: #005CAA;
-            color: #fff;
-            padding: 12px 25px;
-            border: none;
-            border-radius: 5px;
-            font-size: 16px;
-            font-weight: bold;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+form label {
+    font-weight: 600;
+    color: #002766;
+    margin-bottom: 10px;
+    display: block;
+}
 
-        form button:hover {
-            background-color: #003d80;
-        }
+form input,
+form textarea,
+form select {
+    width: 100%;
+    padding: 15px;
+    border: 1px solid #ccd5ff;
+    border-radius: 8px;
+    font-size: 16px;
+    background-color: #ffffff;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
 
-        #submitAll {
-            margin: 20px auto;
-            background-color: #28a745;
-            color: white;
-            padding: 15px 30px;
-            font-size: 18px;
-            font-weight: bold;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
+form input:focus,
+form textarea:focus,
+form select:focus {
+    border-color: #002766;
+    box-shadow: 0 0 8px rgba(0, 39, 102, 0.3);
+    outline: none;
+}
 
-        #submitAll:hover {
-            background-color: #218838;
-        }
+form textarea {
+    resize: vertical;
+    min-height: 120px;
+}
 
-        /* Rodapé */
-        footer {
-            text-align: center;
-            background-color: #005CAA;
-            color: #fff;
-            padding: 15px;
-            font-size: 0.9em;
-        }
+form button {
+    align-self: flex-start;
+    background-color: #002766;
+    color: #ffffff;
+    padding: 15px 30px;
+    border: none;
+    border-radius: 8px;
+    font-size: 18px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out;
+}
 
-        /* Responsividade */
-        @media (max-width: 768px) {
-            .tabs {
-                flex-direction: column;
-            }
+form button:hover {
+    background-color: #001a47;
+}
 
-            .tab {
-                text-align: left;
-                padding: 10px 15px;
-                border-bottom: 1px solid #ddd;
-            }
+/* Botão Enviar Todos */
+#submitAll {
+    margin: 30px auto;
+    display: block;
+    background-color: #28a745;
+    color: #ffffff;
+    padding: 18px 36px;
+    font-size: 20px;
+    font-weight: bold;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
 
-            .tab:last-child {
-                border-bottom: none;
-            }
+#submitAll:hover {
+    background-color: #218838;
+}
 
-            #submitAll {
-                font-size: 16px;
-                padding: 12px 20px;
-            }
-        }
-    </style>
+/* Estilo para inputs de rádio */
+.radio-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    margin: 15px 0;
+}
+
+.radio-group input[type="radio"] {
+    display: none;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    font-weight: 600;
+    color: #002766;
+    transition: color 0.3s ease-in-out;
+}
+
+.radio-group label::before {
+    content: '';
+    display: inline-block;
+    width: 18px;
+    height: 18px;
+    border: 2px solid #ccd5ff;
+    border-radius: 50%;
+    margin-right: 10px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.radio-group input[type="radio"]:checked + label::before {
+    background-color: #002766;
+    border-color: #002766;
+}
+
+/* =========================== Footer =========================== */
+footer {
+    text-align: center;
+    background-color: #002766;
+    color: #ffffff;
+    padding: 20px;
+    font-size: 0.95em;
+    margin-top: auto;
+}
+
+/* =========================== Responsiveness =========================== */
+@media (max-width: 768px) {
+    .tabs {
+        flex-direction: column;
+    }
+
+    .tab {
+        text-align: left;
+        padding: 12px 20px;
+        border-bottom: 1px solid #d1d5db;
+    }
+
+    .tab:last-child {
+        border-bottom: none;
+    }
+
+    #submitAll {
+        font-size: 16px;
+        padding: 15px 25px;
+    }
+
+    form {
+        gap: 20px;
+    }
+}
+
+    </style>  
 </head>
 
 <body>
@@ -220,8 +299,11 @@
             <button class="tab" data-tab="tab19">3.6 Uniformes</button>
             <button class="tab" data-tab="tab20">3.7 Equipe de Trabalho</button>
             <button class="tab" data-tab="tab21">3.8 Divulgação</button>
-     
-  
+            <button class="tab" data-tab="tab22">4.1 Identificação do Evento</button>
+            <button class="tab" data-tab="tab23">4.2 Cronograma de Execução</button>
+            <button class="tab" data-tab="tab24">4.3 Vigência do Evento</button>
+            <button class="tab" data-tab="tab25">4.4 Prestação de Contas</button>
+        </div>
         <!-- Conteúdo das Abas -->
         <div class="tab-content active" id="tab1">
             <form id="formTab1">
@@ -240,7 +322,7 @@
                     <label for="proposalNumber">Número da Proposta:</label>
                     <input type="text" id="proposalNumber" name="proposalNumber" required>
                 </fieldset>
-                <button type="button" onclick="saveTab('tab1')">Salvar</button>
+                <button type="button" onclick="saveTab('formTab1')">Salvar</button>
             </form>
         </div>
 
@@ -257,23 +339,36 @@
                     <label for="responsavelTelefone">Telefone de Contato (DDD):</label>
                     <input type="text" id="responsavelTelefone" name="responsavelTelefone" required>
                 </fieldset>
-                <button type="button" onclick="saveTab('tab2')">Salvar Responsável</button>
+                <button type="button" onclick="saveTab('formTab2')">Salvar Responsável</button>
             </form>
         </div>
 
 <!-- Abas para 1.3 Dimensão -->
 <div class="tab-content" id="tab3">
-    <h3>1.3 Dimensão</h3>
+    <h3>1.3 Dimensão do Projeto</h3>
     <form id="formTab3">
-        <label for="dimensaoEducacional">
-            <input type="radio" id="dimensaoEducacional" name="dimensaoEvento" value="educacional" required>
-            Evento Educacional
-        </label>
-        <label for="dimensaoParticipacao">
-            <input type="radio" id="dimensaoParticipacao" name="dimensaoEvento" value="participacao" required>
-            Evento de Participação
-        </label>
-        <button type="button" onclick="saveTab('tab3')">Salvar</button>
+        <fieldset>
+            <legend>Selecione a Dimensão do Projeto:</legend>
+
+            <!-- Opção 1: Formação Esportiva -->
+            <label for="dimensaoFormacao">
+                <input type="radio" id="dimensaoFormacao" name="dimensaoEvento" value="formacao" required>
+                Formação Esportiva
+            </label>
+            <p class="dimensao-descricao">
+                Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.
+            </p>
+
+            <!-- Opção 2: Esporte para toda vida -->
+            <label for="dimensaoEsporteVida">
+                <input type="radio" id="dimensaoEsporteVida" name="dimensaoEvento" value="esporte_vida" required>
+                Esporte para toda vida
+            </label>
+            <p class="dimensao-descricao">
+                Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.
+            </p>
+        </fieldset>
+        <button type="button" onclick="saveTab('formTab3')">Salvar</button>
     </form>
 </div>
 
@@ -287,7 +382,7 @@
         <input type="text" id="idhFonte" name="idhFonte" required>
         <label for="idhAno">Ano de Referência:</label>
         <input type="number" id="idhAno" name="idhAno" required>
-        <button type="button" onclick="saveTab('tab4')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab4')">Salvar</button>
     </form>
 </div>
 
@@ -301,7 +396,7 @@
         <input type="text" id="habitantesFonte" name="habitantesFonte" required>
         <label for="habitantesAno">Ano de Referência:</label>
         <input type="number" id="habitantesAno" name="habitantesAno" required>
-        <button type="button" onclick="saveTab('tab5')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab5')">Salvar</button>
     </form>
 </div>
 
@@ -322,7 +417,7 @@
         <input type="number" id="numeroParcerias" name="numeroParcerias">
         <label for="resultadosParcerias">Resultados das Parcerias:</label>
         <textarea id="resultadosParcerias" name="resultadosParcerias"></textarea>
-        <button type="button" onclick="saveTab('tab6')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab6')">Salvar</button>
     </form>
 </div>
 
@@ -346,7 +441,7 @@
         <input type="text" id="entidadeCEP" name="entidadeCEP" required>
         <label for="contribuicaoEntidade">Contribuição:</label>
         <textarea id="contribuicaoEntidade" name="contribuicaoEntidade"></textarea>
-        <button type="button" onclick="saveTab('tab7')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab7')">Salvar</button>
     </form>
 </div>
 
@@ -360,7 +455,7 @@
         <input type="email" id="coordenadorEmail" name="coordenadorEmail" required>
         <label for="coordenadorTelefone">Telefone:</label>
         <input type="text" id="coordenadorTelefone" name="coordenadorTelefone" required>
-        <button type="button" onclick="saveTab('tab8')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab8')">Salvar</button>
     </form>
 </div>
 
@@ -379,7 +474,7 @@
         </label>
         <label for="historicoCapacidade">Histórico:</label>
         <textarea id="historicoCapacidade" name="historicoCapacidade"></textarea>
-        <button type="button" onclick="saveTab('tab9')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab9')">Salvar</button>
     </form>
 </div>
 
@@ -388,7 +483,7 @@
     <form id="formTab10">
         <label for="objetoEvento">Descrever o Objeto do Evento:</label>
         <textarea id="objetoEvento" name="objetoEvento" required></textarea>
-        <button type="button" onclick="saveTab('tab10')">Salvar</button>
+        <button type="button" onclick="saveTab('FormTab10')">Salvar</button>
     </form>
 </div>
 
@@ -406,7 +501,7 @@
         <textarea id="problemaResolvido" name="problemaResolvido" required></textarea>
         <label for="resultadosEsperados">Resultados Esperados:</label>
         <textarea id="resultadosEsperados" name="resultadosEsperados" required></textarea>
-        <button type="button" onclick="saveTab('tab11')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab11')">Salvar</button>
     </form>
 </div>
 
@@ -416,7 +511,7 @@
     <form id="formTab12">
         <label for="objetivoGeral">Descrever o Objetivo Geral:</label>
         <textarea id="objetivoGeral" name="objetivoGeral" required></textarea>
-        <button type="button" onclick="saveTab('tab12')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab12')">Salvar</button>
     </form>
 </div>
 
@@ -426,7 +521,7 @@
     <form id="formTab13">
         <label for="objetivosEspecificos">Descrever os Objetivos Específicos:</label>
         <textarea id="objetivosEspecificos" name="objetivosEspecificos" required></textarea>
-        <button type="button" onclick="saveTab('tab13')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab13')">Salvar</button>
     </form>
 </div>
 
@@ -436,7 +531,7 @@
     <form id="formTab14">
         <label for="metodologiaEvento">Descrição Detalhada:</label>
         <textarea id="metodologiaEvento" name="metodologiaEvento" required></textarea>
-        <button type="button" onclick="saveTab('tab14')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab14')">Salvar</button>
     </form>
 </div>
 
@@ -450,7 +545,7 @@
         <input type="text" id="periodoRealizacao" name="periodoRealizacao" required>
         <label for="localEvento">Local:</label>
         <input type="text" id="localEvento" name="localEvento" required>
-        <button type="button" onclick="saveTab('tab15')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab15')">Salvar</button>
     </form>
 </div>
 <div class="tab-content" id="tab16">
@@ -458,7 +553,7 @@
     <form id="formTab16">
         <label for="modalidadesProjeto">Modalidades Oferecidas:</label>
         <textarea id="modalidadesProjeto" name="modalidadesProjeto" rows="4" placeholder="Descreva as modalidades esportivas ou atividades oferecidas pelo projeto." required></textarea>
-        <button type="button" onclick="saveTab('tab16')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab16')">Salvar</button>
     </form>
 </div>
 
@@ -470,7 +565,7 @@
         <input type="text" id="frequenciaReunioes" name="frequenciaReunioes" placeholder="Ex: Semanal, Mensal" required>
         <label for="objetivoReunioes">Objetivo das Reuniões:</label>
         <textarea id="objetivoReunioes" name="objetivoReunioes" rows="4" required></textarea>
-        <button type="button" onclick="saveTab('tab17')">Salvar</button>
+        <button type="button" onclick="saveTab('formTab17')">Salvar</button>
     </form>
 </div>
 
@@ -499,8 +594,8 @@
                 </tr>
             </tbody>
         </table>
-        <button type="button" onclick="addRow()">Adicionar Linha</button>
-        <button type="button" onclick="saveTab('tab18')">Salvar</button>
+        <button type="button" onclick="addRow('materiaisTable')">Adicionar Linha</button>
+        <button type="button" onclick="saveTab('formTab18')">Salvar</button>
     </form>
 </div>
 <div class="tab-content" id="tab19">
@@ -522,12 +617,12 @@
                     <td><input type="text" name="especificacaoUniformes[]" required></td>
                     <td><input type="number" name="quantidadeUniformes[]" min="1" required></td>
                     <td><textarea name="memoriaUniformes[]" rows="2" required></textarea></td>
-                    <td><button type="button" onclick="removerLinha(this)">Remover</button></td>
+                    <td><button type="button" onclick="removeRow(this)">Remover</button></td>
                 </tr>
             </tbody>
         </table>
-        <button type="button" onclick="adicionarLinha('uniformesTable')">Adicionar Uniforme</button>
-        <button type="button" onclick="saveTab('tab19')">Salvar</button>
+        <button type="button" onclick="addRow('uniformesTable')">Adicionar Uniforme</button>
+        <button type="button" onclick="saveTab('formTab19')">Salvar</button>
     </form>
 </div>
 
@@ -552,12 +647,12 @@
                     <td><input type="number" name="quantidadeRh[]" min="1" required></td>
                     <td><textarea name="atribuicaoCargaHoraria[]" rows="2" placeholder="Descreva a atribuição e carga horária" required></textarea></td>
                     <td><input type="number" name="quantidadeMesesDiarias[]" min="1" placeholder="Qtd Meses/Diárias" required></td>
-                    <td><button type="button" onclick="removerLinha(this)">Remover</button></td>
+                    <td><button type="button" onclick="removeRow(this)">Remover</button></td>
                 </tr>
             </tbody>
         </table>
-        <button type="button" onclick="adicionarLinha('equipeTable')">Adicionar Função</button>
-        <button type="button" onclick="saveTab('tab20')">Salvar</button>
+        <button type="button" onclick="addRow('equipeTable')">Adicionar Função</button>
+        <button type="button" onclick="saveTab('formTab37')">Salvar</button>
     </form>
 </div>
 
@@ -565,16 +660,132 @@
 <div class="tab-content" id="tab21">
     <h3>3.8 Divulgação</h3>
     <form id="formTab21">
-        <label for="meiosDivulgacao">Meios de Divulgação:</label>
-        <label><input type="checkbox" name="meiosDivulgacao[]" value="internet"> Internet</label>
-        <label><input type="checkbox" name="meiosDivulgacao[]" value="carros"> Carros de Som</label>
-        <label><input type="checkbox" name="meiosDivulgacao[]" value="cartazes"> Cartazes</label>
-        <button type="button" onclick="saveTab('tab21')">Salvar</button>
+        <fieldset>
+            <legend>3.8.1 Detalhe como ocorrerá a divulgação das ações do Projeto (pode ser assinalada mais de uma alternativa):</legend>
+    
+            <!-- Opções de divulgação -->
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="carros_bicicletas_som">
+                Carros ou bicicletas de som
+            </label><br>
+    
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="cartazes">
+                Cartazes
+            </label><br>
+    
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="faixas">
+                Faixas
+            </label><br>
+    
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="banners">
+                Banners
+            </label><br>
+    
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="jornais">
+                Jornais
+            </label><br>
+    
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="panfletos">
+                Panfletos
+            </label><br>
+    
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="folder">
+                Folder
+            </label><br>
+    
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="midia">
+                Mídia (meios de comunicação social de massa como rádio, cinema e televisão)
+            </label><br>
+    
+            <!-- Internet com especificação -->
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="internet">
+                Internet
+            </label>
+            <input type="text" name="internetEspecificar" placeholder="Especifique os meios usados na internet"><br>
+    
+            <!-- Outros com especificação -->
+            <label>
+                <input type="checkbox" name="meiosDivulgacao[]" value="outros">
+                Outros
+            </label>
+            <input type="text" name="outrosEspecificar" placeholder="Especifique outros meios de divulgação"><br>
+        </fieldset>
+    
+        <button type="button" onclick="saveTab('formTab21')">Salvar</button>
     </form>
     </div>
+    <!-- 4.2 Cronograma de Execução Físico-Financeira -->
+<div class="tab-content" id="tab23">
+    <h3>4.2 Cronograma de Execução Físico-Financeira</h3>
+    <form id="formTab23">
+        <fieldset>
+            <legend>Cronograma</legend>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Atividade</th>
+                        <th>Data de Início</th>
+                        <th>Data de Término</th>
+                        <th>Valor Estimado (R$)</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody id="cronogramaTable">
+                    <tr>
+                        <td><input type="text" name="atividade[]" required></td>
+                        <td><input type="date" name="dataInicio[]" required></td>
+                        <td><input type="date" name="dataTermino[]" required></td>
+                        <td><input type="number" name="valorEstimado[]" step="0.01" required></td>
+                        <td><button type="button" onclick="removeRow(this)">Remover</button></td>
+                    </tr>
+                </tbody>
+            </table>
+            <button type="button" onclick="addRow('cronogramaTable')">Adicionar Linha</button>
+        </fieldset>
+        <button type="button" onclick="saveTab('formTab23')">Salvar</button>
+    </form>
+</div>
 
-        <button id="submitAll" onclick="submitAll()">Enviar Projeto</button>
-    </div>
+<!-- 4.3 Vigência do Evento -->
+<div class="tab-content" id="tab24">
+    <h3>4.3 Vigência do Evento</h3>
+    <form id="formTab24">
+        <fieldset>
+            <legend>Vigência do Evento</legend>
+            <label for="dataInicioEvento">Data de Início:</label>
+            <input type="date" id="dataInicioEvento" name="dataInicioEvento" required>
+
+            <label for="dataTerminoEvento">Data de Término:</label>
+            <input type="date" id="dataTerminoEvento" name="dataTerminoEvento" required>
+        </fieldset>
+        <button type="button" onclick="saveTab('formTab24')">Salvar</button>
+    </form>
+</div>
+
+<!-- 4.4 Forma de Prestação de Contas -->
+<div class="tab-content" id="tab25">
+    <h3>4.4 Prestação de Contas</h3>
+    <form id="formTab25">
+        <fieldset>
+            <legend>Forma de Prestação de Contas</legend>
+            <label for="relatorioFinal">Relatório Final:</label>
+            <textarea id="relatorioFinal" name="relatorioFinal" rows="4" required></textarea>
+
+            <label for="comprovantes">Comprovantes de Execução (Anexe documentos se necessário):</label>
+            <input type="file" id="comprovantes" name="comprovantes" multiple>
+        </fieldset>
+        <button type="button" onclick="saveTab('formTab25')">Salvar</button>
+    </form>
+</div>
+<button type="button" onclick="salvarProjeto()">Salvar Projeto</button>
 </div>  
 
     <footer>
@@ -582,93 +793,125 @@
       </footer>
 
     <script>
-        function saveTab(tabId) {
-            const form = document.querySelector(`#form${tabId}`);
-
-            if (!form) {
-                console.error(`Erro: Formulário não encontrado para a aba ${tabId}`);
-                alert(`Erro: Formulário não encontrado para a aba ${tabId}`);
-                return;
-            }
-
-            try {
-                const formData = new FormData(form);
-                
-                // Exibir os dados do formulário no console para depuração
-                const data = Object.fromEntries(formData.entries());
-                console.log(`Dados da aba ${tabId}:`, data);
-
-                alert(`Informações da aba ${tabId} salvas com sucesso!`);
-            } catch (error) {
-                console.error(`Erro ao criar FormData para a aba ${tabId}:`, error);
-                alert(`Erro ao salvar dados da aba ${tabId}: ${error.message}`);
-            }
-        }
-        async function buscarDadosCNPJ() {
-            const cnpjInput = document.getElementById('cnpjProponente');
-            const cnpj = cnpjInput.value.replace(/\D/g, ''); // Remove pontos e barras
-
-            try {
-                const response = await fetch(`http://localhost:3000/buscar-cnpj/${cnpj}`);
-                
-                if (!response.ok) {
-                    throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
-                }
-
-                const dados = await response.json();
-
-                document.getElementById('nomeProponente').value = dados.nome;
-                document.getElementById('nomeDirigente').value = dados.qsa ? dados.qsa[0].nome : '';
-                document.getElementById('telefoneDirigente').value = dados.telefone;
-                document.getElementById('emailDirigente').value = dados.email;
-
-            } catch (error) {
-                console.error('Erro:', error);
-                alert(`Erro ao buscar os dados da entidade: ${error.message}`);
-            }
-        }
-        // Alternar entre as abas
-        const tabs = document.querySelectorAll(".tab");
-        const contents = document.querySelectorAll(".tab-content");
-
-        tabs.forEach(tab => {
-            tab.addEventListener("click", () => {
-                tabs.forEach(t => t.classList.remove("active"));
-                tab.classList.add("active");
-
-                contents.forEach(content => content.classList.remove("active"));
-                document.getElementById(tab.dataset.tab).classList.add("active");
-            });
-        });
-
-        // Salvar dados por aba
-        function saveTab() {
-    const form = document.querySelector('#meuFormulario'); // Certifique-se que o ID é o correto.
-    if (!form || !(form instanceof HTMLFormElement)) {
-        console.error('O formulário não foi encontrado ou não é do tipo esperado.');
+function saveTab(tabId) {
+    const form = document.querySelector(`#${tabId}`);
+    console.log(`Tentando buscar formulário com ID: #${tabId}`);
+    if (!form || form.tagName !== "FORM") {
+        console.error(`Erro: Elemento com ID ${tabId} não é um formulário válido.`);
+        alert(`Erro: Elemento com ID ${tabId} não é um formulário válido.`);
         return;
     }
-    const formData = new FormData(form);
-    console.log([...formData.entries()]); // Para verificar os dados capturados.
+
+    try {
+        const formData = new FormData(form);
+
+        // Captura os valores de botões de rádio manualmente (se necessário)
+        form.querySelectorAll('input[type="radio"]:checked').forEach((radio) => {
+            formData.append(radio.name, radio.value);
+        });
+
+        const data = Object.fromEntries(formData.entries());
+        localStorage.setItem(tabId, JSON.stringify(data));
+        console.log(`Dados salvos com sucesso para ${tabId}:`, data);
+        alert(`Informações da aba ${tabId} salvas com sucesso!`);
+    } catch (error) {
+        console.error(`Erro ao salvar os dados da aba ${tabId}:`, error);
+        alert(`Erro ao salvar os dados da aba ${tabId}: ${error.message}`);
+    }
 }
 
-        // Enviar todos os dados do formulário
-        function submitAll() {
-            const allData = {};
-            const forms = document.querySelectorAll("form");
+document.addEventListener("DOMContentLoaded", () => {
+    const forms = document.querySelectorAll("form");
 
-            forms.forEach(form => {
-                const formData = new FormData(form);
-                formData.forEach((value, key) => {
-                    allData[key] = value;
-                });
+    forms.forEach((form) => {
+        const savedData = localStorage.getItem(form.id); // Usa o ID completo do formulário
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            Object.keys(data).forEach((key) => {
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    input.value = data[key];
+                }
             });
+            console.log(`Dados carregados para ${form.id}:`, data);
+        }
+    });
+});
 
-            console.log("Dados completos:", allData);
-            alert("Projeto enviado com sucesso!");
+// Função para buscar dados do CNPJ
+async function buscarDadosCNPJ() {
+    const cnpjInput = document.getElementById('cnpjProponente');
+    const cnpj = cnpjInput.value.replace(/\D/g, ''); // Remove pontos e barras
+
+    if (cnpj.length !== 14) {
+        alert("Por favor, insira um CNPJ válido com 14 dígitos.");
+        return;
+    }
+
+    try {
+        const response = await fetch(`http://localhost:3000/buscar-cnpj/${cnpj}`);
+
+        if (!response.ok) {
+            throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
         }
 
-        function addRow(tableId) {
+        const dados = await response.json();
+        document.getElementById('nomeProponente').value = dados.nome || '';
+        document.getElementById('nomeDirigente').value = dados.qsa?.[0]?.nome || '';
+        document.getElementById('telefoneDirigente').value = dados.telefone || '';
+        document.getElementById('emailDirigente').value = dados.email || '';
+
+        alert("Dados do CNPJ carregados com sucesso!");
+    } catch (error) {
+        console.error('Erro ao buscar dados do CNPJ:', error);
+        alert(`Erro ao buscar os dados da entidade: ${error.message}`);
+    }
+}
+
+// Função para alternar abas
+function alternarAbas() {
+    const tabs = document.querySelectorAll(".tab");
+    const contents = document.querySelectorAll(".tab-content");
+
+    tabs.forEach((tab) => {
+        tab.addEventListener("click", () => {
+            tabs.forEach((t) => t.classList.remove("active"));
+            tab.classList.add("active");
+
+            contents.forEach((content) => content.classList.remove("active"));
+            document.getElementById(tab.dataset.tab).classList.add("active");
+        });
+    });
+}
+
+// Função para enviar todos os dados
+async function salvarProjeto() {
+    const form = document.getElementById('formTab1'); // Ajuste o ID para o formulário correto
+    const formData = new FormData(form);
+
+    const data = Object.fromEntries(formData.entries()); // Converte para objeto JSON
+    
+    try {
+        const response = await fetch('http://localhost:3000/salvar-projeto', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data) // Envia os dados como JSON
+        });
+
+        if (!response.ok) throw new Error('Erro ao salvar o projeto.');
+
+        alert('Projeto salvo com sucesso!');
+        window.location.href = '/pre-page2'; // Redirecionar após salvar
+    } catch (error) {
+        console.error(error);
+        alert('Erro ao salvar o projeto.');
+    }
+}
+
+// Função para adicionar uma nova linha na tabela
+function addRow(tableId) {
     const table = document.getElementById(tableId);
     const newRow = table.querySelector("tbody tr").cloneNode(true);
 
@@ -680,11 +923,11 @@
     table.querySelector("tbody").appendChild(newRow);
 }
 
+// Função para remover uma linha da tabela
 function removeRow(button) {
     const row = button.closest("tr");
     const tableBody = row.parentNode;
 
-    // Evita remover todas as linhas
     if (tableBody.querySelectorAll("tr").length > 1) {
         row.remove();
     } else {
@@ -692,6 +935,8 @@ function removeRow(button) {
     }
 }
 
-    </script>
+// Inicialização das abas
+alternarAbas();
+</script>
 </body>
 </html>

@@ -47,6 +47,21 @@
             </table>
         </div>
     </div>
+
+    <!-- Tabela Dinâmica de Projetos -->
+    <h2 class="table-title">Projetos Salvos</h2>
+    <table class="table" id="projetosTable">
+        <thead>
+            <tr>
+                <th>Número da Proposta</th>
+                <th>Nome da Proponente</th>
+                <th>Ações</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- Conteúdo será preenchido dinamicamente -->
+        </tbody>
+    </table>
 </div>
 
 <footer class="footer">
@@ -54,13 +69,56 @@
 </footer>
 
 <script>
-    // Função para exibir o formulário de pesquisa
-    function showSearchForm() {
-        document.getElementById("choiceContainer").classList.add("hidden"); // Oculta os botões iniciais
-        document.getElementById("searchSection").classList.remove("hidden"); // Exibe o formulário de consulta
+    // Função para carregar os projetos existentes
+    async function carregarProjetos() {
+        try {
+            const response = await fetch('/listar-projetos');
+            const projetos = await response.json();
+
+            const tableBody = document.getElementById('projetosTable').querySelector('tbody');
+            tableBody.innerHTML = ''; // Limpa a tabela antes de preencher
+
+            projetos.forEach(projeto => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${projeto.numeroProposta}</td>
+                    <td>${projeto.nomeProponente}</td>
+                    <td>
+                        <button onclick="baixarProjeto('${projeto.id}')">Baixar</button>
+                        <button onclick="editarProjeto('${projeto.id}')">Editar</button>
+                        <button onclick="verProgresso('${projeto.id}')">Ver Progresso</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Erro ao carregar os projetos:', error);
+            alert('Erro ao carregar os projetos.');
+        }
     }
 
-    // Submete o formulário de consulta
+    // Função para baixar o projeto
+    async function baixarProjeto(id) {
+        window.location.href = `/baixar-projeto/${id}`;
+    }
+
+    // Função para editar o projeto
+    async function editarProjeto(id) {
+        window.location.href = `/editar-projeto/${id}`;
+    }
+
+    // Função para verificar progresso do projeto
+    async function verProgresso(id) {
+        window.location.href = `/ver-progresso/${id}`;
+    }
+
+    // Exibir o formulário de pesquisa
+    function showSearchForm() {
+        document.getElementById("choiceContainer").classList.add("hidden");
+        document.getElementById("searchSection").classList.remove("hidden");
+    }
+
+    // Submissão do formulário de consulta
     document.getElementById("searchForm").addEventListener("submit", async function (event) {
         event.preventDefault();
 
@@ -71,48 +129,33 @@
             return;
         }
 
-        // Faz uma requisição para o backend (Node.js + PostgreSQL)
         try {
-            const response = await fetch(`/api/projetos/${proposalNumber}`, {
-                method: "GET",
-                headers: { "Content-Type": "application/json" },
-            });
+            const response = await fetch(`/api/projetos/${proposalNumber}`);
+            if (!response.ok) throw new Error("Projeto não encontrado.");
 
-            if (!response.ok) {
-                throw new Error("Projeto não encontrado.");
-            }
-
-            const data = await response.json();
-            displayResult(data);
+            const projeto = await response.json();
+            displayResult(projeto);
         } catch (error) {
             alert("Erro ao consultar o projeto: " + error.message);
         }
     });
 
-    // Função para exibir os resultados na tabela
-    function displayResult(data) {
+    // Exibir resultados da consulta
+    function displayResult(projeto) {
         const resultTable = document.getElementById("resultTable");
         resultTable.innerHTML = `
             <tr>
-                <td>${data.proposalNumber}</td>
-                <td>${data.objeto}</td>
-                <td>${data.status}</td>
+                <td>${projeto.numeroProposta}</td>
+                <td>${projeto.objeto}</td>
+                <td>${projeto.status}</td>
             </tr>
         `;
 
-        document.getElementById("resultSection").classList.remove("hidden"); // Exibe a seção de resultados
+        document.getElementById("resultSection").classList.remove("hidden");
     }
 
-    document.addEventListener("DOMContentLoaded", () => {
-    // Recupera o número da proposta salvo no localStorage
-    const savedProposalNumber = localStorage.getItem("savedProposalNumber");
-
-    if (savedProposalNumber) {
-        document.getElementById("proposalNumber").value = savedProposalNumber;
-        // Opcional: Submeter automaticamente o formulário de consulta
-        document.getElementById("searchForm").dispatchEvent(new Event("submit"));
-    }
-});
+    // Inicializar a página carregando projetos
+    document.addEventListener("DOMContentLoaded", carregarProjetos);
 </script>
 
 </body>
