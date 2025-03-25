@@ -90,12 +90,14 @@ input.value = cnpj;
 
 // Função para formatar a data
 function formatDate() {
-const today = new Date();
-const day = String(today.getDate()).padStart(2, '0');
-const month = String(today.getMonth() + 1).padStart(2, '0');
-const year = today.getFullYear();
-return `${day}/${month}/${year}`;
+    const today = new Date();
+    const day = String(today.getDate()).padStart(2, '0');
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const year = today.getFullYear();
+    return `${day}/${month}/${year}`;
 }
+
+// Função para converter imagem em Base64
 async function getBase64Image(url) {
     try {
         console.log(`Tentando carregar a imagem do caminho: ${url}`);
@@ -133,7 +135,7 @@ async function generateAllInOnePDF() {
     const date = formatDate();
 
     // Carrega a imagem de marca d'água
-    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
+    const watermarkImage = await getBase64Image('../../images/Ofício_page.jpg');
 
     var docDefinition = {
         pageSize: 'A4',
@@ -143,7 +145,7 @@ async function generateAllInOnePDF() {
             width: 595, // Largura total da página A4 em pontos
             height: 842, // Altura total da página A4 em pontos
             absolutePosition: { x: 0, y: 0 },
-            opacity: 0.2 // Opacidade da marca d'água
+            opacity: 0.9 // Opacidade da marca d'água
         }] : undefined,
         
 
@@ -198,7 +200,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO DE AUSÊNCIA DE DESTINAÇÃO DE RECURSOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 200, 0, 20]  // Margem inferior para o título
+            margin: [0, 150, 0, 20]  // Margem inferior para o título
         },
 
         // Texto principal justificado
@@ -235,7 +237,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO DE CUMPRIMENTO DO ART. 90 DA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 150, 0, 20] // Margem inferior
+            margin: [0, 130, 0, 20] // Margem inferior
         },
         {
             text: 'LEI Nº 14.791 DE 29 DE DEZEMBRO DE 2023',
@@ -340,7 +342,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO ART. 299 CÓDIGO PENAL E AUTONOMIA FINANCEIRA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 200, 0, 20] 
+            margin: [0, 150, 0, 20] 
         },
 
         // Texto principal justificado
@@ -386,7 +388,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO DE NÃO OCORRÊNCIA DE IMPEDIMENTOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 100, 0, 20] // Margem inferior para o título
+            margin: [0, 130, 0, 20] // Margem inferior para o título
         },
 
         // Texto principal justificado
@@ -486,7 +488,7 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO DE COMPROVAÇÃO DE EXISTÊNCIA,',
     style: 'header',
     alignment: 'center',
-    margin: [0, 150, 0, 20]
+    margin: [0, 130, 0, 20]
 },
 {
     text: 'EXPERIÊNCIA, INSTALAÇÕES E OUTRAS CONDIÇÕES MATERIAIS',
@@ -533,7 +535,7 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO DE COMPROMISSO',
     style: 'header',
     alignment: 'center',
-    margin: [0, 150, 0, 20]
+    margin: [0, 130, 0, 20]
 },
 
 // Texto principal
@@ -574,7 +576,7 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO DE CUSTOS',
     style: 'header',
     alignment: 'center',
-    margin: [0, 100, 0, 20]
+    margin: [0, 130, 0, 20]
 },
 
 // Texto principal
@@ -623,7 +625,7 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO DE ADIMPLÊNCIA',
     style: 'header',
     alignment: 'center',
-    margin: [0, 100, 0, 20]
+    margin: [0, 130, 0, 20]
 },
 
 // Texto principal
@@ -683,7 +685,7 @@ margin: [0, 20, 0, 0], color: 'gray'
     text: 'DECLARAÇÃO DE CIÊNCIA DOS DEVERES E RESPONSABILIDADES',
     style: 'header',
     alignment: 'center',
-    margin: [0, 150, 0, 20]
+    margin: [0, 130, 0, 20]
 },
 {
     text: 'IMPOSTOS PELA LEGISLAÇÃO ELEITORAL',
@@ -812,7 +814,7 @@ async function generateAtestadoPDF() {
     const municipio = document.getElementById('municipio').value;
 
     // Carrega a imagem de marca d'água
-    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
+    const watermarkImage = await getBase64Image('../../images/Ofício_page.jpg');
 
 var docDefinition = {
     pageSize: 'A4',
@@ -822,7 +824,7 @@ var docDefinition = {
             text: 'ATESTADO DE CAPACIDADE TÉCNICA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 150, 0, 20]
+            margin: [0, 130, 0, 20]
         },
         {
             text: [
@@ -928,7 +930,7 @@ async function generateTermoCompromissoCoordenadorPDF() {
     const date = formatDate();
 
     // Carrega a imagem de marca d'água
-    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
+    const watermarkImage = await getBase64Image('../../images/Ofício_page.jpg');
     
     // Definindo o conteúdo do PDF
     var docDefinition = {
@@ -940,7 +942,7 @@ async function generateTermoCompromissoCoordenadorPDF() {
             text: 'TERMO DE COMPROMISSO',
             style: 'header',
             alignment: 'center',
-            margin: [0, 100, 0, 20]
+            margin: [0, 130, 0, 20]
         },
     
         // Texto principal justificado
