@@ -6,9 +6,8 @@ const { cadastrarUsuario, verificarCodigo, loginUsuario } = require('../controll
 const { verificarNivelAcesso } = require('../middleware/auth');
 const app = require('../app')
 
-// Rota principal
 router.get('/', (req, res) => {
-  res.redirect('/login'); // Redireciona para a página de login
+  res.redirect('/Formulario_Documentacoes'); // Redireciona para Formulario_Documentacoes
 });
 
 // Rota para renderizar a página de cadastro
@@ -31,6 +30,7 @@ router.post('/login', loginUsuario);
 router.get('/verificar', (req, res) => {
   res.render('verificar'); // Renderiza a página verificar.ejs
 });
+
 
 // Rota para verificar o código
 router.post('/verificar-codigo', verificarCodigo);
