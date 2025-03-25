@@ -154,7 +154,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO DE NÃO UTILIZAÇÃO DE RECURSOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 100, 0, 20]
+            margin: [0, 130, 0, 20]
         },
         {
             text: 'PARA FINALIDADE ALHEIA AO OBJETO DA PARCERIA',
@@ -200,7 +200,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO DE AUSÊNCIA DE DESTINAÇÃO DE RECURSOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 150, 0, 20]  // Margem inferior para o título
+            margin: [0, 130, 0, 20]  // Margem inferior para o título
         },
 
         // Texto principal justificado
