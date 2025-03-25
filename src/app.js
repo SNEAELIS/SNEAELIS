@@ -2,9 +2,8 @@ const express = require('express');
 const path = require('path');
 const useRoutes = require('./routes/useRoutes');
 const session = require('express-session');
-const getPool = require('../config/db'); // Importa a função para obter o pool dinâmico
+const initializePool = require('../config/db');
 const cors = require('cors');
-
 
 let pool;
 
@@ -30,7 +29,6 @@ async function criarTabelaUsuarios() {
       nivel_acesso INTEGER DEFAULT 1
     );
   `;
-
   try {
     await pool.query(query);
     console.log('Tabela users criada ou já existente.');
@@ -39,144 +37,95 @@ async function criarTabelaUsuarios() {
   }
 }
 
-(async () => {
-  pool = getPool(); // Obtemos o pool configurado dinamicamente
-  try {
-    await habilitarPgcrypto();
-    await criarTabelaUsuarios();
-  } catch (err) {
-    console.error('Erro ao configurar o banco de dados:', err);
-    process.exit(1);
-  }
-})();
+// Função principal para inicializar o app
+async function startApp() {
+  pool = await initializePool(); // Aguarda o pool estar pronto
+  await habilitarPgcrypto();
+  await criarTabelaUsuarios();
 
-const app = express();
+  const app = express();
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
+  app.use(express.json());
 
-app.use(
-  session({
-    secret: 'segredo_super_seguranca',
-    resave: false,
-    saveUninitialized: true,
-    cookie: { secure: false },
-  })
-);
+  app.use(
+    session({
+      secret: 'segredo_super_seguranca',
+      resave: false,
+      saveUninitialized: true,
+      cookie: { secure: false }, // Use true em produção com HTTPS
+    })
+  );
 
+  app.set('view engine', 'ejs');
+  app.set('views', path.join(__dirname, 'views'));
+  app.use(express.static(path.join(__dirname, '../public')));
 
-// Configuração do EJS como view engine
-app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, 'views'));
+  app.use((req, res, next) => {
+    if (req.path.endsWith('.js')) {
+      res.type('application/javascript');
+    }
+    next();
+  });
 
-// Middleware para servir arquivos estáticos
-app.use(express.static(path.join(__dirname, '../public')));
-
-app.use((req, res, next) => {
-  if (req.path.endsWith('.js')) {
-    res.type('application/javascript');
-  }
-  next();
-});
-
-// Rota para buscar projeto por número da proposta
-app.get('/api/projetos/:proposalNumber', (req, res) => {
-  const { proposalNumber } = req.params;
-
-  // Simulação de busca no banco de dados
-  const projetos = {
+  app.get('/api/projetos/:proposalNumber', (req, res) => {
+    const { proposalNumber } = req.params;
+    const projetos = {
       "222": { proposalNumber: "222", objeto: "Evento Esportivo", status: "Aprovado" },
       "333": { proposalNumber: "333", objeto: "Projeto Cultural", status: "Em Análise" },
-  };
+    };
+    const projeto = projetos[proposalNumber];
+    if (projeto) res.json(projeto);
+    else res.status(404).json({ error: "Projeto não encontrado." });
+  });
 
-  const projeto = projetos[proposalNumber];
-
-  if (projeto) {
-      res.json(projeto);
-  } else {
-      res.status(404).json({ error: "Projeto não encontrado." });
-  }
-});
-
-app.get('/buscar-cnpj/:cnpj', async (req, res) => {
-  const { cnpj } = req.params;
-  console.log(`Buscando dados para o CNPJ: ${cnpj}`);
-
-  try {
+  app.get('/buscar-cnpj/:cnpj', async (req, res) => {
+    const { cnpj } = req.params;
+    try {
       const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpj}`);
-      console.log(`Status da resposta da API externa: ${response.status}`);
-      
-      if (!response.ok) {
-          throw new Error(`Erro na API externa: ${response.status} ${response.statusText}`);
-      }
-
+      if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
       const data = await response.json();
       res.json(data);
-  } catch (error) {
-      console.error('Erro ao buscar dados da API externa:', error);
-      res.status(500).json({ error: 'Erro ao buscar os dados da entidade.' });
-  }
-});
-app.use('/', useRoutes);
+    } catch (error) {
+      console.error('Erro ao buscar CNPJ:', error);
+      res.status(500).json({ error: 'Erro ao buscar dados.' });
+    }
+  });
 
-// Middleware
-app.use(cors());
-app.use(express.json());
+  app.use('/', useRoutes);
+  app.use(cors());
 
-app.post('/salvar-projeto', (req, res) => {
-  const { numeroProposta, nomeProponente } = req.body;
-
-  // Verifica se os campos obrigatórios estão presentes
-  if (!numeroProposta || !nomeProponente) {
+  let projetos = [];
+  app.post('/salvar-projeto', (req, res) => {
+    const { numeroProposta, nomeProponente } = req.body;
+    if (!numeroProposta || !nomeProponente) {
       return res.status(400).json({ error: "Campos obrigatórios ausentes." });
-  }
-
-  // Adiciona o novo projeto à lista
-  const novoProjeto = { id: Date.now().toString(), numeroProposta, nomeProponente };
-  projetos.push(novoProjeto);
-
-  res.status(201).json({ message: "Projeto salvo com sucesso!", projeto: novoProjeto });
-});
-
-let projetos = [];
-
-app.get('/listar-projetos', (req, res) => {
-  res.json(projetos); // Retorna os dados dos projetos
-});
-
-app.get('/baixar-projeto/:id', (req, res) => {
-  const projeto = projetos.find(p => p.id === req.params.id);
-  if (!projeto) return res.status(404).send('Projeto não encontrado.');
-
-  // Exemplo de criação de documento Word
-  const doc = new Document({
-      sections: [
-          {
-              children: [
-                  new Paragraph({ text: `Projeto: ${projeto.proposalNumber}`, heading: HeadingLevel.HEADING_1 }),
-                  new Paragraph({ text: `Proponente: ${projeto.nomeProponente}` }),
-              ],
-          },
-      ],
+    }
+    const novoProjeto = { id: Date.now().toString(), numeroProposta, nomeProponente };
+    projetos.push(novoProjeto);
+    res.status(201).json({ message: "Projeto salvo!", projeto: novoProjeto });
   });
 
-  Packer.toBuffer(doc).then(buffer => {
-      res.setHeader('Content-Disposition', 'attachment; filename=projeto.docx');
-      res.send(buffer);
-  });
-});
-// Rota para buscar dados do banco
-app.get('/users', async (req, res) => {
-  try {
-    const result = await pool.query('SELECT * FROM usuarios'); // Ajuste o nome da tabela
-    res.json(result.rows);
-  } catch (err) {
-    console.error('Erro ao buscar dados:', err.message);
-    res.status(500).json({ error: 'Erro ao buscar dados do banco remoto' });
-  }
-});
+  app.get('/listar-projetos', (req, res) => res.json(projetos));
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
+  app.get('/users', async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM users');
+      res.json(result.rows);
+    } catch (err) {
+      console.error('Erro ao buscar usuários:', err.message);
+      res.status(500).json({ error: 'Erro ao buscar dados.' });
+    }
+  });
+
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`Servidor rodando na porta ${PORT}`);
+  });
+}
+
+// Inicia o aplicativo
+startApp().catch((err) => {
+  console.error('Erro ao iniciar o aplicativo:', err);
+  process.exit(1);
 });
