@@ -1,70 +1,44 @@
-document.getElementById('botaoGerarPDF').addEventListener('click', function (e) {
+document.getElementById('botaoGerarPDF').addEventListener('click', async function (e) {
     e.preventDefault();
-
-    // Exibe a mensagem de carregamento
     const loadingMessage = document.getElementById('loadingMessage');
-    loadingMessage.style.display = 'block'; // Mostra o aviso
-
-    // Função simulada para gerar os PDFs
-    generateAllInOnePDF().then(() => {
-        // Oculta a mensagem de carregamento após o processo de geração
-        loadingMessage.style.display = 'none';
-    }).catch((error) => {
-        // Se houver um erro, você pode lidar com ele aqui
-        alert("Ocorreu um erro ao gerar os PDFs.");
-        console.error(error);
-
-        // Oculta a mensagem de carregamento também no caso de erro
-        loadingMessage.style.display = 'none';
-    });
-});
-
-
-// Vincula o evento ao novo botão para gerar o Atestado em PDF
-document.getElementById('botaoGerarAtestadoPDF').addEventListener('click', function (e) {
-    e.preventDefault();
-
-    // Exibe a mensagem de carregamento
-    const loadingMessage = document.getElementById('loadingMessage');
-    loadingMessage.style.display = 'block'; // Mostra o aviso
-
+    loadingMessage.style.display = 'block';
     try {
-        // Chama diretamente a função de geração de PDF
-        generateAtestadoPDF();
-
-        // Oculta a mensagem de carregamento após o processo de geração
+        await generateAllInOnePDF();
         loadingMessage.style.display = 'none';
     } catch (error) {
-        // Se houver um erro, você pode lidar com ele aqui
         alert("Ocorreu um erro ao gerar os PDFs.");
         console.error(error);
-
-        // Oculta a mensagem de carregamento também no caso de erro
         loadingMessage.style.display = 'none';
     }
 });
 
 
 // Vincula o evento ao novo botão para gerar o Atestado em PDF
-document.getElementById('generateTermoCompromissoCoordenadorPDF').addEventListener('click', function (e) {
+document.getElementById('botaoGerarAtestadoPDF').addEventListener('click', async function (e) {
     e.preventDefault();
-
-    // Exibe a mensagem de carregamento
     const loadingMessage = document.getElementById('loadingMessage');
-    loadingMessage.style.display = 'block'; // Mostra o aviso
-
+    loadingMessage.style.display = 'block';
     try {
-        // Chama diretamente a função de geração de PDF
-        generateTermoCompromissoCoordenadorPDF();
-
-        // Oculta a mensagem de carregamento após o processo de geração
+        await generateAtestadoPDF();
         loadingMessage.style.display = 'none';
     } catch (error) {
-        // Se houver um erro, você pode lidar com ele aqui
         alert("Ocorreu um erro ao gerar os PDFs.");
         console.error(error);
+        loadingMessage.style.display = 'none';
+    }
+});
 
-        // Oculta a mensagem de carregamento também no caso de erro
+
+document.getElementById('generateTermoCompromissoCoordenadorPDF').addEventListener('click', async function (e) {
+    e.preventDefault();
+    const loadingMessage = document.getElementById('loadingMessage');
+    loadingMessage.style.display = 'block';
+    try {
+        await generateTermoCompromissoCoordenadorPDF();
+        loadingMessage.style.display = 'none';
+    } catch (error) {
+        alert("Ocorreu um erro ao gerar os PDFs.");
+        console.error(error);
         loadingMessage.style.display = 'none';
     }
 });
@@ -122,32 +96,63 @@ const month = String(today.getMonth() + 1).padStart(2, '0');
 const year = today.getFullYear();
 return `${day}/${month}/${year}`;
 }
+async function getBase64Image(url) {
+    try {
+        console.log(`Tentando carregar a imagem do caminho: ${url}`);
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Erro ao carregar a imagem: ${response.status} - ${response.statusText}`);
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                console.log('Imagem convertida para Base64 com sucesso.');
+                resolve(reader.result);
+            };
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        console.error('Erro ao converter imagem para Base64:', error);
+        return null; // Retorna null em caso de erro
+    }
+}
 
 
-function generateAllInOnePDF() {
-const dirigente = document.getElementById('dirigente').value;
-const cpf = document.getElementById('cpf').value;
-const cnpj = document.getElementById('cnpj').value;
-const entidade = document.getElementById('entidade').value;
-const endereco = document.getElementById('endereco').value;
-const proposta = document.getElementById('proposta').value;
-const municipio = document.getElementById('municipio').value;
-const rg = document.getElementById('rg').value;
-const objeto = document.getElementById('objeto').value;
-const orgaoEmissor = document.getElementById('orgao').value;
-const uf = document.getElementById('uf').value;
-const cargoDirigente = document.getElementById('cargoDirigente').value;
-const date = formatDate(); 
+async function generateAllInOnePDF() {
+    const dirigente = document.getElementById('dirigente').value;
+    const cpf = document.getElementById('cpf').value;
+    const cnpj = document.getElementById('cnpj').value;
+    const entidade = document.getElementById('entidade').value;
+    const endereco = document.getElementById('endereco').value;
+    const proposta = document.getElementById('proposta').value;
+    const municipio = document.getElementById('municipio').value;
+    const rg = document.getElementById('rg').value;
+    const objeto = document.getElementById('objeto').value;
+    const orgaoEmissor = document.getElementById('orgao').value;
+    const uf = document.getElementById('uf').value;
+    const cargoDirigente = document.getElementById('cargoDirigente').value;
+    const date = formatDate();
 
-var docDefinition = {
-    pageSize: 'A4',
-    pageMargins: [40, 60, 40, 60],
+    // Carrega a imagem de marca d'água
+    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
+
+    var docDefinition = {
+        pageSize: 'A4',
+        pageMargins: [40, 60, 40, 60],
+        background: watermarkImage ? [{
+            image: watermarkImage,
+            width: 595, // Largura total da página A4 em pontos
+            height: 842, // Altura total da página A4 em pontos
+            absolutePosition: { x: 0, y: 0 },
+            opacity: 0.2 // Opacidade da marca d'água
+        }] : undefined,
+        
+
     content: [
         {
             text: 'DECLARAÇÃO DE NÃO UTILIZAÇÃO DE RECURSOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20]
+            margin: [0, 100, 0, 20]
         },
         {
             text: 'PARA FINALIDADE ALHEIA AO OBJETO DA PARCERIA',
@@ -168,7 +173,7 @@ var docDefinition = {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 0, 0, 20]
+            margin: [0, 40, 0, 20]
         },
 
         // Local e data
@@ -176,13 +181,13 @@ var docDefinition = {
             text: `${municipio}/${uf}, na data da assinatura digital.`,
             alignment: 'left',
             fontSize: 12,
-            margin: [0, 0, 0, 20]
+            margin: [0, 40, 0, 20]
         },
         {
             text: `${cargoDirigente}\n\n`,
             alignment: 'center', // Centraliza o cargo do dirigente
             fontSize: 12,
-            margin: [0, 0, 0, 20]
+            margin: [0, 40, 0, 20]
         },
 
         { text: '', pageBreak: 'after' }, // Quebra de página
@@ -193,7 +198,7 @@ var docDefinition = {
             text: 'DECLARAÇÃO DE AUSÊNCIA DE DESTINAÇÃO DE RECURSOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20] // Margem inferior para o título
+            margin: [0, 200, 0, 20]  // Margem inferior para o título
         },
 
         // Texto principal justificado
@@ -204,7 +209,7 @@ var docDefinition = {
             ],
             alignment: 'justify', // Alinhamento justificado do texto principal
             fontSize: 12,
-            margin: [0, 0, 0, 40] // Margem inferior para separar o texto da assinatura
+            margin: [0, 0, 0, 20] // Margem inferior para separar o texto da assinatura
         },
 
         // Local e data
@@ -212,7 +217,7 @@ var docDefinition = {
             text: `${municipio}/${uf}, na data da assinatura digital.`,
             alignment: 'left',
             fontSize: 12,
-            margin: [0, 0, 0, 20] // Margem inferior antes da assinatura
+            margin: [0, 40, 0, 20] // Margem inferior antes da assinatura
         },
 
          // Assinatura centralizada
@@ -220,7 +225,7 @@ var docDefinition = {
             text: `${cargoDirigente}\n\n`,
             alignment: 'center', // Centraliza o cargo do dirigente
             fontSize: 12,
-            margin: [0, 0, 0, 20]
+            margin: [0, 40, 0, 20]
         },
 
         { text: '', pageBreak: 'after' }, // Quebra de página
@@ -230,13 +235,13 @@ var docDefinition = {
             text: 'DECLARAÇÃO DE CUMPRIMENTO DO ART. 90 DA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 10] // Margem inferior
+            margin: [0, 150, 0, 20] // Margem inferior
         },
         {
             text: 'LEI Nº 14.791 DE 29 DE DEZEMBRO DE 2023',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20] // Margem inferior
+            margin: [0, 0, 0, 20]  // Margem inferior
         },
 
         // Texto principal justificado
@@ -278,13 +283,13 @@ var docDefinition = {
             text: 'DECLARAÇÃO',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 10] // Margem inferior para o título
+            margin: [0, 150, 0, 20] // Margem inferior para o título
         },
         {
             text: 'NÃO CONTRATAÇÃO COM RECURSOS DA PARCERIA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20] // Margem inferior para o título
+            margin: [0, 0, 0, 20]  // Margem inferior para o título
         },
 
         // Texto principal justificado
@@ -335,7 +340,7 @@ var docDefinition = {
             text: 'DECLARAÇÃO ART. 299 CÓDIGO PENAL E AUTONOMIA FINANCEIRA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20]
+            margin: [0, 200, 0, 20] 
         },
 
         // Texto principal justificado
@@ -381,7 +386,7 @@ var docDefinition = {
             text: 'DECLARAÇÃO DE NÃO OCORRÊNCIA DE IMPEDIMENTOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20] // Margem inferior para o título
+            margin: [0, 100, 0, 20] // Margem inferior para o título
         },
 
         // Texto principal justificado
@@ -432,7 +437,7 @@ var docDefinition = {
     text: 'DECLARAÇÃO',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 10] // Margem inferior para o título
+    margin: [0, 150, 0, 20] // Margem inferior para o título
 },
 {
     text: 'NÃO RECEBE RECURSOS PARA A MESMA FINALIDADE DE OUTRA ENTIDADE OU ÓRGÃO',
@@ -481,7 +486,7 @@ var docDefinition = {
     text: 'DECLARAÇÃO DE COMPROVAÇÃO DE EXISTÊNCIA,',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 5]
+    margin: [0, 150, 0, 20]
 },
 {
     text: 'EXPERIÊNCIA, INSTALAÇÕES E OUTRAS CONDIÇÕES MATERIAIS',
@@ -528,7 +533,7 @@ var docDefinition = {
     text: 'DECLARAÇÃO DE COMPROMISSO',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 20]
+    margin: [0, 150, 0, 20]
 },
 
 // Texto principal
@@ -569,7 +574,7 @@ var docDefinition = {
     text: 'DECLARAÇÃO DE CUSTOS',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 20]
+    margin: [0, 100, 0, 20]
 },
 
 // Texto principal
@@ -618,7 +623,7 @@ var docDefinition = {
     text: 'DECLARAÇÃO DE ADIMPLÊNCIA',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 20]
+    margin: [0, 100, 0, 20]
 },
 
 // Texto principal
@@ -678,7 +683,7 @@ margin: [0, 20, 0, 0], color: 'gray'
     text: 'DECLARAÇÃO DE CIÊNCIA DOS DEVERES E RESPONSABILIDADES',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 10]
+    margin: [0, 150, 0, 20]
 },
 {
     text: 'IMPOSTOS PELA LEGISLAÇÃO ELEITORAL',
@@ -723,7 +728,7 @@ margin: [0, 20, 0, 0], color: 'gray'
     text: 'ATESTADO DE VERACIDADE DAS INFORMAÇÕES PRESTADAS',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 10]
+    margin: [0, 150, 0, 20]
 },
 
 // Texto principal
@@ -797,14 +802,17 @@ pdfMake.createPdf(docDefinition).download(`Todos_Documentos_${dirigente}.pdf`);
 }
 
 // Função para gerar o Atestado em PDF
-function generateAtestadoPDF() {
-const dirigente = document.getElementById('dirigente').value;
-const cpf = document.getElementById('cpf').value;
-const cnpj = document.getElementById('cnpj').value;
-const entidade = document.getElementById('entidade').value;
-const endereco = document.getElementById('endereco').value;
-const proposta = document.getElementById('proposta').value;
-const municipio = document.getElementById('municipio').value;
+async function generateAtestadoPDF() {
+    const dirigente = document.getElementById('dirigente').value;
+    const cpf = document.getElementById('cpf').value;
+    const cnpj = document.getElementById('cnpj').value;
+    const entidade = document.getElementById('entidade').value;
+    const endereco = document.getElementById('endereco').value;
+    const proposta = document.getElementById('proposta').value;
+    const municipio = document.getElementById('municipio').value;
+
+    // Carrega a imagem de marca d'água
+    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
 
 var docDefinition = {
     pageSize: 'A4',
@@ -814,7 +822,7 @@ var docDefinition = {
             text: 'ATESTADO DE CAPACIDADE TÉCNICA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20]
+            margin: [0, 150, 0, 20]
         },
         {
             text: [
@@ -897,20 +905,16 @@ var docDefinition = {
 pdfMake.createPdf(docDefinition).download(`Atestado_Capacidade_Tecnica_${dirigente}.pdf`);
 }
 
-function generateTermoCompromissoCoordenadorPDF() {
-    // Coleta dos dados do formulário relacionados ao Coordenador Geral
+async function generateTermoCompromissoCoordenadorPDF() {
     const coordenador = document.getElementById('nomeCoordenador').value;
     const rgCoordenador = document.getElementById('rgCoordenador').value;
     const cpfCoordenador = document.getElementById('cpfCoordenador').value;
-    
-    // Verifica se todos os campos relacionados ao Coordenador Geral estão preenchidos
+
     if (!coordenador || !rgCoordenador || !cpfCoordenador) {
-    // Se os campos estiverem vazios, não gera o PDF e apenas continua
-    console.log("Campos do Coordenador não foram preenchidos. PDF não gerado.");
-    return; // Sai da função e não gera o PDF
+        console.log("Campos do Coordenador não foram preenchidos. PDF não gerado.");
+        return;
     }
-    
-    // Se todos os campos estiverem preenchidos, gera o PDF
+
     const dirigente = document.getElementById('dirigente').value;
     const rg = document.getElementById('rg').value;
     const orgao = document.getElementById('orgao').value;
@@ -921,7 +925,10 @@ function generateTermoCompromissoCoordenadorPDF() {
     const municipio = document.getElementById('municipio').value;
     const uf = document.getElementById('uf').value;
     const cargoDirigente = document.getElementById('cargoDirigente').value;
-    const date = formatDate(); // Função que formata a data atual
+    const date = formatDate();
+
+    // Carrega a imagem de marca d'água
+    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
     
     // Definindo o conteúdo do PDF
     var docDefinition = {
@@ -933,7 +940,7 @@ function generateTermoCompromissoCoordenadorPDF() {
             text: 'TERMO DE COMPROMISSO',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20]
+            margin: [0, 100, 0, 20]
         },
     
         // Texto principal justificado

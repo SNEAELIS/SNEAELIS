@@ -1,3 +1,4 @@
+// Evento para manipular o input de imagens (mantido como está)
 document.addEventListener('DOMContentLoaded', () => {
     const imagensInput = document.getElementById('imagens');
 
@@ -21,6 +22,23 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error("Elemento com id 'imagens' não encontrado.");
     }
 });
+
+// Função para converter imagem em Base64 (mantida como está)
+async function getBase64Image(url) {
+    try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error(`Erro ao carregar a imagem: ${response.statusText}`);
+        const blob = await response.blob();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result);
+            reader.readAsDataURL(blob);
+        });
+    } catch (error) {
+        console.error('Erro ao converter imagem para Base64:', error);
+        return null; // Retorna null em caso de erro
+    }
+}
 
 function capturarDadosFormulario() {
 
@@ -1111,26 +1129,32 @@ const declaracoesEspecificas = {
 };
 
 // Função para gerar o PDF
-function gerarPDF() {
+async function gerarPDF() {
     const dados = capturarDadosFormulario();
-    const opcao = document.getElementById('opcaoSelecao').value;
+    const opcao = document.getElementById('opcaoSelecao')?.value;
 
-    // Verificar se uma opção válida foi selecionada
     if (!opcao || !declaracoesEspecificas[opcao]) {
         alert('Selecione uma opção válida antes de gerar o PDF.');
         return;
     }
 
-    // Processar as declarações comuns
+    // Carregar a imagem de fundo
+    const backgroundImage = await getBase64Image('public/images/Modelo-Marcadagua.jpg');
+    if (!backgroundImage) {
+        alert('Erro ao carregar a imagem de fundo. Verifique o caminho ou a conexão.');
+        return;
+    }
+
+    // Processar declarações comuns
     const conteudoComum = declaracoesCompletas.map(declaracao => ({
         stack: [
-            { text: declaracao.title, style: 'header', margin: [0, 10, 0, 10] },
+            { text: declaracao.title || '', style: 'header', margin: [0, 10, 0, 10] },
             { text: substituirPlaceholders(declaracao.content, dados), style: 'normal' }
         ],
         pageBreak: 'after'
     }));
 
-    // Processar as declarações específicas selecionadas
+    // Processar declarações específicas
     const declaracoesEspecificasSelecionadas = declaracoesEspecificas[opcao];
     const conteudoEspecifico = declaracoesEspecificasSelecionadas.map(declaracao => ({
         stack: [
@@ -1140,20 +1164,26 @@ function gerarPDF() {
         pageBreak: 'after'
     }));
 
-    // Definição do documento PDF com as declarações comuns e específicas
+    // Definição do documento
     const docDefinition = {
         pageSize: 'A4',
         pageMargins: [40, 40, 40, 40],
-        content: [...conteudoComum, ...conteudoEspecifico], // Inclui comuns e específicas
+        content: [...conteudoComum, ...conteudoEspecifico],
         styles: {
             header: { fontSize: 16, bold: true, alignment: 'center' },
             normal: { fontSize: 12, lineHeight: 1.5 }
+        },
+        background: function (currentPage, pageSize) {
+            return {
+                image: backgroundImage,
+                width: pageSize.width,
+                height: pageSize.height,
+                absolutePosition: { x: 0, y: 0 },
+                opacity: 0.1
+            };
         }
     };
 
-    // Gera e baixa o PDF
+    // Gerar e baixar o PDF
     pdfMake.createPdf(docDefinition).download(`${opcao}.pdf`);
 }
-
-// Evento do botão para gerar PDF
-document.getElementById('gerarPDF').addEventListener('click', gerarPDF);
