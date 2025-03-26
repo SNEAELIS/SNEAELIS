@@ -147,20 +147,18 @@ async function generateAllInOnePDF() {
             absolutePosition: { x: 0, y: 0 },
             opacity: 0.9 // Opacidade da marca d'água
         }] : undefined,
-        
-
     content: [
         {
             text: 'DECLARAÇÃO DE NÃO UTILIZAÇÃO DE RECURSOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 130, 0, 20]
+            margin: [0, 120, 0, 2] // Reduzido de [0, 130, 0, 20] para menos espaço acima e abaixo
         },
         {
             text: 'PARA FINALIDADE ALHEIA AO OBJETO DA PARCERIA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20]
+            margin: [0, 0, 0, 2] // Reduzido de [0, 0, 0, 20] para menos espaço abaixo
         },
 
         // Texto principal justificado
@@ -200,7 +198,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO DE AUSÊNCIA DE DESTINAÇÃO DE RECURSOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 130, 0, 20]  // Margem inferior para o título
+            margin: [0, 130, 0, 2]  // Margem inferior para o título
         },
 
         // Texto principal justificado
@@ -209,9 +207,9 @@ async function generateAllInOnePDF() {
                 `Eu, ${dirigente}, portador da carteira de identidade nº ${rg}, expedida pelo ${orgaoEmissor}, CPF nº ${cpf}, na condição de representante legal da ${entidade}, CNPJ nº ${cnpj}, declaro que os recursos do presente Termo de Fomento não se destinarão ao pagamento de despesas com pessoal ativo, inativo ou pensionista, dos Estados, do Distrito Federal e Municípios, conforme o art. 167, inciso X, da Constituição Federal de 1988 e  art. 25, § 1º, inciso III, da Lei Complementar nº 101/2000.\n\n`,
                 'Por ser expressão da verdade, firmo a presente declaração.'
             ],
-            alignment: 'justify', // Alinhamento justificado do texto principal
+            alignment: 'justify',
             fontSize: 12,
-            margin: [0, 0, 0, 20] // Margem inferior para separar o texto da assinatura
+            margin: [0, 40, 0, 20]
         },
 
         // Local e data
@@ -237,13 +235,13 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO DE CUMPRIMENTO DO ART. 90 DA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 130, 0, 20] // Margem inferior
+            margin: [0, 120, 0, 2] // Margem inferior
         },
         {
             text: 'LEI Nº 14.791 DE 29 DE DEZEMBRO DE 2023',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20]  // Margem inferior
+            margin: [0, 0, 0, 2]  // Margem inferior
         },
 
         // Texto principal justificado
@@ -259,9 +257,9 @@ async function generateAllInOnePDF() {
        
                 'Por ser expressão da verdade, firmo a presente declaração.'
             ],
-            alignment: 'justify', // Texto justificado
+            alignment: 'justify',
             fontSize: 12,
-            margin: [0, 0, 0, 40] // Margem inferior
+            margin: [0, 40, 0, 20]
         },
 
         // Local e data
@@ -285,13 +283,13 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO',
             style: 'header',
             alignment: 'center',
-            margin: [0, 150, 0, 20] // Margem inferior para o título
+            margin: [0, 120, 0, 2] // Margem inferior para o título
         },
         {
             text: 'NÃO CONTRATAÇÃO COM RECURSOS DA PARCERIA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 0, 0, 20]  // Margem inferior para o título
+            margin: [0, 0, 0, 2]  // Margem inferior para o título
         },
 
         // Texto principal justificado
@@ -312,9 +310,9 @@ async function generateAllInOnePDF() {
                 'As cotações relativas aos itens previstos no Plano de Trabalho também não apresentarão incompatibilidades quanto à situação cadastral dos fornecedores e à classificação de atividades econômicas (CNAE) em relação ao serviço ou fornecimento de material alusivo à respectiva cotação. Além disso, a Entidade se responsabilizará pela veracidade dos documentos apresentados referentes às pesquisas de preços junto aos fornecedores.\n\n',
                 'Por ser expressão da verdade, firmo a presente declaração.'
             ],
-            alignment: 'justify', // Texto justificado
+            alignment: 'justify',
             fontSize: 12,
-            margin: [0, 0, 0, 40] // Espaçamento inferior
+            margin: [0, 40, 0, 20]
         },
 
 
@@ -342,7 +340,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO ART. 299 CÓDIGO PENAL E AUTONOMIA FINANCEIRA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 150, 0, 20] 
+            margin: [0, 120, 0, 2] 
         },
 
         // Texto principal justificado
@@ -360,9 +358,9 @@ async function generateAllInOnePDF() {
 
  
             ],
-            alignment: 'justify', // Alinhamento justificado
+            alignment: 'justify',
             fontSize: 12,
-            margin: [0, 0, 0, 40]
+            margin: [0, 40, 0, 20]
         },
 
         // Local e data
@@ -388,7 +386,7 @@ async function generateAllInOnePDF() {
             text: 'DECLARAÇÃO DE NÃO OCORRÊNCIA DE IMPEDIMENTOS',
             style: 'header',
             alignment: 'center',
-            margin: [0, 130, 0, 20] // Margem inferior para o título
+            margin: [0, 120, 0, 2] // Margem inferior para o título
         },
 
         // Texto principal justificado
@@ -414,7 +412,7 @@ async function generateAllInOnePDF() {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 0, 0, 40] // Margem inferior para o conteúdo principal
+            margin: [0, 40, 0, 20]
         },
         // Local e data
         {
@@ -439,13 +437,13 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO',
     style: 'header',
     alignment: 'center',
-    margin: [0, 150, 0, 20] // Margem inferior para o título
+    margin: [0, 150, 0, 2] // Margem inferior para o título
 },
 {
     text: 'NÃO RECEBE RECURSOS PARA A MESMA FINALIDADE DE OUTRA ENTIDADE OU ÓRGÃO',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 20] // Margem inferior entre o título e o corpo do texto
+    margin: [0, 0, 0, 2] // Margem inferior entre o título e o corpo do texto
 },
 
 // Texto principal justificado
@@ -460,9 +458,9 @@ async function generateAllInOnePDF() {
         ` para a mesma finalidade na execução das ações apresentadas e especificadas na Proposta N° ${proposta}/2024, cadastrada no Sistema Eletrônico Transferegov, evitando desta forma a sobreposição de recursos.\n\n`
     ],
  
-    alignment: 'justify', // Alinhamento justificado
+    alignment: 'justify',
     fontSize: 12,
-    margin: [0, 0, 0, 40] // Margem inferior
+    margin: [0, 40, 0, 20]
 },
 
 // Local e data
@@ -488,13 +486,13 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO DE COMPROVAÇÃO DE EXISTÊNCIA,',
     style: 'header',
     alignment: 'center',
-    margin: [0, 130, 0, 20]
+    margin: [0, 120, 0, 2]
 },
 {
     text: 'EXPERIÊNCIA, INSTALAÇÕES E OUTRAS CONDIÇÕES MATERIAIS',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 20]
+    margin: [0, 0, 0, 2]
 },
 
 // Texto principal
@@ -509,7 +507,7 @@ async function generateAllInOnePDF() {
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 0, 0, 40]
+    margin: [0, 40, 0, 20]
 },
 
 // Local e data
@@ -535,7 +533,7 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO DE COMPROMISSO',
     style: 'header',
     alignment: 'center',
-    margin: [0, 130, 0, 20]
+    margin: [0, 120, 0, 2]
 },
 
 // Texto principal
@@ -549,7 +547,7 @@ async function generateAllInOnePDF() {
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 0, 0, 40]
+    margin: [0, 40, 0, 20]
 },
 
 // Local e data
@@ -576,7 +574,7 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO DE CUSTOS',
     style: 'header',
     alignment: 'center',
-    margin: [0, 130, 0, 20]
+    margin: [0, 120, 0, 2]
 },
 
 // Texto principal
@@ -599,7 +597,7 @@ async function generateAllInOnePDF() {
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 0, 0, 40]
+    margin: [0, 40, 0, 20]
 },
 
 // Local e data
@@ -625,7 +623,7 @@ async function generateAllInOnePDF() {
     text: 'DECLARAÇÃO DE ADIMPLÊNCIA',
     style: 'header',
     alignment: 'center',
-    margin: [0, 130, 0, 20]
+    margin: [0, 120, 0, 2]
 },
 
 // Texto principal
@@ -644,10 +642,9 @@ async function generateAllInOnePDF() {
             bold: true   
         }
     ],
-    
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 0, 0, 40]
+    margin: [0, 40, 0, 20]
 },
 
 
@@ -685,13 +682,13 @@ margin: [0, 20, 0, 0], color: 'gray'
     text: 'DECLARAÇÃO DE CIÊNCIA DOS DEVERES E RESPONSABILIDADES',
     style: 'header',
     alignment: 'center',
-    margin: [0, 130, 0, 20]
+    margin: [0, 120, 0, 2]
 },
 {
     text: 'IMPOSTOS PELA LEGISLAÇÃO ELEITORAL',
     style: 'header',
     alignment: 'center',
-    margin: [0, 0, 0, 20]
+    margin: [0, 0, 0, 2]
 },
 
 // Texto principal
@@ -730,7 +727,7 @@ margin: [0, 20, 0, 0], color: 'gray'
     text: 'ATESTADO DE VERACIDADE DAS INFORMAÇÕES PRESTADAS',
     style: 'header',
     alignment: 'center',
-    margin: [0, 150, 0, 20]
+    margin: [0, 120, 0, 2]
 },
 
 // Texto principal
@@ -757,7 +754,7 @@ margin: [0, 20, 0, 0], color: 'gray'
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 0, 0, 40]
+    margin: [0, 40, 0, 20]
 },
 
 {
@@ -812,19 +809,33 @@ async function generateAtestadoPDF() {
     const endereco = document.getElementById('endereco').value;
     const proposta = document.getElementById('proposta').value;
     const municipio = document.getElementById('municipio').value;
+    const rg = document.getElementById('rg').value;
+    const objeto = document.getElementById('objeto').value;
+    const orgaoEmissor = document.getElementById('orgao').value;
+    const uf = document.getElementById('uf').value;
+    const cargoDirigente = document.getElementById('cargoDirigente').value;
+    const date = formatDate();
 
     // Carrega a imagem de marca d'água
     const watermarkImage = await getBase64Image('../../images/Ofício_page.jpg');
 
-var docDefinition = {
-    pageSize: 'A4',
-    pageMargins: [40, 60, 40, 60],
+    var docDefinition = {
+        pageSize: 'A4',
+        pageMargins: [40, 60, 40, 60],
+        background: watermarkImage ? [{
+            image: watermarkImage,
+            width: 595, // Largura total da página A4 em pontos
+            height: 842, // Altura total da página A4 em pontos
+            absolutePosition: { x: 0, y: 0 },
+            opacity: 0.9 // Opacidade da marca d'água
+        }] : undefined,
+        // Definindo a fonte padrão como Helvetica (equivalente a Arial)
     content: [
         {
             text: 'ATESTADO DE CAPACIDADE TÉCNICA',
             style: 'header',
             alignment: 'center',
-            margin: [0, 130, 0, 20]
+            margin: [0, 120, 0, 2]
         },
         {
             text: [
@@ -833,7 +844,7 @@ var docDefinition = {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 0, 0, 40]
+            margin: [0, 40, 0, 20]
         },
         {
             text: `${municipio}, na data da assinatura digital.`,
@@ -877,7 +888,7 @@ var docDefinition = {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 0, 0, 40]
+            margin: [0, 130, 0, 20]
         },
 
     ],
