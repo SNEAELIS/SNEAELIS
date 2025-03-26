@@ -173,7 +173,7 @@ async function generateAllInOnePDF() {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 40, 0, 20]
+            margin: [0, 20, 0, 10]
         },
 
         // Local e data
@@ -209,7 +209,7 @@ async function generateAllInOnePDF() {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 40, 0, 20]
+            margin: [0, 20, 0, 10]
         },
 
         // Local e data
@@ -259,7 +259,7 @@ async function generateAllInOnePDF() {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 40, 0, 20]
+            margin: [0, 20, 0, 10]
         },
 
         // Local e data
@@ -312,7 +312,7 @@ async function generateAllInOnePDF() {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 40, 0, 20]
+            margin: [0, 20, 0, 10]
         },
 
 
@@ -360,7 +360,7 @@ async function generateAllInOnePDF() {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 40, 0, 20]
+            margin: [0, 20, 0, 10]
         },
 
         // Local e data
@@ -412,7 +412,7 @@ async function generateAllInOnePDF() {
             ],
             alignment: 'justify',
             fontSize: 12,
-            margin: [0, 40, 0, 20]
+            margin: [0, 20, 0, 10]
         },
         // Local e data
         {
@@ -460,7 +460,7 @@ async function generateAllInOnePDF() {
  
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 40, 0, 20]
+    margin: [0, 20, 0, 10]
 },
 
 // Local e data
@@ -507,7 +507,7 @@ async function generateAllInOnePDF() {
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 40, 0, 20]
+    margin: [0, 20, 0, 10]
 },
 
 // Local e data
@@ -547,7 +547,7 @@ async function generateAllInOnePDF() {
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 40, 0, 20]
+    margin: [0, 20, 0, 10]
 },
 
 // Local e data
@@ -597,8 +597,10 @@ async function generateAllInOnePDF() {
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 40, 0, 20]
+    margin: [0, 20, 0, 10]
 },
+
+
 
 // Local e data
 {
@@ -644,8 +646,9 @@ async function generateAllInOnePDF() {
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 40, 0, 20]
+    margin: [0, 20, 0, 10]
 },
+
 
 
 // Local e data
@@ -672,7 +675,7 @@ text: [
 ],
 alignment: 'justify',
 fontSize: 9,
-margin: [0, 20, 0, 0], color: 'gray'
+margin: [0, 50, 0, 0], color: 'gray'
 },
 
   { text: '', pageBreak: 'after' }, // Quebra de página
@@ -709,7 +712,7 @@ margin: [0, 20, 0, 0], color: 'gray'
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 0, 0, 40]
+    margin: [0, 20, 0, 10]
 },
 
  // Assinatura centralizada
@@ -719,6 +722,7 @@ margin: [0, 20, 0, 0], color: 'gray'
     fontSize: 12,
     margin: [0, 0, 0, 20]
 },
+
 
 { text: '', pageBreak: 'after' }, // Quebra de página
 
@@ -754,7 +758,7 @@ margin: [0, 20, 0, 0], color: 'gray'
     ],
     alignment: 'justify',
     fontSize: 12,
-    margin: [0, 40, 0, 20]
+    margin: [0, 20, 0, 20]
 },
 
 {
@@ -777,12 +781,15 @@ margin: [0, 20, 0, 0], color: 'gray'
 styles: {
     header: {
         fontSize: 16,
-        bold: true
+        bold: true,
+        color: '#003087' // Azul institucional
     },
-    normalText: {
-        fontSize: 12
-        }
-    },
+    subheader: {
+        fontSize: 14,
+        bold: true,
+        color: '#003087'
+    }
+},
       // Configurações de segurança para o PDF
 permissions: {
 printing: 'highResolution',  // Permitir impressão apenas em alta resolução
@@ -896,12 +903,14 @@ async function generateAtestadoPDF() {
     styles: {
         header: {
             fontSize: 16,
-            bold: true
+            bold: true,
+            color: '#003087' // Azul institucional
         },
-        normalText: {
-            fontSize: 12
+        subheader: {
+            fontSize: 14,
+            bold: true,
+            color: '#003087'
         }
-        
     },
     permissions: {
         printing: 'highResolution',  // Permitir impressão apenas em alta resolução
