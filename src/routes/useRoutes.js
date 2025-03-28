@@ -7,7 +7,23 @@ const { verificarNivelAcesso } = require('../middleware/auth');
 const app = require('../app')
 
 router.get('/', (req, res) => {
-  res.redirect('/Formulario_Documentacoes'); // Redireciona para Formulario_Documentacoes
+  res.redirect('/escolher-formulario'); // Redireciona para Formulario_Documentacoes
+});
+
+router.get('/escolher-formulario', (req, res) => {
+  res.render('escolherFormulario');
+});
+
+// Rota para processar a seleção do formulário
+router.post('/selecionar-formulario', (req, res) => {
+  const { tipoFormulario } = req.body;
+
+  // Redireciona para a página correspondente com base na seleção
+  if (tipoFormulario) {
+    res.redirect(`/${tipoFormulario}`);
+  } else {
+    res.redirect('/escolher-formulario'); // Volta para a página de seleção se nada for selecionado
+  }
 });
 
 // Rota para renderizar a página de cadastro

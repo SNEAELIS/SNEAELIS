@@ -1,50 +1,54 @@
-// Evento para manipular o input de imagens (mantido como está)
 document.addEventListener('DOMContentLoaded', () => {
     const imagensInput = document.getElementById('imagens');
+    const descricaoContainer = document.getElementById('descricaoImagens');
 
-    if (imagensInput) {
-        imagensInput.addEventListener('change', function () {
-            const descricaoContainer = document.getElementById('descricaoImagens');
-            descricaoContainer.innerHTML = ''; // Limpa descrições anteriores
-
-            Array.from(this.files).forEach((file, index) => {
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <div class="form-row">
-                        <label for="descricao${index}">Descrição da Imagem ${index + 1}:</label>
-                        <textarea id="descricao${index}" rows="2" style="width: 100%;"></textarea>
-                    </div>
-                `;
-                descricaoContainer.appendChild(div);
-            });
-        });
-    } else {
-        console.error("Elemento com id 'imagens' não encontrado.");
+    if (!imagensInput || !descricaoContainer) {
+        console.error("Elemento 'imagens' ou 'descricaoImagens' não encontrado.");
+        return;
     }
+
+    imagensInput.addEventListener('change', function () {
+        descricaoContainer.innerHTML = ''; // Limpa descrições anteriores
+
+        Array.from(this.files).forEach((file, index) => {
+            const div = document.createElement('div');
+            div.innerHTML = `
+                <div class="form-row">
+                    <label for="descricao${index}">Descrição da Imagem ${index + 1}:</label>
+                    <textarea id="descricao${index}" rows="2" style="width: 100%;"></textarea>
+                </div>
+            `;
+            descricaoContainer.appendChild(div);
+        });
+    });
 });
 
-// Função para converter imagem em Base64 (mantida como está)
+// Função para converter imagem em Base64
 async function getBase64Image(url) {
     try {
+        console.log(`Carregando imagem de: ${url}`);
         const response = await fetch(url);
-        if (!response.ok) throw new Error(`Erro ao carregar a imagem: ${response.statusText}`);
+        if (!response.ok) throw new Error(`Erro HTTP: ${response.status} - ${response.statusText}`);
+        
         const blob = await response.blob();
         return new Promise((resolve) => {
             const reader = new FileReader();
-            reader.onloadend = () => resolve(reader.result);
+            reader.onloadend = () => {
+                console.log('Imagem convertida para Base64.');
+                resolve(reader.result);
+            };
             reader.readAsDataURL(blob);
         });
     } catch (error) {
         console.error('Erro ao converter imagem para Base64:', error);
-        return null; // Retorna null em caso de erro
+        return null;
     }
 }
 
+// Captura os dados do formulário
 function capturarDadosFormulario() {
-
     const getValue = (id) => document.getElementById(id)?.value || '';
-
-    const imagens = Array.from(document.getElementById('imagens').files);
+    const imagens = Array.from(document.getElementById('imagens')?.files || []);
     const descricoes = imagens.map((_, index) => getValue(`descricao${index}`));
 
     return {
@@ -81,14 +85,12 @@ function capturarDadosFormulario() {
         acoesDesenvolvidas: getValue('acoesDesenvolvidas'),
         chefeExecutivo: getValue('chefeExecutivo'),
         secretarioFinancas: getValue('secretarioFinancas'),
-        imagens: imagens,
-        descricoes: descricoes
-        
+        imagens,
+        descricoes
     };
 }
 
-
-// Substituir os placeholders nas declarações
+// Substitui placeholders no texto com os dados fornecidos
 function substituirPlaceholders(texto, dados) {
     const dataAtual = new Date();
     const diaAtual = String(dataAtual.getDate()).padStart(2, '0');
@@ -96,48 +98,133 @@ function substituirPlaceholders(texto, dados) {
     const anoAtual = dataAtual.getFullYear();
 
     return texto
-    .replace(/\[NOME\]/g, dados.nome)
-    .replace(/\[CPF\]/g, dados.cpf)
-    .replace(/\[RG\]/g, dados.rg)
-    .replace(/\[ORGAO_EMISSOR\]/g, dados.orgaoEmissor)
-    .replace(/\[UF\]/g, dados.uf)
-    .replace(/\[CARGO_DIRIGENTE\]/g, dados.cargoDirigente)
-    .replace(/\[ENTIDADE\]/g, dados.entidade)
-    .replace(/\[CNPJ\]/g, dados.cnpj)
-    .replace(/\[ENDERECO\]/g, dados.endereco)
-    .replace(/\[CEP\]/g, dados.cep)
-    .replace(/\[MUNICIPIO\]/g, dados.municipio)
-    .replace(/\[PROPOSTA\]/g, dados.proposta)
-    .replace(/\[OBJETO\]/g, dados.objetoConvenio)
-    .replace(/\[VALOR_CONTRAPARTIDA\]/g, dados.valorContrapartida)
-    .replace(/\[VALOR_CONTRAPARTIDA_EXTENSO\]/g, dados.valorContrapartidaExtenso)
-    .replace(/\[LEI_ORCAMENTARIA\]/g, dados.leiOrcamentaria)
-    .replace(/\[DIA_LEI\]/g, dados.diaLei)
-    .replace(/\[MES_LEI\]/g, dados.mesLei)
-    .replace(/\[ANO_LEI\]/g, dados.anoLei)
-    .replace(/\[ORGAO\]/g, dados.orgao)
-    .replace(/\[UNIDADE\]/g, dados.unidade)
-    .replace(/\[FUNCAO\]/g, dados.funcao)
-    .replace(/\[SUBFUNCAO\]/g, dados.subfuncao)
-    .replace(/\[PROGRAMA\]/g, dados.programa)
-    .replace(/\[ATIVIDADE\]/g, dados.atividade)
-    .replace(/\[NATUREZA_DESPESA\]/g, dados.naturezaDespesa)
-    .replace(/\[NOME_PROJETO\]/g, dados.nomeProjeto)
-    .replace(/\[ENTIDADES_PARCEIRAS\]/g, dados.entidadesParceiras)
-    .replace(/\[PERIODO_VIGENCIA\]/g, dados.periodoVigencia)
-    .replace(/\[NUMERO_BENEFICIADOS\]/g, dados.numeroBeneficiados)
-    .replace(/\[ACOES_DESENVOLVIDAS\]/g, dados.acoesDesenvolvidas)
-    .replace(/\[CHEFE_EXECUTIVO\]/g, dados.chefeExecutivo || "Chefe do Poder Executivo")
-    .replace(/\[SECRETARIO_FINANCAS\]/g, dados.secretarioFinancas || "Secretário de Finanças")
-    .replace(/\[DIA_ATUAL\]/g, diaAtual)
-    .replace(/\[MES_ATUAL\]/g, mesAtual)
-    .replace(/\[ANO_ATUAL\]/g, anoAtual);
+        .replace(/\[NOME\]/g, dados.nome || '')
+        .replace(/\[CPF\]/g, dados.cpf || '')
+        .replace(/\[RG\]/g, dados.rg || '')
+        .replace(/\[ORGAO_EMISSOR\]/g, dados.orgaoEmissor || '')
+        .replace(/\[UF\]/g, dados.uf || '')
+        .replace(/\[CARGO_DIRIGENTE\]/g, dados.cargoDirigente || '')
+        .replace(/\[ENTIDADE\]/g, dados.entidade || '')
+        .replace(/\[CNPJ\]/g, dados.cnpj || '')
+        .replace(/\[ENDERECO\]/g, dados.endereco || '')
+        .replace(/\[CEP\]/g, dados.cep || '')
+        .replace(/\[MUNICIPIO\]/g, dados.municipio || '')
+        .replace(/\[PROPOSTA\]/g, dados.proposta || '')
+        .replace(/\[OBJETO\]/g, dados.objeto || '')
+        .replace(/\[VALOR_CONTRAPARTIDA\]/g, dados.valorContrapartida || '')
+        .replace(/\[VALOR_CONTRAPARTIDA_EXTENSO\]/g, dados.valorContrapartidaExtenso || '')
+        .replace(/\[LEI_ORCAMENTARIA\]/g, dados.leiOrcamentaria || '')
+        .replace(/\[DIA_LEI\]/g, dados.diaLei || '')
+        .replace(/\[MES_LEI\]/g, dados.mesLei || '')
+        .replace(/\[ANO_LEI\]/g, dados.anoLei || '')
+        .replace(/\[ORGAO\]/g, dados.orgao || '')
+        .replace(/\[UNIDADE\]/g, dados.unidade || '')
+        .replace(/\[FUNCAO\]/g, dados.funcao || '')
+        .replace(/\[SUBFUNCAO\]/g, dados.subfuncao || '')
+        .replace(/\[PROGRAMA\]/g, dados.programa || '')
+        .replace(/\[ATIVIDADE\]/g, dados.atividade || '')
+        .replace(/\[NATUREZA_DESPESA\]/g, dados.naturezaDespesa || '')
+        .replace(/\[NOME_PROJETO\]/g, dados.nomeProjeto || '')
+        .replace(/\[ENTIDADES_PARCEIRAS\]/g, dados.entidadesParceiras || '')
+        .replace(/\[PERIODO_VIGENCIA\]/g, dados.periodoVigencia || '')
+        .replace(/\[NUMERO_BENEFICIADOS\]/g, dados.numeroBeneficiados || '')
+        .replace(/\[ACOES_DESENVOLVIDAS\]/g, dados.acoesDesenvolvidas || '')
+        .replace(/\[CHEFE_EXECUTIVO\]/g, dados.chefeExecutivo || 'Chefe do Poder Executivo')
+        .replace(/\[SECRETARIO_FINANCAS\]/g, dados.secretarioFinancas || 'Secretário de Finanças')
+        .replace(/\[DIA_ATUAL\]/g, diaAtual)
+        .replace(/\[MES_ATUAL\]/g, mesAtual)
+        .replace(/\[ANO_ATUAL\]/g, anoAtual);
 }
 
+// Evento para o botão de gerar PDF
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('gerarPDF').addEventListener('click', gerarPDF);
+    const gerarPDFButton = document.getElementById('gerarPDF');
+    if (!gerarPDFButton) {
+        console.error("Elemento 'gerarPDF' não encontrado.");
+        return;
+    }
+    gerarPDFButton.addEventListener('click', gerarPDF);
 });
 
+async function gerarPDF() {
+    try {
+        const dados = capturarDadosFormulario();
+        const opcao = document.getElementById('opcaoSelecao')?.value;
+
+        if (!opcao || !declaracoesEspecificas[opcao]) {
+            alert('Selecione uma opção válida antes de gerar o PDF.');
+            return;
+        }
+
+        // Carrega a imagem de fundo
+        const backgroundImage = await getBase64Image('../../images/Ofício_page.jpg');
+        if (!backgroundImage) {
+            alert('Erro ao carregar a imagem de fundo.');
+            return;
+        }
+
+        // Converte as imagens enviadas para Base64
+        const imageBase64Array = await Promise.all(
+            dados.imagens.map(file => new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result);
+                reader.readAsDataURL(file);
+            }))
+        );
+
+        // Cria o conteúdo das imagens com descrições
+        const imageContent = imageBase64Array.map((base64, index) => ({
+            stack: [
+                { image: base64, width: 200, margin: [0, 10, 0, 10] },
+                { text: dados.descricoes[index] || `Imagem ${index + 1}`, alignment: 'center', fontSize: 10 }
+            ],
+            pageBreak: 'after'
+        }));
+
+        // Gera o conteúdo comum com margem superior de 50px (37.5pt)
+        const conteudoComum = declaracoesCompletas.map(declaracao => ({
+            stack: [
+                { text: declaracao.title || '', style: 'header', margin: [0, 37.5, 0, 10] }, // Margem superior de 50px
+                { text: substituirPlaceholders(declaracao.content, dados), style: 'normal' }
+            ],
+            pageBreak: 'after'
+        }));
+
+        // Gera o conteúdo específico com margem superior de 50px (37.5pt)
+        const conteudoEspecifico = declaracoesEspecificas[opcao].map(declaracao => ({
+            stack: [
+                { text: declaracao.title, style: 'header', margin: [0, 37.5, 0, 10] }, // Margem superior de 50px
+                { text: substituirPlaceholders(declaracao.content, dados), style: 'normal', alignment: 'justify' }
+            ],
+            pageBreak: 'after'
+        }));
+
+        // Definição do documento PDF
+        const docDefinition = {
+            pageSize: 'A4',
+            pageMargins: [40, 40, 40, 40],
+            content: [...conteudoComum, ...conteudoEspecifico, ...imageContent],
+            styles: {
+                header: { fontSize: 16, bold: true, alignment: 'center' },
+                normal: { fontSize: 12, lineHeight: 1.5 }
+            },
+            background: (currentPage, pageSize) => ({
+                image: backgroundImage,
+                width: pageSize.width,
+                height: pageSize.height,
+                absolutePosition: { x: 0, y: 0 },
+                opacity: 0.1
+            })
+        };
+
+        console.log('Gerando PDF...');
+        pdfMake.createPdf(docDefinition).download(`${opcao}.pdf`);
+        console.log('PDF gerado com sucesso.');
+    } catch (error) {
+        console.error('Erro ao gerar o PDF:', error);
+        alert('Erro ao gerar o PDF. Verifique o console para mais detalhes.');
+    }
+}
 const declaracoesCompletas = [
     {
         title: "ATESTADO DE CAPACIDADE TÉCNICA",
@@ -1127,63 +1214,3 @@ const declaracoesEspecificas = {
         },
     ],
 };
-
-// Função para gerar o PDF
-async function gerarPDF() {
-    const dados = capturarDadosFormulario();
-    const opcao = document.getElementById('opcaoSelecao')?.value;
-
-    if (!opcao || !declaracoesEspecificas[opcao]) {
-        alert('Selecione uma opção válida antes de gerar o PDF.');
-        return;
-    }
-
-    // Carregar a imagem de fundo
-    const backgroundImage = await getBase64Image('public/images/Modelo-Marcadagua.jpg');
-    if (!backgroundImage) {
-        alert('Erro ao carregar a imagem de fundo. Verifique o caminho ou a conexão.');
-        return;
-    }
-
-    // Processar declarações comuns
-    const conteudoComum = declaracoesCompletas.map(declaracao => ({
-        stack: [
-            { text: declaracao.title || '', style: 'header', margin: [0, 10, 0, 10] },
-            { text: substituirPlaceholders(declaracao.content, dados), style: 'normal' }
-        ],
-        pageBreak: 'after'
-    }));
-
-    // Processar declarações específicas
-    const declaracoesEspecificasSelecionadas = declaracoesEspecificas[opcao];
-    const conteudoEspecifico = declaracoesEspecificasSelecionadas.map(declaracao => ({
-        stack: [
-            { text: declaracao.title, style: 'header', margin: [0, 10, 0, 10] },
-            { text: substituirPlaceholders(declaracao.content, dados), style: 'normal', alignment: 'justify' }
-        ],
-        pageBreak: 'after'
-    }));
-
-    // Definição do documento
-    const docDefinition = {
-        pageSize: 'A4',
-        pageMargins: [40, 40, 40, 40],
-        content: [...conteudoComum, ...conteudoEspecifico],
-        styles: {
-            header: { fontSize: 16, bold: true, alignment: 'center' },
-            normal: { fontSize: 12, lineHeight: 1.5 }
-        },
-        background: function (currentPage, pageSize) {
-            return {
-                image: backgroundImage,
-                width: pageSize.width,
-                height: pageSize.height,
-                absolutePosition: { x: 0, y: 0 },
-                opacity: 0.1
-            };
-        }
-    };
-
-    // Gerar e baixar o PDF
-    pdfMake.createPdf(docDefinition).download(`${opcao}.pdf`);
-}

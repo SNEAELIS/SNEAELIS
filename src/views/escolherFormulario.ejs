@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Escolher Formulário - Ministério do Esporte</title>
+    <style>
+        /* Reset Básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Cabeçalho */
+        header {
+            background-color: #003087;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* Container Principal */
+        .container {
+            background: #fff;
+            margin: 80px auto 30px;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .container h2 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #003087;
+            margin-bottom: 20px;
+        }
+
+        /* Formulário de Seleção */
+        .form-selection {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: #fff;
+            transition: border-color 0.3s;
+        }
+
+        select:focus {
+            border-color: #003087;
+            outline: none;
+        }
+
+        /* Estilo para opções desativadas */
+        select option:disabled {
+            color: #999; /* Cinza claro para indicar que está desativado */
+        }
+
+        /* Botão */
+        button {
+            background-color: #003087;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #002766;
+        }
+
+        /* Rodapé */
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #003087;
+            color: #fff;
+            font-size: 0.8rem;
+            margin-top: auto;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .container {
+                margin: 70px 10px 20px;
+                padding: 15px;
+            }
+
+            header h1 {
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header>
+        <div class="header-left">
+            <img src="/images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="Logo Ministério do Esporte">
+            <h1>Ministério do Esporte</h1>
+        </div>
+    </header>
+
+    <!-- Container Principal -->
+    <div class="container">
+        <h2>Escolha o Tipo de Formulário</h2>
+        <form id="formularioSelecao" action="/selecionar-formulario" method="POST">
+            <div class="form-selection">
+                <select name="tipoFormulario" id="tipoFormulario" required>
+                    <option value="" disabled selected>Selecione um formulário</option>
+                    <option value="Formulario_Documentacoes">Formulário de Documentações (OSC/Sociedade Civil)</option>
+                    <option value="Formulario_convenio">Formulário de Convênio (Entidades Públicas)</option>
+                    <option value="Ficha_RTMA" disabled>Ficha RTMA</option>
+                    <option value="Ficha_Frequencia" disabled>Ficha de Frequência</option>
+                    <option value="formulario-merito" disabled>Formulário de Mérito</option>
+                    <option value="formulario-dirigente" disabled>Formulário de Dirigente</option>
+                </select>
+                <button type="submit">Acessar Formulário</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Rodapé -->
+    <footer>
+        <p>© 2024 Ministério do Esporte</p>
+    </footer>
+</body>
+</html>
