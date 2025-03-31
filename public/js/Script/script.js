@@ -892,7 +892,7 @@ async function generateAtestadoPDF() {
                 'b) materiais de divulgação (folders, cartazes, etc)\n\n',
                 'c) matérias vinculadas na mídia (jornal, revistas, etc)\n\n',
                 'd) cópia de instrumento específico (contratos, convênios, termos de parceria, etc)\n\n'
-            ],
+            ],  
             alignment: 'justify',
             fontSize: 12,
             margin: [0, 130, 0, 20]

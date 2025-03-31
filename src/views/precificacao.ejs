@@ -1,0 +1,726 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precificação de Emenda - Ministério do Esporte</title>
+    <style>
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+            font-family: 'Arial', sans-serif; 
+        }
+        
+        body { 
+            background-color: #f4f4f9; 
+            color: #333; 
+            line-height: 1.6; 
+        }
+        
+        header { 
+            background-color: #003087; 
+            color: white; 
+            padding: 10px 20px; 
+            display: flex; 
+            align-items: center; 
+            position: fixed; 
+            width: 100%; 
+            top: 0; 
+            z-index: 1000;
+        }
+        
+        .header-left { 
+            display: flex; 
+            align-items: center; 
+            gap: 15px; 
+        }
+        
+        header img { 
+            max-width: 200px; 
+            height: auto; 
+        }
+        
+        header h1 { 
+            font-size: 1.2rem; 
+            font-weight: bold; 
+        }
+        
+        .main-container { 
+            margin: 80px auto 20px; 
+            padding: 0 20px; 
+            max-width: 1200px; 
+        }
+        
+        .recursos-container, .carrinho-container { 
+            background: #fff; 
+            padding: 20px; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05); 
+            margin-bottom: 20px; 
+        }
+        
+        h2 { 
+            font-size: 1.5rem; 
+            color: #003087; 
+            margin-bottom: 15px; 
+        }
+        
+        .recurso-info p { 
+            font-size: 1.1rem; 
+            margin: 5px 0; 
+        }
+        
+        .recurso-info span { 
+            font-weight: bold; 
+            color: #003087; 
+        }
+        
+        /* Filtros e Pesquisa */
+        .filtros-container { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+            flex-wrap: wrap; 
+        }
+        
+        .filtro-btn { 
+            padding: 8px 15px; 
+            background-color: #e0e0e0; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+            transition: all 0.3s;
+        }
+        
+        .filtro-btn.active { 
+            background-color: #003087; 
+            color: white; 
+        }
+        
+        .pesquisa-container { 
+            margin-bottom: 15px; 
+            position: relative;
+        }
+        
+        .pesquisa-input { 
+            width: 100%; 
+            padding: 10px 15px; 
+            border: 1px solid #ddd; 
+            border-radius: 4px; 
+            font-size: 1rem;
+        }
+        
+        /* Estrutura Hierárquica */
+        .categoria-container {
+            margin-bottom: 20px;
+        }
+        
+        .categoria-header { 
+            background-color: #003087;
+            color: white;
+            padding: 12px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+        }
+        
+        .item-container { 
+            margin-top: 10px;
+            margin-left: 15px;
+        }
+        
+        .item-header {
+            background-color: #0056b3;
+            color: white;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .subitem-container { 
+            margin-left: 15px;
+        }
+        
+        .subitem {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 10px 0;
+            border: 1px solid #eee;
+        }
+        
+        .subitem-detalhes {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto auto;
+            gap: 10px;
+            align-items: center;
+        }
+        
+        @media (max-width: 1200px) {
+            .subitem-detalhes {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        
+        .subitem-nome {
+            font-weight: bold;
+        }
+        
+        .subitem-info {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .subitem-info span:first-child {
+            font-size: 0.8rem;
+            color: #666;
+        }
+        
+        .subitem-preco { 
+            font-weight: bold; 
+            color: #003087; 
+            text-align: right;
+        }
+        
+        input[type="number"] { 
+            width: 80px; 
+            padding: 8px; 
+            border: 1px solid #ccc; 
+            border-radius: 4px; 
+            text-align: center; 
+        }
+        
+        .carrinho-icon { 
+            background: none; 
+            border: none; 
+            font-size: 1.2rem; 
+            color: #003087; 
+            cursor: pointer; 
+            padding: 5px;
+        }
+        
+        /* Carrinho */
+        .carrinho-lista { 
+            min-height: 100px; 
+            max-height: 300px; 
+            overflow-y: auto; 
+            background-color: #f9f9f9; 
+            border-radius: 5px; 
+            padding: 10px; 
+        }
+        
+        .carrinho-item { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px; 
+            background-color: #fff; 
+            border: 1px solid #eee; 
+            border-radius: 5px; 
+            margin: 5px 0; 
+        }
+        
+        .carrinho-item-info {
+            flex: 1;
+        }
+        
+        .carrinho-item-detalhes {
+            font-size: 0.9rem;
+            color: #666;
+        }
+        
+        .remover-icon { 
+            background: none; 
+            border: none; 
+            font-size: 1.2rem; 
+            color: #dc3545; 
+            cursor: pointer; 
+            margin-left: 10px;
+        }
+        
+        .carrinho-total { 
+            margin-top: 15px; 
+            text-align: right; 
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+        
+        .finalizar-btn { 
+            background-color: #28a745; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .finalizar-btn:hover {
+            background-color: #218838;
+        }
+        
+        .gerar-doc-btn { 
+            background-color: #17a2b8; 
+            color: white; 
+            padding: 10px 20px; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin-left: 10px; 
+            font-size: 1rem;
+            transition: background-color 0.3s;
+        }
+        
+        .gerar-doc-btn:hover {
+            background-color: #138496;
+        }
+        
+        footer { 
+            text-align: center; 
+            padding: 15px; 
+            background-color: #003087; 
+            color: #fff; 
+            margin-top: 30px;
+        }
+        
+        /* Ícones de expansão */
+        .expand-icon {
+            transition: transform 0.3s;
+        }
+        
+        .expanded {
+            transform: rotate(180deg);
+        }
+        
+        /* Loading */
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border-left-color: #003087;
+            animation: spin 1s linear infinite;
+            margin: 0 auto;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <div class="header-left">
+            <img src="/images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" alt="Logo Ministério do Esporte">
+            <h1>Ministério do Esporte - Sistema de Precificação de Emendas</h1>
+        </div>
+    </header>
+
+    <div class="main-container">
+        <div class="recursos-container">
+            <h2>Recursos Disponíveis</h2>
+            <div class="recurso-info">
+                <p>Valor Total da Emenda: <span id="valor-total">R$ 0,00</span></p>
+                <p>Valor Gasto: <span id="valor-gasto">R$ 0,00</span></p>
+                <p>Valor Restante: <span id="valor-restante">R$ 0,00</span></p>
+            </div>
+        </div>
+
+        <div class="itens-lista">
+            <!-- Filtros por categoria -->
+            <div class="filtros-container">
+                <button class="filtro-btn active" data-categoria="todos">Todos</button>
+                <button class="filtro-btn" data-categoria="Recursos Humanos">Recursos Humanos</button>
+                <button class="filtro-btn" data-categoria="Alimentação e Hidratação">Alimentação</button>
+                <button class="filtro-btn" data-categoria="Locações e Serviços">Locações</button>
+                <button class="filtro-btn" data-categoria="Material Esportivo">Material Esportivo</button>
+                <button class="filtro-btn" data-categoria="Outros">Outros</button>
+            </div>
+
+            <!-- Campo de pesquisa -->
+            <div class="pesquisa-container">
+                <input type="text" class="pesquisa-input" placeholder="Pesquisar itens por nome, código ou descrição...">
+            </div>
+
+            <!-- Loading -->
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Carregando dados...</p>
+            </div>
+
+            <!-- Estrutura Hierárquica -->
+            <div id="dados-container">
+                <!-- Os dados serão carregados dinamicamente aqui -->
+            </div>
+        </div>
+
+        <div class="carrinho-container">
+            <h2>Carrinho de Compras</h2>
+            <div class="carrinho-lista" id="carrinho-lista">
+                <p style="text-align: center; color: #666;">Nenhum item adicionado ao carrinho</p>
+            </div>
+            <div class="carrinho-total">
+                <p>Total no Carrinho: <span id="total-carrinho">R$ 0,00</span></p>
+                <button class="finalizar-btn">Finalizar Precificação</button>
+                <button class="gerar-doc-btn">Gerar Documento</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <p>© 2024 Ministério do Esporte - Todos os direitos reservados</p>
+    </footer>
+    <script>
+        // Variáveis globais
+        let valorGasto = 0;
+        let carrinhoItens = [];
+        let todosDados = [];
+        let valorTotalEmenda = 0;
+    
+        // Elementos do DOM
+        const loadingElement = document.getElementById('loading');
+        const dadosContainer = document.getElementById('dados-container');
+        const filtroBtns = document.querySelectorAll('.filtro-btn');
+        const pesquisaInput = document.querySelector('.pesquisa-input');
+    
+        // Modifique a função buscarDados para extrair as categorias dinamicamente
+        async function buscarDados() {
+            loadingElement.style.display = 'block';
+            try {
+                const urlParams = new URLSearchParams(window.location.search);
+                const valorQuery = parseFloat(urlParams.get('valor')) || 0;
+
+                const response = await fetch(`/api/precificacao-dados?valor=${valorQuery}`);
+                if (!response.ok) throw new Error(`Erro ao buscar dados: ${response.status}`);
+
+                const result = await response.json();
+                todosDados = result.dados || [];
+                valorTotalEmenda = result.valorEmenda || 0;
+
+                // Extrai categorias únicas dos dados
+                const categoriasUnicas = [...new Set(todosDados.map(item => item.Recursos))].filter(Boolean);
+                console.log('Categorias encontradas:', categoriasUnicas);
+
+                // Atualiza os filtros dinamicamente
+                atualizarFiltros(categoriasUnicas);
+                
+                carregarDados();
+                configurarPesquisa();
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                dadosContainer.innerHTML = `<p style="color: red; text-align: center;">Erro ao carregar os dados: ${error.message}</p>`;
+            } finally {
+                loadingElement.style.display = 'none';
+            }
+        }
+
+    
+        // Formata valores para exibição
+        function formatarValor(valor) {
+            return valor.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            });
+        }
+    
+        // Atualiza os valores exibidos
+        function atualizarValores() {
+            console.log('Atualizando valores - valorTotalEmenda:', valorTotalEmenda, 'valorGasto:', valorGasto);
+            document.getElementById('valor-total').textContent = formatarValor(valorTotalEmenda);
+            document.getElementById('valor-gasto').textContent = formatarValor(valorGasto);
+            document.getElementById('valor-restante').textContent = formatarValor(valorTotalEmenda - valorGasto);
+            document.getElementById('total-carrinho').textContent = formatarValor(valorGasto);
+        }
+    
+        // Processa os dados brutos da planilha
+        function processarDados(dadosBrutos) {
+            todosDados = dadosBrutos;
+        }
+    
+            // Modifique a função agruparDados para agrupar corretamente
+            function agruparDados(dados) {
+                const agrupado = {};
+                dados.forEach(item => {
+                    const categoria = item.Recursos || 'Outros';
+                    if (!agrupado[categoria]) agrupado[categoria] = {};
+                    if (!agrupado[categoria][item.item]) agrupado[categoria][item.item] = [];
+                    agrupado[categoria][item.item].push(item);
+                });
+                return agrupado;
+            }
+                
+        // Função para exibir os dados
+        function exibirDados(categoriaFiltro = 'todos', termoPesquisa = '') {
+            const dadosAgrupados = agruparDados(todosDados);
+            dadosContainer.innerHTML = '';
+    
+            // Log para verificar as categorias que serão exibidas
+            console.log('Categorias a serem exibidas:', Object.keys(dadosAgrupados));
+    
+            for (const [categoria, itens] of Object.entries(dadosAgrupados)) {
+                // Aplicar filtro de categoria
+                if (categoriaFiltro !== 'todos' && categoria !== categoriaFiltro) {
+                    continue;
+                }
+                
+                const categoriaContainer = document.createElement('div');
+                categoriaContainer.classList.add('categoria-container');
+    
+                const categoriaHeader = document.createElement('div');
+                categoriaHeader.classList.add('categoria-header');
+                categoriaHeader.innerHTML = `
+                    ${categoria}
+                    <span class="expand-icon">▼</span>
+                `;
+                categoriaContainer.appendChild(categoriaHeader);
+    
+                const itensContainer = document.createElement('div');
+                itensContainer.classList.add('item-container');
+                itensContainer.style.display = 'none';
+    
+                for (const [item, subitens] of Object.entries(itens)) {
+                    const itemContainer = document.createElement('div');
+                    const itemHeader = document.createElement('div');
+                    itemHeader.classList.add('item-header');
+                    itemHeader.innerHTML = `
+                        ${item}
+                        <span class="expand-icon">▼</span>
+                    `;
+                    itemContainer.appendChild(itemHeader);
+    
+                    const subitemContainer = document.createElement('div');
+                    subitemContainer.classList.add('subitem-container');
+                    subitemContainer.style.display = 'none';
+    
+                    subitens.forEach(subitem => {
+                        // Aplicar filtro de pesquisa
+                        const textoCompleto = `${subitem.subitem} ${subitem.codigo} ${subitem.codigoSipea}`.toLowerCase();
+                        if (termoPesquisa && !textoCompleto.includes(termoPesquisa.toLowerCase())) {
+                            return;
+                        }
+                        
+                        const subitemDiv = document.createElement('div');
+                        subitemDiv.classList.add('subitem');
+                        subitemDiv.innerHTML = `
+                            <div class="subitem-detalhes">
+                                <div class="subitem-nome">${subitem.subitem}</div>
+                                <div class="subitem-info">
+                                    <span>Código: ${subitem.codigo}</span>
+                                    <span>Código SIPEA: ${subitem.codigoSipea}</span>
+                                    <span>UF: ${subitem.uf}</span>
+                                </div>
+                                <div class="subitem-info">
+                                    <span>Unidade: ${subitem.unidade}</span>
+                                    <span>Modalidade: ${subitem.modalidade}</span>
+                                    <span>GND: ${subitem.gnd}</span>
+                                </div>
+                                <div class="subitem-info">
+                                    <span>Etapa: ${subitem.etapa}</span>
+                                    <span>Pasta: ${subitem.pasta}</span>
+                                </div>
+                                <div class="subitem-preco">${formatarValor(subitem.valorUnitario)}</div>
+                                <input type="number" min="0" value="0" class="quantidade-input" data-preco="${subitem.valorUnitario}">
+                                <button class="carrinho-icon" title="Adicionar ao carrinho">🛒</button>
+                            </div>
+                        `;
+                        subitemContainer.appendChild(subitemDiv);
+                    });
+    
+                    // Só adiciona o item se houver subitens após a filtragem
+                    if (subitemContainer.children.length > 0) {
+                        itemContainer.appendChild(subitemContainer);
+                        itensContainer.appendChild(itemContainer);
+    
+                        itemHeader.addEventListener('click', () => {
+                            const isExpanded = subitemContainer.style.display === 'block';
+                            subitemContainer.style.display = isExpanded ? 'none' : 'block';
+                            itemHeader.querySelector('.expand-icon').classList.toggle('expanded');
+                        });
+                    }
+                }
+    
+                // Só adiciona a categoria se houver itens após a filtragem
+                if (itensContainer.children.length > 0) {
+                    categoriaContainer.appendChild(itensContainer);
+                    dadosContainer.appendChild(categoriaContainer);
+    
+                    categoriaHeader.addEventListener('click', () => {
+                        const isExpanded = itensContainer.style.display === 'block';
+                        itensContainer.style.display = isExpanded ? 'none' : 'block';
+                        categoriaHeader.querySelector('.expand-icon').classList.toggle('expanded');
+                    });
+                }
+            }
+    
+            adicionarEventosCarrinho();
+        }
+    
+
+        // Função para atualizar os filtros dinamicamente
+        function atualizarFiltros(categorias) {
+            const filtrosContainer = document.querySelector('.filtros-container');
+            filtrosContainer.innerHTML = ''; // Limpa os filtros existentes
+
+            // Adiciona o filtro "Todos"
+            const todosBtn = document.createElement('button');
+            todosBtn.className = 'filtro-btn active';
+            todosBtn.dataset.categoria = 'todos';
+            todosBtn.textContent = 'Todos';
+            filtrosContainer.appendChild(todosBtn);
+
+            // Adiciona um filtro para cada categoria encontrada
+            categorias.forEach(categoria => {
+                const btn = document.createElement('button');
+                btn.className = 'filtro-btn';
+                btn.dataset.categoria = categoria;
+                btn.textContent = categoria;
+                filtrosContainer.appendChild(btn);
+            });
+
+            // Reconfigura os eventos dos filtros
+            configurarFiltros();
+        }
+
+    
+        // Configura a pesquisa
+        function configurarPesquisa() {
+            pesquisaInput.addEventListener('input', () => {
+                const termoPesquisa = pesquisaInput.value.trim();
+                const categoriaAtiva = document.querySelector('.filtro-btn.active').dataset.categoria;
+                exibirDados(categoriaAtiva === 'todos' ? 'todos' : categoriaAtiva, termoPesquisa);
+            });
+        }
+    
+        // Função para adicionar eventos aos botões de carrinho
+        function adicionarEventosCarrinho() {
+            document.querySelectorAll('.carrinho-icon').forEach(button => {
+                button.addEventListener('click', (e) => {
+                    const subitemDiv = e.target.closest('.subitem');
+                    const quantidadeInput = subitemDiv.querySelector('.quantidade-input');
+                    const quantidade = parseInt(quantidadeInput.value) || 0;
+                    const preco = parseFloat(quantidadeInput.dataset.preco) || 0;
+    
+                    if (quantidade <= 0) {
+                        alert('Selecione uma quantidade maior que zero.');
+                        return;
+                    }
+    
+                    const subitemNome = subitemDiv.querySelector('.subitem-nome').textContent;
+                    const total = preco * quantidade;
+    
+                    carrinhoItens.push({
+                        subitem: subitemNome,
+                        quantidade,
+                        preco,
+                        total
+                    });
+    
+                    valorGasto += total;
+                    atualizarValores();
+                    atualizarCarrinho();
+                });
+            });
+        }
+    
+        // Função para atualizar o carrinho
+        function atualizarCarrinho() {
+            const carrinhoLista = document.getElementById('carrinho-lista');
+            carrinhoLista.innerHTML = '';
+    
+            if (carrinhoItens.length === 0) {
+                carrinhoLista.innerHTML = '<p style="text-align: center; color: #666;">Nenhum item adicionado ao carrinho</p>';
+            } else {
+                carrinhoItens.forEach((item, index) => {
+                    const carrinhoItem = document.createElement('div');
+                    carrinhoItem.classList.add('carrinho-item');
+                    carrinhoItem.innerHTML = `
+                        <div class="carrinho-item-info">
+                            <div>${item.subitem}</div>
+                            <div class="carrinho-item-detalhes">
+                                Quantidade: ${item.quantidade} | Total: ${formatarValor(item.total)}
+                            </div>
+                        </div>
+                        <button class="remover-icon" data-index="${index}" title="Remover do carrinho">🗑️</button>
+                    `;
+                    carrinhoLista.appendChild(carrinhoItem);
+                });
+    
+                document.querySelectorAll('.remover-icon').forEach(button => {
+                    button.addEventListener('click', (e) => {
+                        const index = parseInt(e.target.dataset.index);
+                        const itemRemovido = carrinhoItens[index];
+                        valorGasto -= itemRemovido.total;
+                        carrinhoItens.splice(index, 1);
+                        atualizarValores();
+                        atualizarCarrinho();
+                    });
+                });
+            }
+        }
+    
+        // Finalizar precificação com geração de protocolo
+        document.querySelector('.finalizar-btn').addEventListener('click', () => {
+            if (carrinhoItens.length === 0) {
+                alert('Adicione pelo menos um item ao carrinho antes de finalizar.');
+                return;
+            }
+    
+            if (confirm('Deseja finalizar a precificação? Esta ação não pode ser desfeita.')) {
+                const protocolo = `ESP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                alert(`Precificação finalizada com sucesso!\nNúmero do protocolo: ${protocolo}`);
+    
+                fetch('/salvar-precificacao', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        protocolo,
+                        itens: carrinhoItens,
+                        valorTotal: valorGasto,
+                        valorEmenda: valorTotalEmenda
+                    })
+                })
+                .then(response => response.json())
+                .then(data => console.log('Precificação salva:', data))
+                .catch(err => console.error('Erro ao salvar:', err));
+    
+                carrinhoItens = [];
+                valorGasto = 0;
+                atualizarValores();
+                atualizarCarrinho();
+            }
+        });
+    
+        // Carrega os dados na interface
+        function carregarDados() {
+            try {
+                processarDados(todosDados);
+                atualizarValores();
+                exibirDados();
+            } catch (error) {
+                console.error('Erro ao carregar dados:', error);
+                dadosContainer.innerHTML = `<p style="color: red; text-align: center;">Erro ao carregar os dados: ${error.message}</p>`;
+            }
+        }
+    
+        // Inicializa o sistema
+        document.addEventListener('DOMContentLoaded', buscarDados);
+    </script>
+</body>
+</html>

@@ -55,10 +55,10 @@
             white-space: nowrap;
         }
 
-        /* Container Principal */
-        .container {
+        /* Estilo comum para containers */
+        .container, .precificacao-container {
             background: #fff;
-            margin: 80px auto 30px;
+            margin: 80px auto 20px;
             padding: 30px;
             border-radius: 8px;
             box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
@@ -66,23 +66,41 @@
             text-align: center;
         }
 
-        .container h2 {
+        .container h2, .precificacao-container h2 {
             font-size: 1.5rem;
             font-weight: bold;
             color: #003087;
             margin-bottom: 20px;
         }
 
-        /* Formulário de Seleção */
-        .form-selection {
+        /* Estilo comum para formulários */
+        .form-selection, .precificacao-form {
             display: flex;
             flex-direction: column;
             gap: 15px;
         }
 
-        select {
+        /* Estilo para o campo de precificação com símbolo de moeda */
+        .input-container {
+            position: relative;
             width: 100%;
-            padding: 10px;
+        }
+
+        .input-container::before {
+            content: 'R$';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #333;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        /* Estilo comum para campos de entrada */
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px 12px 12px 40px; /* Ajuste para o símbolo R$ */
             border: 1px solid #ccc;
             border-radius: 4px;
             font-size: 1rem;
@@ -90,27 +108,28 @@
             transition: border-color 0.3s;
         }
 
-        select:focus {
+        select:focus, input[type="text"]:focus {
             border-color: #003087;
             outline: none;
         }
 
         /* Estilo para opções desativadas */
         select option:disabled {
-            color: #999; /* Cinza claro para indicar que está desativado */
+            color: #999;
         }
 
-        /* Botão */
+        /* Estilo comum para botões */
         button {
             background-color: #003087;
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 12px 20px;
             border-radius: 5px;
             cursor: pointer;
             font-size: 1rem;
             font-weight: bold;
             transition: background-color 0.3s;
+            width: 100%;
         }
 
         button:hover {
@@ -129,13 +148,23 @@
 
         /* Responsividade */
         @media (max-width: 600px) {
-            .container {
+            .container, .precificacao-container {
                 margin: 70px 10px 20px;
-                padding: 15px;
+                padding: 20px;
             }
 
             header h1 {
                 font-size: 1rem;
+            }
+
+            select, input[type="text"], button {
+                padding: 10px 10px 10px 35px; /* Ajuste para o símbolo R$ em telas menores */
+                font-size: 0.9rem;
+            }
+
+            .input-container::before {
+                left: 10px;
+                font-size: 0.9rem;
             }
         }
     </style>
@@ -168,9 +197,95 @@
         </form>
     </div>
 
+    <!-- Seção de Precificação -->
+    <div class="precificacao-container">
+        <h3><i class="fas fa-calculator"></i> Precificação de Emenda</h3>
+        <div class="precificacao-form">
+            <div class="input-container">
+                <input type="text" name="valorPrecificacao" id="valorPrecificacao" placeholder="Digite o valor em reais" required>
+            </div>
+            <button type="button" onclick="redirecionarParaPrecificacao()" class="action-btn">
+                <i class="fas fa-arrow-right"></i> Ir para Precificação
+            </button>
+        </div>
+    </div>
     <!-- Rodapé -->
     <footer>
         <p>© 2024 Ministério do Esporte</p>
     </footer>
+
+    <!-- Script para formatar o valor em reais e redirecionar -->
+    <script>
+        // Formata o campo enquanto o usuário digita
+        document.getElementById('valorPrecificacao').addEventListener('input', function(e) {
+            let valor = this.value.replace(/\D/g, '');
+            valor = (valor/100).toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL'
+            });
+            this.value = valor;
+        });
+        
+                // No escolherFormulario.ejs
+        function formatarValor(input) {
+            // Remove tudo que não é número ou vírgula
+            let valor = input.value.replace(/[^\d,]/g, '');
+            
+            // Garante apenas uma vírgula
+            const partes = valor.split(',');
+            if (partes.length > 2) {
+                valor = partes[0] + ',' + partes.slice(1).join('');
+            }
+            
+            input.value = valor;
+        }
+
+        const inputValor = document.getElementById('valorPrecificacao');
+
+        // Função para formatar o valor em reais
+        function formatarMoeda() {
+            let valor = inputValor.value.replace(/\D/g, '');
+            valor = (valor / 100).toFixed(2);
+            valor = parseFloat(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            inputValor.value = valor;
+        }
+
+        // Formatação enquanto digita
+        inputValor.addEventListener('input', () => {
+            inputValor.value = inputValor.value.replace(/[^0-9]/g, '');
+            formatarMoeda();
+        });
+
+        // Inicialização do campo
+        inputValor.addEventListener('focus', () => {
+            if (!inputValor.value) {
+                inputValor.value = '0,00';
+            }
+        });
+// Mantenha o script de redirecionamento atual
+function redirecionarParaPrecificacao() {
+            const input = document.getElementById('valorPrecificacao');
+            let valorNumerico = input.value.replace(/[^\d,]/g, '').replace(',', '.');
+            valorNumerico = parseFloat(valorNumerico);
+
+            if (isNaN(valorNumerico) || valorNumerico <= 0) {
+                alert('Digite um valor válido maior que zero para a emenda!');
+                input.focus();
+                return;
+            }
+
+            window.location.href = `/precificacao?valor=${valorNumerico}`;
+        }
+
+        function consultarProtocolo() {
+            const numeroProtocolo = document.getElementById('numeroProtocolo').value.trim();
+            if (!numeroProtocolo) {
+                alert('Digite um número de protocolo válido!');
+                return;
+            }
+            // Redireciona para uma página de consulta (você precisará implementar a rota no backend)
+            window.location.href = `/consulta-protocolo?protocolo=${encodeURIComponent(numeroProtocolo)}`;
+        }
+    </script>
 </body>
 </html>

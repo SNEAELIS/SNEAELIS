@@ -2,65 +2,126 @@ const express = require('express');
 const router = express.Router();
 const xlsx = require('xlsx');
 const path = require('path');
+const fs = require('fs');
+const ExcelJS = require('exceljs');
 const { cadastrarUsuario, verificarCodigo, loginUsuario } = require('../controllers/userController');
 const { verificarNivelAcesso } = require('../middleware/auth');
-const app = require('../app')
 
-router.get('/', (req, res) => {
-  res.redirect('/escolher-formulario'); // Redireciona para Formulario_Documentacoes
-});
+// Helper functions
+const loadSpreadsheetData = (filePath, sheetName) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Arquivo não encontrado: ${filePath}`);
+    }
 
-router.get('/escolher-formulario', (req, res) => {
-  res.render('escolherFormulario');
-});
+    const workbook = xlsx.readFile(filePath);
+    const worksheet = workbook.Sheets[sheetName];
 
-// Rota para processar a seleção do formulário
+    if (!worksheet) {
+      throw new Error(`A aba "${sheetName}" não foi encontrada.`);
+    }
+
+    return xlsx.utils.sheet_to_json(worksheet);
+  } catch (error) {
+    console.error('Erro ao carregar planilha:', error);
+    throw error;
+  }
+};
+
+const groupByMeta = (data) => {
+  return data.reduce((acc, curr) => {
+    const meta = curr.meta || 'Sem Meta';
+    if (!acc[meta]) {
+      acc[meta] = [];
+    }
+    acc[meta].push(curr);
+    return acc;
+  }, {});
+};
+
+// Rotas Públicas
+router.get('/', (req, res) => res.redirect('/escolher-formulario'));
+router.get('/escolher-formulario', (req, res) => res.render('escolherFormulario'));
+
 router.post('/selecionar-formulario', (req, res) => {
   const { tipoFormulario } = req.body;
+  res.redirect(tipoFormulario ? `/${tipoFormulario}` : '/escolher-formulario');
+});
 
-  // Redireciona para a página correspondente com base na seleção
-  if (tipoFormulario) {
-    res.redirect(`/${tipoFormulario}`);
-  } else {
-    res.redirect('/escolher-formulario'); // Volta para a página de seleção se nada for selecionado
+router.get('/precificacao', (req, res) => {
+  console.log('Acessando a rota /precificacao com query:', req.query);
+  try {
+      if (!req.query.valor) {
+          return res.redirect('/escolher-formulario?erro=Valor não informado');
+      }
+      const valorFormatado = String(req.query.valor)
+          .replace(/\./g, '')
+          .replace(',', '.');
+      const valor = parseFloat(valorFormatado);
+      if (isNaN(valor)) {
+          return res.redirect('/escolher-formulario?erro=Valor inválido. Use números (ex: 1000 ou 1000,50)');
+      }
+      if (valor <= 0) {
+          return res.redirect('/escolher-formulario?erro=O valor deve ser maior que zero');
+      }
+
+      // Novo caminho do arquivo
+      const filePath = path.resolve(__dirname, '../../data/Consolidado_Preços_Esporte_Amador.xlsx');
+      const rawData = loadSpreadsheetData(filePath, 'Sheet1'); // Substitua 'Sheet1' pelo nome real da aba, se diferente
+
+      // Mapeamento dos dados com as novas colunas
+      const data = rawData.map(row => ({
+          codigoCatmat: row['CÓDIGO/CATMAT/CATSER/CBO'] || '',
+          codigoSipea: row['CÓDIGO SIPEA'] || '',
+          item: row['ITEM'] || '',
+          subitem: row['SUBITEM'] || '',
+          unidade: row['UNIDADE'] || '',
+          valorUnitario: parseFloat(row['VALOR UNITÁRIO (R$)']) || 0,
+          uf: (row['UF'] || '').trim().toUpperCase(),
+          gnd: row['GND'] || '',
+          etapa: row['ETAPA ORÇAMENTÁRIA'] || '',
+          modalidade: row['MODALIDADE'] || '',
+          recursosHumanos: row['Recursos'] || ''
+      }));
+
+      // Agrupamento dos dados (exemplo: por 'etapa')
+      const groupedData = groupByEtapa(data); // Ajuste a função de agrupamento conforme necessário
+
+      res.render('precificacao', {
+          valorEmenda: valor,
+          valorFormatado: valor.toLocaleString('pt-BR', {
+              style: 'currency',
+              currency: 'BRL'
+          }),
+          groupedData: groupedData
+      });
+  } catch (error) {
+      console.error('Erro na rota /precificacao:', error);
+      res.status(500).redirect('/escolher-formulario?erro=Erro interno no servidor');
   }
 });
 
-// Rota para renderizar a página de cadastro
-router.get('/cadastro', (req, res) => {
-  res.render('cadastro'); // Renderiza a view cadastro.ejs
-});
-
-// Rota para processar o cadastro
-router.post('/cadastro', cadastrarUsuario);
-
-// Rota para renderizar a página de login
-router.get('/login', (req, res) => {
-  res.render('login', { error: null }); // Certifique-se de passar a variável `error` como null inicialmente
-});
-
-// Rota para processar o login
-router.post('/login', loginUsuario);
-
-// Rota para renderizar a página de verificação
-router.get('/verificar', (req, res) => {
-  res.render('verificar'); // Renderiza a página verificar.ejs
-});
-
-
-// Rota para verificar o código
-router.post('/verificar-codigo', verificarCodigo);
-
-// Rota para renderizar a página principal
+// Função de agrupamento por 'etapa' (exemplo)
+function groupByEtapa(data) {
+  return data.reduce((acc, item) => {
+      const key = item.etapa || 'Sem Etapa';
+      if (!acc[key]) {
+          acc[key] = [];
+      }
+      acc[key].push(item);
+      return acc;
+  }, {});
+}
+// Rotas Protegidas
 router.get('/paginaprincipal', verificarNivelAcesso(1), (req, res) => {
-  const user = req.session.user; // Obtém o usuário da sessão
-  if (!user) {
-    return res.redirect('/login'); // Redireciona para login se o usuário não estiver na sessão
-  }
-  res.render('paginaprincipal', { user }); // Envia o usuário para a view
+  const user = req.session.user;
+  res.render('paginaprincipal', { user });
 });
 
-// Rotas protegidas por níveis de acesso
+router.get('/pre-page2', verificarNivelAcesso(1), (req, res) => {
+  res.render('pre-page2', { user: req.session.user });
+});
+
 router.get('/formalizacao', verificarNivelAcesso(1), (req, res) => {
   res.render('formalizacao', { nivel_acesso: req.session.nivel_acesso });
 });
@@ -70,123 +131,38 @@ router.get('/acompanhamento', verificarNivelAcesso(2), (req, res) => {
 });
 
 router.get('/admin-dashboard', verificarNivelAcesso(3), (req, res) => {
-  console.log("Acessando /admin-dashboard");
   res.render('admin-dashboard', { nivel_acesso: req.session.nivel_acesso });
 });
 
-// Rota para renderizar a página pre-page2
-router.get('/pre-page2', (req, res) => {
-  const user = req.session.user; // Supondo que os dados do usuário estejam na sessão
-  if (user) {
-    res.render('pre-page2', { user });
-  } else {
-    res.redirect('/login'); // Redireciona para o login se o usuário não estiver autenticado
-  }
+router.get('/dashboard-pesquisa', verificarNivelAcesso(1), (req, res) => {
+  res.render('dashboard-pesquisa', { user: req.session.user });
 });
 
-router.get('/formulario-merito', (req, res) => {
-  res.render('Formulario-merito');
-});
+// Rotas de Formulários
+router.get('/formulario-merito', (req, res) => res.render('Formulario-merito'));
+router.get('/Formulario_Documentacoes', (req, res) => res.render('Formulario_Documentacoes'));
+router.get('/Ficha_Frequencia', (req, res) => res.render('Ficha_Frequencia'));
+router.get('/Formulario_convenio', (req, res) => res.render('Formulario_convenio'));
+router.get('/formulario-dirigente', (req, res) => res.render('formulario-dirigente'));
+router.get('/Ficha_RTMA', (req, res) => res.render('Ficha_RTMA'));
+router.get('/Formulario', (req, res) => res.render('Formulario'));
 
-router.get('/Formulario_Documentacoes', (req, res) =>{
-  res.render('Formulario_Documentacoes');
-});
-
-router.get('/Ficha_Frequencia', (req, res) => {
-  res.render('Ficha_Frequencia'); // Renderiza o template EJS com dados do usuário
-});
-
-router.get('/Formulario_convenio', (req, res) => {
-  res.render('Formulario_convenio');
-});
-
-router.get('/formulario-dirigente', (req, res) => {
-  res.render('formulario-dirigente'); // Certifique-se de que o arquivo 'formulario-dirigente.ejs' existe em 'views'
-});
-
-router.get('/simulacao', (req, res) => {
-  res.render('simulacao'); // Renderiza a página simulacao.ejs
-});
+// Rotas de Simulação
+router.get('/simulacao', (req, res) => res.render('simulacao'));
 
 router.post('/simulacao/resultado', (req, res) => {
   const { tipo, quantidade, custo } = req.body;
   const total = parseFloat(quantidade) * parseFloat(custo);
-
   res.render('resultado', { tipo, quantidade, custo, total });
 });
 
-router.get('/dashboard-pesquisa', (req, res) => {
-  const user = req.session.user; // Verifica o usuário na sessão
-  if (!user) {
-    return res.redirect('/login'); // Redireciona para login se não estiver autenticado
-  }
-  res.render('dashboard-pesquisa', { user }); // Renderiza a página com os dados do usuário
-});
-
-// Rota para renderizar a página do formulário Ficha RTMA
-router.get('/Ficha_RTMA', (req, res) => {
-  res.render('Ficha_RTMA'); // Certifique-se de que o arquivo EJS existe
-});
-
-router.get('/Formulario', (req, res) => {
-  res.render('Formulario'); // Certifique-se que o arquivo .ejs está em 'views'
-});
-
-
-router.post('/Ficha_RTMA', async (req, res) => {
-  const formData = req.body;
-
-  // Carregar a planilha original
-  const workbook = new ExcelJS.Workbook();
-  const filePath = path.join(__dirname, 'templates', 'Ficha_Técnica_Template.xlsx');
-  
-  try {
-    await workbook.xlsx.readFile(filePath);
-    const worksheet = workbook.getWorksheet('Planilha1');
-
-    // Preencher os campos na planilha
-    worksheet.getCell('A3').value = formData.osc; // OSC
-    worksheet.getCell('A4').value = formData.processo; // Processo
-    worksheet.getCell('A5').value = formData.termo_fomento; // Termo de Fomento
-    worksheet.getCell('G5').value = formData.termo_sei; // Termo (SEI)
-    worksheet.getCell('H5').value = formData.dou_sei; // DOU (SEI)
-
-    worksheet.getCell('A8').value = formData.data_monitoramento; // Data do Monitoramento
-    worksheet.getCell('B8').value = formData.responsavel_monitoramento; // Responsável
-    worksheet.getCell('C8').value = formData.local_monitoramento; // Local
-
-    worksheet.getCell('A12').value = formData.atividades; // Atividades Realizadas
-    worksheet.getCell('A14').value = formData.resultados; // Resultados Obtidos
-
-    worksheet.getCell('A18').value = formData.dificuldades; // Dificuldades
-    worksheet.getCell('A20').value = formData.observacoes; // Observações
-
-    // Salvar e enviar o arquivo para download
-    const outputPath = path.join(__dirname, 'output', 'Ficha_RTMA_Preenchida.xlsx');
-    await workbook.xlsx.writeFile(outputPath);
-
-    res.download(outputPath, 'Ficha_RTMA_Preenchida.xlsx', () => {
-      fs.unlinkSync(outputPath); // Remove o arquivo após download
-    });
-  } catch (error) {
-    console.error(error);
-    res.status(500).send('Erro ao gerar a planilha.');
-  }
-});
-
+// API Endpoints
 router.get('/api/pesquisa-preco', (req, res) => {
   try {
     const filePath = path.resolve(__dirname, '../../data/Planilha_Custo.xlsx');
-    const workbook = xlsx.readFile(filePath);
-    const sheetName = 'Resultado (3)';
-    const worksheet = workbook.Sheets[sheetName];
+    const rawData = loadSpreadsheetData(filePath, 'Resultado (3)');
 
-    if (!worksheet) {
-      throw new Error(`A aba "${sheetName}" não foi encontrada.`);
-    }
-
-    // Conversão dos dados para JSON
-    const data = xlsx.utils.sheet_to_json(worksheet).map(row => ({
+    const data = rawData.map(row => ({
       META: row['META'] || '',
       ETAPA: row['ETAPA'] || '',
       CLASSIFICACAO: row['CLASSIFICAÇÃO'] || '',
@@ -199,13 +175,61 @@ router.get('/api/pesquisa-preco', (req, res) => {
       DATA_BASE: row['DATA BASE'] || ''
     }));
 
-    console.log("Dados enviados ao front-end:", data.slice(0, 5)); // Log dos primeiros 5 registros para validação
     res.json(data);
   } catch (error) {
-    console.error('Erro ao processar a planilha:', error.message);
+    console.error('Erro na API de pesquisa de preço:', error);
     res.status(500).json({ error: error.message });
   }
 });
 
+// Rota para processar Ficha RTMA
+router.post('/Ficha_RTMA', async (req, res) => {
+  try {
+    const formData = req.body;
+    const workbook = new ExcelJS.Workbook();
+    const filePath = path.join(__dirname, 'templates', 'Ficha_Técnica_Template.xlsx');
 
-module.exports = router; // Certifique-se de exportar o roteador
+    await workbook.xlsx.readFile(filePath);
+    const worksheet = workbook.getWorksheet('Planilha1');
+
+    // Preenche os dados no template
+    const mappings = {
+      'A3': formData.osc,
+      'A4': formData.processo,
+      'A5': formData.termo_fomento,
+      'G5': formData.termo_sei,
+      'H5': formData.dou_sei,
+      'A8': formData.data_monitoramento,
+      'B8': formData.responsavel_monitoramento,
+      'C8': formData.local_monitoramento,
+      'A12': formData.atividades,
+      'A14': formData.resultados,
+      'A18': formData.dificuldades,
+      'A20': formData.observacoes
+    };
+
+    Object.entries(mappings).forEach(([cell, value]) => {
+      worksheet.getCell(cell).value = value;
+    });
+
+    const outputDir = path.join(__dirname, 'output');
+    if (!fs.existsSync(outputDir)) {
+      fs.mkdirSync(outputDir, { recursive: true });
+    }
+
+    const outputPath = path.join(outputDir, 'Ficha_RTMA_Preenchida.xlsx');
+    await workbook.xlsx.writeFile(outputPath);
+
+    res.download(outputPath, 'Ficha_RTMA_Preenchida.xlsx', (err) => {
+      if (err) console.error('Erro ao enviar arquivo:', err);
+      fs.unlinkSync(outputPath);
+    });
+  } catch (error) {
+    console.error('Erro ao processar Ficha RTMA:', error);
+    res.status(500).render('error', { 
+      message: 'Erro ao gerar a Ficha RTMA. Por favor, tente novamente.' 
+    });
+  }
+});
+
+module.exports = router;
