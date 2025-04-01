@@ -49,7 +49,7 @@
         .main-container { 
             margin: 80px auto 20px; 
             padding: 0 20px; 
-            max-width: 1200px; 
+            max-width: 1400px; 
         }
         
         .recursos-container, .carrinho-container { 
@@ -159,14 +159,14 @@
         
         .subitem-detalhes {
             display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr 1fr auto auto;
+            grid-template-columns: 2fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr 1fr auto auto;
             gap: 10px;
             align-items: center;
         }
         
         @media (max-width: 1200px) {
             .subitem-detalhes {
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: 1fr 1fr 1fr;
             }
         }
         
@@ -322,6 +322,59 @@
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
+
+        /* Modal de geração de documento */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            width: 90%;
+            max-width: 500px;
+            text-align: center;
+        }
+        
+        .modal-buttons {
+            margin-top: 20px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        
+        .modal-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .modal-btn-pdf {
+            background-color: #d33;
+            color: white;
+        }
+        
+        .modal-btn-word {
+            background-color: #2b579a;
+            color: white;
+        }
+        
+        .modal-btn-cancel {
+            background-color: #6c757d;
+            color: white;
+        }
     </style>
 </head>
 <body>
@@ -346,11 +399,6 @@
             <!-- Filtros por categoria -->
             <div class="filtros-container">
                 <button class="filtro-btn active" data-categoria="todos">Todos</button>
-                <button class="filtro-btn" data-categoria="Recursos Humanos">Recursos Humanos</button>
-                <button class="filtro-btn" data-categoria="Alimentação e Hidratação">Alimentação</button>
-                <button class="filtro-btn" data-categoria="Locações e Serviços">Locações</button>
-                <button class="filtro-btn" data-categoria="Material Esportivo">Material Esportivo</button>
-                <button class="filtro-btn" data-categoria="Outros">Outros</button>
             </div>
 
             <!-- Campo de pesquisa -->
@@ -378,7 +426,20 @@
             <div class="carrinho-total">
                 <p>Total no Carrinho: <span id="total-carrinho">R$ 0,00</span></p>
                 <button class="finalizar-btn">Finalizar Precificação</button>
-                <button class="gerar-doc-btn">Gerar Documento</button>
+                <button class="gerar-doc-btn" id="gerar-doc-btn">Gerar Documento</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para escolher o tipo de documento -->
+    <div class="modal" id="document-modal">
+        <div class="modal-content">
+            <h3>Escolha o formato do documento</h3>
+            <p>Selecione em qual formato você deseja gerar o relatório:</p>
+            <div class="modal-buttons">
+                <button class="modal-btn modal-btn-pdf" id="gerar-pdf-btn">Gerar PDF</button>
+                <button class="modal-btn modal-btn-word" id="gerar-word-btn">Gerar Word</button>
+                <button class="modal-btn modal-btn-cancel" id="cancelar-doc-btn">Cancelar</button>
             </div>
         </div>
     </div>
@@ -386,20 +447,173 @@
     <footer>
         <p>© 2024 Ministério do Esporte - Todos os direitos reservados</p>
     </footer>
+
+    <!-- Scripts -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/docx/7.8.2/docx.min.js"></script>
+    
     <script>
+                // Configuração global das bibliotecas
+                const { jsPDF } = window.jspdf;
+        
+        // Verifique se as bibliotecas foram carregadas
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            console.error('jsPDF não foi carregado corretamente');
+            // Você pode mostrar uma mensagem de erro para o usuário aqui
+        }
+        
+        if (!window.docx) {
+            console.error('docx não foi carregado corretamente');
+            // Você pode mostrar uma mensagem de erro para o usuário aqui
+        };
         // Variáveis globais
         let valorGasto = 0;
         let carrinhoItens = [];
         let todosDados = [];
         let valorTotalEmenda = 0;
-    
+
         // Elementos do DOM
         const loadingElement = document.getElementById('loading');
         const dadosContainer = document.getElementById('dados-container');
-        const filtroBtns = document.querySelectorAll('.filtro-btn');
         const pesquisaInput = document.querySelector('.pesquisa-input');
-    
-        // Modifique a função buscarDados para extrair as categorias dinamicamente
+        const gerarDocBtn = document.getElementById('gerar-doc-btn');
+        const documentModal = document.getElementById('document-modal');
+        const gerarPdfBtn = document.getElementById('gerar-pdf-btn');
+        const gerarWordBtn = document.getElementById('gerar-word-btn');
+        const cancelarDocBtn = document.getElementById('cancelar-doc-btn');
+
+        // Dados fictícios para teste (caso a API não esteja disponível)
+        const dadosFicticios = [
+            {
+                Recursos: "ARBITRAGEM",
+                ITEM: "ÁRBITRO - BASQUETEBOL",
+                SUBITEM: "ÁRBITRO - BASQUETEBOL 3X3 (EQUIPE 5 ÁRBITROS)",
+                CODIGO: "18449",
+                CODIGO_SIPEA: "1.2.1.1.5.24",
+                UNIDADE: "PARTIDA",
+                VALOR_UNITARIO: 1500.00,
+                UF: "SC",
+                GND: "GND3",
+                ETAPA: "N/A",
+                MODALIDADE: "BASQUETEBOL",
+                PASTA: "OK"
+            },
+            {
+                Recursos: "ARBITRAGEM",
+                ITEM: "ÁRBITRO - FUTEBOL DE CAMPO",
+                SUBITEM: "ÁRBITRO - FUTEBOL DE CAMPO (EQUIPE 4 ÁRBITROS)",
+                CODIGO: "18449",
+                CODIGO_SIPEA: "1.4.1.1.3.22",
+                UNIDADE: "PARTIDA",
+                VALOR_UNITARIO: 1200.00,
+                UF: "RO",
+                GND: "GND3",
+                ETAPA: "N/A",
+                MODALIDADE: "FUTEBOL DE CAMPO",
+                PASTA: "OK"
+            },
+            {
+                Recursos: "ARBITRAGEM",
+                ITEM: "ÁRBITRO - XADREZ",
+                SUBITEM: "ÁRBITRO - XADREZ (EQUIPE 3 ÁRBITROS)",
+                CODIGO: "18449",
+                CODIGO_SIPEA: "1.11.1.1.3.22",
+                UNIDADE: "PARTIDA",
+                VALOR_UNITARIO: 900.00,
+                UF: "RO",
+                GND: "GND3",
+                ETAPA: "N/A",
+                MODALIDADE: "XADREZ",
+                PASTA: "OK"
+            },
+            {
+                Recursos: "COORDENADOR",
+                ITEM: "COORDENADOR DE EVENTO",
+                SUBITEM: "COORDENADOR DE EVENTO ESPORTIVO",
+                CODIGO: "18500",
+                CODIGO_SIPEA: "1.1.1.2.1.10",
+                UNIDADE: "SERVIÇO",
+                VALOR_UNITARIO: 3000.00,
+                UF: "SP",
+                GND: "GND2",
+                ETAPA: "N/A",
+                MODALIDADE: "N/A",
+                PASTA: "OK"
+            },
+            {
+                Recursos: "CONTABILIDADE",
+                ITEM: "SERVIÇO CONTÁBIL",
+                SUBITEM: "SERVIÇO DE CONTABILIDADE PARA EVENTO",
+                CODIGO: "19000",
+                CODIGO_SIPEA: "1.1.1.3.1.15",
+                UNIDADE: "SERVIÇO",
+                VALOR_UNITARIO: 5000.00,
+                UF: "RJ",
+                GND: "GND1",
+                ETAPA: "N/A",
+                MODALIDADE: "N/A",
+                PASTA: "OK"
+            },
+            {
+                Recursos: "ASSESSORIA",
+                ITEM: "ASSESSORIA DE COMUNICAÇÃO",
+                SUBITEM: "ASSESSORIA DE COMUNICAÇÃO PARA EVENTO",
+                CODIGO: "19100",
+                CODIGO_SIPEA: "1.1.1.4.1.20",
+                UNIDADE: "SERVIÇO",
+                VALOR_UNITARIO: 4000.00,
+                UF: "MG",
+                GND: "GND4",
+                ETAPA: "N/A",
+                MODALIDADE: "N/A",
+                PASTA: "OK"
+            },
+            {
+                Recursos: "AUXILIAR",
+                ITEM: "AUXILIAR DE CAMPO",
+                SUBITEM: "AUXILIAR DE CAMPO PARA EVENTO",
+                CODIGO: "19200",
+                CODIGO_SIPEA: "1.1.1.5.1.25",
+                UNIDADE: "SERVIÇO",
+                VALOR_UNITARIO: 800.00,
+                UF: "PR",
+                GND: "GND3",
+                ETAPA: "N/A",
+                MODALIDADE: "N/A",
+                PASTA: "OK"
+            },
+            {
+                Recursos: "MARKETING",
+                ITEM: "SERVIÇO DE MARKETING",
+                SUBITEM: "SERVIÇO DE MARKETING DIGITAL",
+                CODIGO: "19300",
+                CODIGO_SIPEA: "1.1.1.6.1.30",
+                UNIDADE: "SERVIÇO",
+                VALOR_UNITARIO: 6000.00,
+                UF: "RS",
+                GND: "GND2",
+                ETAPA: "N/A",
+                MODALIDADE: "N/A",
+                PASTA: "OK"
+            },
+            {
+                Recursos: "DESIGN GRÁFICO",
+                ITEM: "DESIGN GRÁFICO",
+                SUBITEM: "CRIAÇÃO DE ARTE PARA EVENTO",
+                CODIGO: "19400",
+                CODIGO_SIPEA: "1.1.1.7.1.35",
+                UNIDADE: "SERVIÇO",
+                VALOR_UNITARIO: 2000.00,
+                UF: "BA",
+                GND: "GND1",
+                ETAPA: "N/A",
+                MODALIDADE: "N/A",
+                PASTA: "OK"
+            }
+        ];
+
+        // Buscar dados da API
         async function buscarDados() {
             loadingElement.style.display = 'block';
             try {
@@ -413,13 +627,16 @@
                 todosDados = result.dados || [];
                 valorTotalEmenda = result.valorEmenda || 0;
 
-                // Extrai categorias únicas dos dados
-                const categoriasUnicas = [...new Set(todosDados.map(item => item.Recursos))].filter(Boolean);
-                console.log('Categorias encontradas:', categoriasUnicas);
+                // Se não houver dados da API, usar dados fictícios para teste
+                if (todosDados.length === 0) {
+                    console.warn('Nenhum dado retornado pela API. Usando dados fictícios.');
+                    todosDados = dadosFicticios;
+                    valorTotalEmenda = 200000;
+                }
 
-                // Atualiza os filtros dinamicamente
+                // Extrai categorias únicas dos dados
+                const categoriasUnicas = [...new Set(todosDados.map(item => item.Recursos))].filter(categoria => categoria && categoria !== 'Sem categoria');
                 atualizarFiltros(categoriasUnicas);
-                
                 carregarDados();
                 configurarPesquisa();
             } catch (error) {
@@ -430,7 +647,6 @@
             }
         }
 
-    
         // Formata valores para exibição
         function formatarValor(valor) {
             return valor.toLocaleString('pt-BR', {
@@ -439,50 +655,39 @@
                 minimumFractionDigits: 2
             });
         }
-    
+
         // Atualiza os valores exibidos
         function atualizarValores() {
-            console.log('Atualizando valores - valorTotalEmenda:', valorTotalEmenda, 'valorGasto:', valorGasto);
             document.getElementById('valor-total').textContent = formatarValor(valorTotalEmenda);
             document.getElementById('valor-gasto').textContent = formatarValor(valorGasto);
             document.getElementById('valor-restante').textContent = formatarValor(valorTotalEmenda - valorGasto);
             document.getElementById('total-carrinho').textContent = formatarValor(valorGasto);
         }
-    
-        // Processa os dados brutos da planilha
-        function processarDados(dadosBrutos) {
-            todosDados = dadosBrutos;
+
+        // Agrupa os dados por categoria e item
+        function agruparDados(dados) {
+            const agrupado = {};
+            dados.forEach(item => {
+                const categoria = item.Recursos || 'Sem categoria';
+                if (!agrupado[categoria]) agrupado[categoria] = {};
+                if (!agrupado[categoria][item.ITEM]) agrupado[categoria][item.ITEM] = [];
+                agrupado[categoria][item.ITEM].push(item);
+            });
+            return agrupado;
         }
-    
-            // Modifique a função agruparDados para agrupar corretamente
-            function agruparDados(dados) {
-                const agrupado = {};
-                dados.forEach(item => {
-                    const categoria = item.Recursos || 'Outros';
-                    if (!agrupado[categoria]) agrupado[categoria] = {};
-                    if (!agrupado[categoria][item.item]) agrupado[categoria][item.item] = [];
-                    agrupado[categoria][item.item].push(item);
-                });
-                return agrupado;
-            }
-                
-        // Função para exibir os dados
+
+        // Exibir os dados
         function exibirDados(categoriaFiltro = 'todos', termoPesquisa = '') {
             const dadosAgrupados = agruparDados(todosDados);
             dadosContainer.innerHTML = '';
-    
-            // Log para verificar as categorias que serão exibidas
-            console.log('Categorias a serem exibidas:', Object.keys(dadosAgrupados));
-    
+
             for (const [categoria, itens] of Object.entries(dadosAgrupados)) {
-                // Aplicar filtro de categoria
-                if (categoriaFiltro !== 'todos' && categoria !== categoriaFiltro) {
-                    continue;
-                }
-                
+                if (categoriaFiltro !== 'todos' && categoria !== categoriaFiltro) continue;
+                if (categoria === 'Sem categoria') continue; // Ignora a categoria "Sem categoria"
+
                 const categoriaContainer = document.createElement('div');
                 categoriaContainer.classList.add('categoria-container');
-    
+
                 const categoriaHeader = document.createElement('div');
                 categoriaHeader.classList.add('categoria-header');
                 categoriaHeader.innerHTML = `
@@ -490,11 +695,11 @@
                     <span class="expand-icon">▼</span>
                 `;
                 categoriaContainer.appendChild(categoriaHeader);
-    
+
                 const itensContainer = document.createElement('div');
                 itensContainer.classList.add('item-container');
                 itensContainer.style.display = 'none';
-    
+
                 for (const [item, subitens] of Object.entries(itens)) {
                     const itemContainer = document.createElement('div');
                     const itemHeader = document.createElement('div');
@@ -504,50 +709,56 @@
                         <span class="expand-icon">▼</span>
                     `;
                     itemContainer.appendChild(itemHeader);
-    
+
                     const subitemContainer = document.createElement('div');
                     subitemContainer.classList.add('subitem-container');
                     subitemContainer.style.display = 'none';
-    
+
                     subitens.forEach(subitem => {
-                        // Aplicar filtro de pesquisa
-                        const textoCompleto = `${subitem.subitem} ${subitem.codigo} ${subitem.codigoSipea}`.toLowerCase();
-                        if (termoPesquisa && !textoCompleto.includes(termoPesquisa.toLowerCase())) {
-                            return;
-                        }
-                        
+                        const textoCompleto = `${subitem.SUBITEM} ${subitem.CODIGO} ${subitem.CODIGO_SIPEA}`.toLowerCase();
+                        if (termoPesquisa && !textoCompleto.includes(termoPesquisa.toLowerCase())) return;
+
                         const subitemDiv = document.createElement('div');
                         subitemDiv.classList.add('subitem');
                         subitemDiv.innerHTML = `
                             <div class="subitem-detalhes">
-                                <div class="subitem-nome">${subitem.subitem}</div>
+                                <div class="subitem-nome">${subitem.SUBITEM}</div>
                                 <div class="subitem-info">
-                                    <span>Código: ${subitem.codigo}</span>
-                                    <span>Código SIPEA: ${subitem.codigoSipea}</span>
-                                    <span>UF: ${subitem.uf}</span>
+                                    <span>Código: ${subitem.CODIGO}</span>
                                 </div>
                                 <div class="subitem-info">
-                                    <span>Unidade: ${subitem.unidade}</span>
-                                    <span>Modalidade: ${subitem.modalidade}</span>
-                                    <span>GND: ${subitem.gnd}</span>
+                                    <span>Código SIPEA: ${subitem.CODIGO_SIPEA}</span>
                                 </div>
                                 <div class="subitem-info">
-                                    <span>Etapa: ${subitem.etapa}</span>
-                                    <span>Pasta: ${subitem.pasta}</span>
+                                    <span>Unidade: ${subitem.UNIDADE}</span>
                                 </div>
-                                <div class="subitem-preco">${formatarValor(subitem.valorUnitario)}</div>
-                                <input type="number" min="0" value="0" class="quantidade-input" data-preco="${subitem.valorUnitario}">
+                                <div class="subitem-info">
+                                    <span>UF: ${subitem.UF}</span>
+                                </div>
+                                <div class="subitem-info">
+                                    <span>GND: ${subitem.GND}</span>
+                                </div>
+                                <div class="subitem-info">
+                                    <span>Etapa: ${subitem.ETAPA}</span>
+                                </div>
+                                <div class="subitem-info">
+                                    <span>Modalidade: ${subitem.MODALIDADE}</span>
+                                </div>
+                                <div class="subitem-info">
+                                    <span>Pasta: ${subitem.PASTA}</span>
+                                </div>
+                                <div class="subitem-preco">${formatarValor(subitem.VALOR_UNITARIO)}</div>
+                                <input type="number" min="0" value="0" class="quantidade-input" data-preco="${subitem.VALOR_UNITARIO}">
                                 <button class="carrinho-icon" title="Adicionar ao carrinho">🛒</button>
                             </div>
                         `;
                         subitemContainer.appendChild(subitemDiv);
                     });
-    
-                    // Só adiciona o item se houver subitens após a filtragem
+
                     if (subitemContainer.children.length > 0) {
                         itemContainer.appendChild(subitemContainer);
                         itensContainer.appendChild(itemContainer);
-    
+
                         itemHeader.addEventListener('click', () => {
                             const isExpanded = subitemContainer.style.display === 'block';
                             subitemContainer.style.display = isExpanded ? 'none' : 'block';
@@ -555,12 +766,11 @@
                         });
                     }
                 }
-    
-                // Só adiciona a categoria se houver itens após a filtragem
+
                 if (itensContainer.children.length > 0) {
                     categoriaContainer.appendChild(itensContainer);
                     dadosContainer.appendChild(categoriaContainer);
-    
+
                     categoriaHeader.addEventListener('click', () => {
                         const isExpanded = itensContainer.style.display === 'block';
                         itensContainer.style.display = isExpanded ? 'none' : 'block';
@@ -568,24 +778,21 @@
                     });
                 }
             }
-    
+
             adicionarEventosCarrinho();
         }
-    
 
-        // Função para atualizar os filtros dinamicamente
+        // Atualizar os filtros dinamicamente
         function atualizarFiltros(categorias) {
             const filtrosContainer = document.querySelector('.filtros-container');
-            filtrosContainer.innerHTML = ''; // Limpa os filtros existentes
+            filtrosContainer.innerHTML = '';
 
-            // Adiciona o filtro "Todos"
             const todosBtn = document.createElement('button');
             todosBtn.className = 'filtro-btn active';
             todosBtn.dataset.categoria = 'todos';
             todosBtn.textContent = 'Todos';
             filtrosContainer.appendChild(todosBtn);
 
-            // Adiciona um filtro para cada categoria encontrada
             categorias.forEach(categoria => {
                 const btn = document.createElement('button');
                 btn.className = 'filtro-btn';
@@ -594,12 +801,23 @@
                 filtrosContainer.appendChild(btn);
             });
 
-            // Reconfigura os eventos dos filtros
             configurarFiltros();
         }
 
-    
-        // Configura a pesquisa
+        // Configurar eventos dos filtros
+        function configurarFiltros() {
+            const filtroBtns = document.querySelectorAll('.filtro-btn');
+            filtroBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    filtroBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    const categoria = btn.dataset.categoria;
+                    exibirDados(categoria === 'todos' ? 'todos' : categoria, pesquisaInput.value.trim());
+                });
+            });
+        }
+
+        // Configurar a pesquisa
         function configurarPesquisa() {
             pesquisaInput.addEventListener('input', () => {
                 const termoPesquisa = pesquisaInput.value.trim();
@@ -607,8 +825,8 @@
                 exibirDados(categoriaAtiva === 'todos' ? 'todos' : categoriaAtiva, termoPesquisa);
             });
         }
-    
-        // Função para adicionar eventos aos botões de carrinho
+
+        // Adicionar eventos aos botões de carrinho
         function adicionarEventosCarrinho() {
             document.querySelectorAll('.carrinho-icon').forEach(button => {
                 button.addEventListener('click', (e) => {
@@ -616,34 +834,35 @@
                     const quantidadeInput = subitemDiv.querySelector('.quantidade-input');
                     const quantidade = parseInt(quantidadeInput.value) || 0;
                     const preco = parseFloat(quantidadeInput.dataset.preco) || 0;
-    
+
                     if (quantidade <= 0) {
                         alert('Selecione uma quantidade maior que zero.');
                         return;
                     }
-    
+
                     const subitemNome = subitemDiv.querySelector('.subitem-nome').textContent;
+                    const codigo = subitemDiv.querySelector('.subitem-info span').textContent.replace('Código: ', '');
                     const total = preco * quantidade;
-    
-                    carrinhoItens.push({
-                        subitem: subitemNome,
-                        quantidade,
-                        preco,
-                        total
+
+                    carrinhoItens.push({ 
+                        subitem: subitemNome, 
+                        codigo,
+                        quantidade, 
+                        preco, 
+                        total 
                     });
-    
                     valorGasto += total;
                     atualizarValores();
                     atualizarCarrinho();
                 });
             });
         }
-    
-        // Função para atualizar o carrinho
+
+        // Atualizar o carrinho
         function atualizarCarrinho() {
             const carrinhoLista = document.getElementById('carrinho-lista');
             carrinhoLista.innerHTML = '';
-    
+
             if (carrinhoItens.length === 0) {
                 carrinhoLista.innerHTML = '<p style="text-align: center; color: #666;">Nenhum item adicionado ao carrinho</p>';
             } else {
@@ -654,14 +873,14 @@
                         <div class="carrinho-item-info">
                             <div>${item.subitem}</div>
                             <div class="carrinho-item-detalhes">
-                                Quantidade: ${item.quantidade} | Total: ${formatarValor(item.total)}
+                                Código: ${item.codigo} | Quantidade: ${item.quantidade} | Total: ${formatarValor(item.total)}
                             </div>
                         </div>
                         <button class="remover-icon" data-index="${index}" title="Remover do carrinho">🗑️</button>
                     `;
                     carrinhoLista.appendChild(carrinhoItem);
                 });
-    
+
                 document.querySelectorAll('.remover-icon').forEach(button => {
                     button.addEventListener('click', (e) => {
                         const index = parseInt(e.target.dataset.index);
@@ -674,18 +893,18 @@
                 });
             }
         }
-    
-        // Finalizar precificação com geração de protocolo
+
+        // Finalizar precificação
         document.querySelector('.finalizar-btn').addEventListener('click', () => {
             if (carrinhoItens.length === 0) {
                 alert('Adicione pelo menos um item ao carrinho antes de finalizar.');
                 return;
             }
-    
+
             if (confirm('Deseja finalizar a precificação? Esta ação não pode ser desfeita.')) {
                 const protocolo = `ESP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
                 alert(`Precificação finalizada com sucesso!\nNúmero do protocolo: ${protocolo}`);
-    
+
                 fetch('/salvar-precificacao', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -699,27 +918,191 @@
                 .then(response => response.json())
                 .then(data => console.log('Precificação salva:', data))
                 .catch(err => console.error('Erro ao salvar:', err));
-    
+
                 carrinhoItens = [];
                 valorGasto = 0;
                 atualizarValores();
                 atualizarCarrinho();
             }
         });
-    
-        // Carrega os dados na interface
-        function carregarDados() {
-            try {
-                processarDados(todosDados);
-                atualizarValores();
-                exibirDados();
-            } catch (error) {
-                console.error('Erro ao carregar dados:', error);
-                dadosContainer.innerHTML = `<p style="color: red; text-align: center;">Erro ao carregar os dados: ${error.message}</p>`;
+
+        // Gerar documento PDF
+        function gerarPDF() {
+            if (carrinhoItens.length === 0) {
+                alert('Adicione itens ao carrinho antes de gerar o documento.');
+                return;
             }
+
+            const doc = new jsPDF();
+            
+            // Cabeçalho do documento
+            doc.setFontSize(16);
+            doc.setTextColor(0, 0, 128); // Azul escuro
+            doc.text('MINISTÉRIO DO ESPORTE', 105, 15, { align: 'center' });
+            doc.setFontSize(14);
+            doc.text('RELATÓRIO DE PRECIFICAÇÃO DE EMENDA', 105, 25, { align: 'center' });
+            
+            // Informações da emenda
+            doc.setFontSize(12);
+            doc.setTextColor(0, 0, 0);
+            doc.text(`Valor Total da Emenda: ${formatarValor(valorTotalEmenda)}`, 15, 40);
+            doc.text(`Valor Gasto: ${formatarValor(valorGasto)}`, 15, 50);
+            doc.text(`Valor Restante: ${formatarValor(valorTotalEmenda - valorGasto)}`, 15, 60);
+            
+            // Tabela de itens
+            doc.autoTable({
+                startY: 70,
+                head: [['Item', 'Código', 'Quantidade', 'Valor Unitário', 'Total']],
+                body: carrinhoItens.map(item => [
+                    item.subitem,
+                    item.codigo,
+                    item.quantidade,
+                    formatarValor(item.preco),
+                    formatarValor(item.total)
+                ]),
+                styles: { 
+                    fontSize: 10,
+                    cellPadding: 5,
+                    halign: 'center'
+                },
+                headStyles: {
+                    fillColor: [0, 51, 135], // Azul do Ministério do Esporte
+                    textColor: 255 // Branco
+                }
+            });
+            
+            // Rodapé
+            const date = new Date().toLocaleDateString('pt-BR');
+            doc.setFontSize(10);
+            doc.text(`Documento gerado em: ${date}`, 15, doc.lastAutoTable.finalY + 20);
+            
+            // Salva o PDF
+            doc.save(`Precificação_Emenda_${Date.now()}.pdf`);
         }
-    
-        // Inicializa o sistema
+
+        // Gerar documento Word (DOCX)
+        async function gerarWord() {
+            if (carrinhoItens.length === 0) {
+                alert('Adicione itens ao carrinho antes de gerar o documento.');
+                return;
+            }
+
+            const { Document, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType, HeadingLevel } = docx;
+
+            const doc = new Document({
+                sections: [{
+                    properties: {},
+                    children: [
+                        new Paragraph({
+                            text: "MINISTÉRIO DO ESPORTE",
+                            heading: HeadingLevel.HEADING_1,
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 200 }
+                        }),
+                        new Paragraph({
+                            text: "RELATÓRIO DE PRECIFICAÇÃO DE EMENDA",
+                            heading: HeadingLevel.HEADING_2,
+                            alignment: AlignmentType.CENTER,
+                            spacing: { after: 400 }
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: `Valor Total da Emenda: ${formatarValor(valorTotalEmenda)}`,
+                                    bold: true
+                                })
+                            ],
+                            spacing: { after: 100 }
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: `Valor Gasto: ${formatarValor(valorGasto)}`,
+                                    bold: true
+                                })
+                            ],
+                            spacing: { after: 100 }
+                        }),
+                        new Paragraph({
+                            children: [
+                                new TextRun({
+                                    text: `Valor Restante: ${formatarValor(valorTotalEmenda - valorGasto)}`,
+                                    bold: true
+                                })
+                            ],
+                            spacing: { after: 400 }
+                        }),
+                        new Table({
+                            width: { size: 100, type: WidthType.PERCENTAGE },
+                            rows: [
+                                new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph("Item")], width: { size: 40 } }),
+                                        new TableCell({ children: [new Paragraph("Código")], width: { size: 15 } }),
+                                        new TableCell({ children: [new Paragraph("Quantidade")], width: { size: 15 } }),
+                                        new TableCell({ children: [new Paragraph("Valor Unitário")], width: { size: 15 } }),
+                                        new TableCell({ children: [new Paragraph("Total")], width: { size: 15 } })
+                                    ],
+                                    tableHeader: true
+                                }),
+                                ...carrinhoItens.map(item => new TableRow({
+                                    children: [
+                                        new TableCell({ children: [new Paragraph(item.subitem)] }),
+                                        new TableCell({ children: [new Paragraph(item.codigo)] }),
+                                        new TableCell({ children: [new Paragraph(item.quantidade.toString())] }),
+                                        new TableCell({ children: [new Paragraph(formatarValor(item.preco))] }),
+                                        new TableCell({ children: [new Paragraph(formatarValor(item.total))] })
+                                    ]
+                                }))
+                            ]
+                        }),
+                        new Paragraph({
+                            text: `Documento gerado em: ${new Date().toLocaleDateString('pt-BR')}`,
+                            alignment: AlignmentType.LEFT,
+                            spacing: { before: 400 }
+                        })
+                    ]
+                }]
+            });
+
+            const blob = await docx.Packer.toBlob(doc);
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Precificação_Emenda_${Date.now()}.docx`;
+            a.click();
+        }
+
+        // Configurar eventos para geração de documentos
+        gerarDocBtn.addEventListener('click', () => {
+            if (carrinhoItens.length === 0) {
+                alert('Adicione itens ao carrinho antes de gerar o documento.');
+                return;
+            }
+            documentModal.style.display = 'flex';
+        });
+
+        gerarPdfBtn.addEventListener('click', () => {
+            documentModal.style.display = 'none';
+            gerarPDF();
+        });
+
+        gerarWordBtn.addEventListener('click', () => {
+            documentModal.style.display = 'none';
+            gerarWord();
+        });
+
+        cancelarDocBtn.addEventListener('click', () => {
+            documentModal.style.display = 'none';
+        });
+
+        // Carregar os dados
+        function carregarDados() {
+            atualizarValores();
+            exibirDados();
+        }
+
+        // Inicializar
         document.addEventListener('DOMContentLoaded', buscarDados);
     </script>
 </body>

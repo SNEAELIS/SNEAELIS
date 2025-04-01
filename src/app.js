@@ -42,7 +42,7 @@ async function criarTabelaUsuarios() {
 
 function processarDadosPlanilha(dadosBrutos) {
   return dadosBrutos.map(item => ({
-    Recursos: (row['Recursos'] || '').trim(),
+    categoria: item.Recursos, // Mantém o valor original, mesmo se for undefined
     item: item.ITEM || 'Sem descrição',
     subitem: item.SUBITEM || item.ITEM || 'Sem descrição',
     codigo: item['CÓDIGO/CATMAT/CATSER/CBO'] || 'N/A',
@@ -50,7 +50,7 @@ function processarDadosPlanilha(dadosBrutos) {
     uf: item.UF || 'N/A',
     modalidade: item.MODALIDADE || 'N/A',
     unidade: item.UNIDADE || 'N/A',
-    valorUnitario: parseFloat(String(row['VALOR UNITÁRIO']).replace(/[^\d,-]/g, '').replace(',', '.')) || 0,
+    valorUnitario: parseFloat(item['VALOR UNITÁRIO (R$)']) || 0,
     etapa: item['ETAPA ORÇAMENTÁRIA'] || 'N/A'
   }));
 }
@@ -86,9 +86,6 @@ async function startApp() {
   });
 
   // Rotas específicas antes do useRoutes
-  app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '../public', 'index.html'));
-  });
   app.get('/api/precificacao-dados', (req, res) => {
     try {
         const valorEmenda = parseFloat(req.query.valor) || 0;
@@ -100,34 +97,38 @@ async function startApp() {
         const worksheet = workbook.Sheets[sheetName];
         const rawData = XLSX.utils.sheet_to_json(worksheet);
 
-        // Log para inspecionar a planilha
-        if (rawData.length > 0) {
-            console.log('Nomes das colunas na planilha:', Object.keys(rawData[0]));
-            console.log('Primeiros 5 itens brutos da planilha:', rawData.slice(0, 5));
-        } else {
-            console.log('A planilha está vazia.');
-        }
+        // Log para verificar as chaves da planilha
+        console.log('Chaves da planilha:', Object.keys(rawData[0]));
 
-        const dados = rawData.map(row => ({
-            Recursos: (row['Recursos'] || '').trim() || 'Outros', // Garante que espaços sejam removidos
-            item: (row['ITEM'] || 'Sem descrição').trim(),
-            subitem: (row['SUBITEM'] || row['ITEM'] || 'Sem descrição').trim(),
-            codigo: row['CÓDIGO/CATMAT/CATSER/CBO'] || 'N/A',
-            codigoSipea: row['CÓDIGO SIPEA'] || 'N/A',
-            unidade: row['UNIDADE'] || 'N/A',
-            valorUnitario: parseFloat(row['VALOR UNITÁRIO']) || 0,
-            uf: (row['UF'] || '').trim().toUpperCase(),
-            gnd: row['GND'] || 'N/A',
-            etapa: row['ETAPA ORÇAMENTÁRIA'] || 'N/A',
-            modalidade: row['MODALIDADE'] || 'N/A',
-            pasta: row['PASTA'] || 'N/A'
-        }));
+        const dados = rawData.map(row => {
+            // Tratamento para o valor unitário
+            let valorUnitario = row['VALOR UNITÁRIO'];
+            if (typeof valorUnitario === 'string') {
+                // Remove caracteres não numéricos, exceto vírgula e ponto
+                valorUnitario = valorUnitario.replace(/[^\d,.]/g, '');
+                // Substitui vírgula por ponto para conversão
+                valorUnitario = valorUnitario.replace(',', '.');
+                // Remove pontos extras (separadores de milhar)
+                valorUnitario = valorUnitario.replace(/\.(?=.*\.)/g, '');
+            }
+            valorUnitario = parseFloat(valorUnitario) || 0;
 
-        // Log para verificar os valores únicos da coluna Recursos
-        const recursosUnicos = [...new Set(dados.map(item => item.Recursos))];
-        console.log('Valores únicos da coluna Recursos:', recursosUnicos);
+            return {
+                Recursos: row['Recursos '] || 'Sem categoria', // Ajuste para o nome exato da coluna (com espaço)
+                ITEM: row['ITEM'] || 'Sem descrição',
+                SUBITEM: row['SUBITEM'] || row['ITEM'] || 'Sem descrição',
+                CODIGO: row['CÓDIGO/CATMAT/CATSER/CBO'] || 'N/A',
+                CODIGO_SIPEA: row['CÓDIGO SIPEA'] || 'N/A',
+                UNIDADE: row['UNIDADE'] || 'N/A',
+                VALOR_UNITARIO: valorUnitario,
+                UF: row['UF'] || 'N/A',
+                GND: row['GND'] || 'N/A',
+                ETAPA: row['ETAPA ORÇAMENTÁRIA'] || 'N/A',
+                MODALIDADE: row['MODALIDADE'] || 'N/A',
+                PASTA: row['PASTA'] || 'N/A'
+            };
+        });
 
-        console.log('Dados processados (primeiros 5 itens):', dados.slice(0, 5));
         res.json({ dados, valorEmenda });
     } catch (error) {
         console.error('Erro ao carregar dados da precificação:', error);

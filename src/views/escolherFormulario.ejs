@@ -204,6 +204,11 @@
             <div class="input-container">
                 <input type="text" name="valorPrecificacao" id="valorPrecificacao" placeholder="Digite o valor em reais" required>
             </div>
+            <input type="text" name="numeroProtocolo" id="numeroProtocolo" placeholder="Digite o número do protocolo" required>
+            </div>
+            <button type="button" onclick="consultarProtocolo()" class="action-btn">
+                <i class="fas fa-search"></i> Consultar Protocolo
+            </button>
             <button type="button" onclick="redirecionarParaPrecificacao()" class="action-btn">
                 <i class="fas fa-arrow-right"></i> Ir para Precificação
             </button>
@@ -262,30 +267,28 @@
                 inputValor.value = '0,00';
             }
         });
-// Mantenha o script de redirecionamento atual
-function redirecionarParaPrecificacao() {
-            const input = document.getElementById('valorPrecificacao');
-            let valorNumerico = input.value.replace(/[^\d,]/g, '').replace(',', '.');
-            valorNumerico = parseFloat(valorNumerico);
+        function redirecionarParaPrecificacao() {
+        const input = document.getElementById('valorPrecificacao');
+        let valorNumerico = input.value.replace(/[^\d,]/g, '').replace(',', '.');
+        valorNumerico = parseFloat(valorNumerico);
 
-            if (isNaN(valorNumerico) || valorNumerico <= 0) {
-                alert('Digite um valor válido maior que zero para a emenda!');
-                input.focus();
-                return;
-            }
-
-            window.location.href = `/precificacao?valor=${valorNumerico}`;
+        if (isNaN(valorNumerico) || valorNumerico <= 0) {
+            alert('Digite um valor válido maior que zero para a emenda!');
+            input.focus();
+            return;
         }
+
+        window.location.href = `/precificacao?valor=${valorNumerico}`;
+    }
 
         function consultarProtocolo() {
-            const numeroProtocolo = document.getElementById('numeroProtocolo').value.trim();
-            if (!numeroProtocolo) {
-                alert('Digite um número de protocolo válido!');
-                return;
-            }
-            // Redireciona para uma página de consulta (você precisará implementar a rota no backend)
-            window.location.href = `/consulta-protocolo?protocolo=${encodeURIComponent(numeroProtocolo)}`;
+        const numeroProtocolo = document.getElementById('numeroProtocolo').value.trim();
+        if (!numeroProtocolo) {
+            alert('Digite um número de protocolo válido!');
+            return;
         }
+        window.location.href = `/consulta-protocolo?protocolo=${encodeURIComponent(numeroProtocolo)}`;
+    }
     </script>
 </body>
 </html>
