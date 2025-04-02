@@ -145,11 +145,20 @@ async function startApp() {
     const protocolo = req.query.protocolo;
     const precificacao = precificacoesSalvas.find(p => p.protocolo === protocolo);
     if (precificacao) {
-      res.json(precificacao);
+        res.json(precificacao);
     } else {
-      res.status(404).send('Protocolo não encontrado.');
+        res.status(404).send('Protocolo não encontrado.');
     }
-  });
+});
+app.get('/exportar-protocolos', (req, res) => {
+    const csv = precificacoesSalvas.map(p => 
+        `${p.protocolo},${p.valorEmenda},${p.valorTotal},${p.data.toISOString()}`
+    ).join('\n');
+    
+    res.setHeader('Content-Type', 'text/csv');
+    res.setHeader('Content-Disposition', 'attachment; filename=protocolos.csv');
+    res.send('Protocolo,Valor Emenda,Valor Gasto,Data\n' + csv);
+});
 
   app.get('/api/planilha', async (req, res) => {
     try {
