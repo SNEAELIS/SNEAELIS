@@ -1,16 +1,17 @@
 const express = require('express');
 const path = require('path');
-const useRoutes = require('./routes/useRoutes');
 const session = require('express-session');
-const initializePool = require('../config/db');
 const cors = require('cors');
 const XLSX = require('xlsx');
+const initializePool = require('../config/db'); // Import from db.js
+const useRoutes = require('./routes/useRoutes'); // Import useRoutes as a factory function
 
+// Global variables
 let pool;
 let precificacoesSalvas = [];
 let projetos = [];
 
-async function habilitarPgcrypto() {
+async function habilitarPgcrypto(pool) {
   try {
     await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
     console.log('Extensão pgcrypto habilitada ou já existente.');
@@ -19,7 +20,7 @@ async function habilitarPgcrypto() {
   }
 }
 
-async function criarTabelaUsuarios() {
+async function criarTabelaUsuarios(pool) {
   const query = `
     CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
@@ -42,7 +43,7 @@ async function criarTabelaUsuarios() {
 
 function processarDadosPlanilha(dadosBrutos) {
   return dadosBrutos.map(item => ({
-    categoria: item.Recursos, // Mantém o valor original, mesmo se for undefined
+    categoria: item.Recursos,
     item: item.ITEM || 'Sem descrição',
     subitem: item.SUBITEM || item.ITEM || 'Sem descrição',
     codigo: item['CÓDIGO/CATMAT/CATSER/CBO'] || 'N/A',
@@ -56,12 +57,22 @@ function processarDadosPlanilha(dadosBrutos) {
 }
 
 async function startApp() {
-  pool = await initializePool();
-  await habilitarPgcrypto();
-  await criarTabelaUsuarios();
+  // Initialize the database pool
+  try {
+    pool = await initializePool();
+    console.log('Database pool initialized successfully');
+  } catch (err) {
+    console.error('Failed to initialize database pool:', err);
+    process.exit(1);
+  }
+
+  // Setup database extensions and tables
+  await habilitarPgcrypto(pool);
+  await criarTabelaUsuarios(pool);
 
   const app = express();
 
+  // Middleware setup
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(cors());
@@ -70,14 +81,16 @@ async function startApp() {
       secret: 'segredo_super_seguranca',
       resave: false,
       saveUninitialized: true,
-      cookie: { secure: false },
+      cookie: { secure: false }, // Set to true if using HTTPS
     })
   );
 
+  // View engine setup
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));
   app.use(express.static(path.join(__dirname, '../public')));
 
+  // Serve .js files with correct MIME type
   app.use((req, res, next) => {
     if (req.path.endsWith('.js')) {
       res.type('application/javascript');
@@ -85,56 +98,46 @@ async function startApp() {
     next();
   });
 
-  // Rotas específicas antes do useRoutes
+  // API Routes
   app.get('/api/precificacao-dados', (req, res) => {
     try {
-        const valorEmenda = parseFloat(req.query.valor) || 0;
-        console.log('Valor recebido na query:', valorEmenda);
+      const valorEmenda = parseFloat(req.query.valor) || 0;
+      const filePath = path.resolve(__dirname, '../data/Consolidado_Preços_Esporte_Amador.xlsx');
+      const workbook = XLSX.readFile(filePath);
+      const sheetName = workbook.SheetNames[0];
+      const worksheet = workbook.Sheets[sheetName];
+      const rawData = XLSX.utils.sheet_to_json(worksheet);
 
-        const filePath = path.resolve(__dirname, '../data/Consolidado_Preços_Esporte_Amador.xlsx');
-        const workbook = XLSX.readFile(filePath);
-        const sheetName = workbook.SheetNames[0];
-        const worksheet = workbook.Sheets[sheetName];
-        const rawData = XLSX.utils.sheet_to_json(worksheet);
+      const dados = rawData.map(row => {
+        let valorUnitario = row['VALOR UNITÁRIO'];
+        if (typeof valorUnitario === 'string') {
+          valorUnitario = valorUnitario.replace(/[^\d,.]/g, '').replace(',', '.').replace(/\.(?=.*\.)/g, '');
+        }
+        valorUnitario = parseFloat(valorUnitario) || 0;
 
-        // Log para verificar as chaves da planilha
-        console.log('Chaves da planilha:', Object.keys(rawData[0]));
+        return {
+          Recursos: row['Recursos '] || 'Sem categoria',
+          ITEM: row['ITEM'] || 'Sem descrição',
+          SUBITEM: row['SUBITEM'] || row['ITEM'] || 'Sem descrição',
+          CODIGO: row['CÓDIGO/CATMAT/CATSER/CBO'] || 'N/A',
+          CODIGO_SIPEA: row['CÓDIGO SIPEA'] || 'N/A',
+          UNIDADE: row['UNIDADE'] || 'N/A',
+          VALOR_UNITARIO: valorUnitario,
+          UF: row['UF'] || 'N/A',
+          GND: row['GND'] || 'N/A',
+          ETAPA: row['ETAPA ORÇAMENTÁRIA'] || 'N/A',
+          MODALIDADE: row['MODALIDADE'] || 'N/A',
+          PASTA: row['PASTA'] || 'N/A'
+        };
+      });
 
-        const dados = rawData.map(row => {
-            // Tratamento para o valor unitário
-            let valorUnitario = row['VALOR UNITÁRIO'];
-            if (typeof valorUnitario === 'string') {
-                // Remove caracteres não numéricos, exceto vírgula e ponto
-                valorUnitario = valorUnitario.replace(/[^\d,.]/g, '');
-                // Substitui vírgula por ponto para conversão
-                valorUnitario = valorUnitario.replace(',', '.');
-                // Remove pontos extras (separadores de milhar)
-                valorUnitario = valorUnitario.replace(/\.(?=.*\.)/g, '');
-            }
-            valorUnitario = parseFloat(valorUnitario) || 0;
-
-            return {
-                Recursos: row['Recursos '] || 'Sem categoria', // Ajuste para o nome exato da coluna (com espaço)
-                ITEM: row['ITEM'] || 'Sem descrição',
-                SUBITEM: row['SUBITEM'] || row['ITEM'] || 'Sem descrição',
-                CODIGO: row['CÓDIGO/CATMAT/CATSER/CBO'] || 'N/A',
-                CODIGO_SIPEA: row['CÓDIGO SIPEA'] || 'N/A',
-                UNIDADE: row['UNIDADE'] || 'N/A',
-                VALOR_UNITARIO: valorUnitario,
-                UF: row['UF'] || 'N/A',
-                GND: row['GND'] || 'N/A',
-                ETAPA: row['ETAPA ORÇAMENTÁRIA'] || 'N/A',
-                MODALIDADE: row['MODALIDADE'] || 'N/A',
-                PASTA: row['PASTA'] || 'N/A'
-            };
-        });
-
-        res.json({ dados, valorEmenda });
+      res.json({ dados, valorEmenda });
     } catch (error) {
-        console.error('Erro ao carregar dados da precificação:', error);
-        res.status(500).json({ dados: [], valorEmenda: 0 });
+      console.error('Erro ao carregar dados da precificação:', error);
+      res.status(500).json({ dados: [], valorEmenda: 0 });
     }
-});
+  });
+
   app.post('/salvar-precificacao', express.json(), (req, res) => {
     const { protocolo, itens, valorTotal, valorEmenda } = req.body;
     precificacoesSalvas.push({ protocolo, itens, valorTotal, valorEmenda, data: new Date() });
@@ -145,20 +148,20 @@ async function startApp() {
     const protocolo = req.query.protocolo;
     const precificacao = precificacoesSalvas.find(p => p.protocolo === protocolo);
     if (precificacao) {
-        res.json(precificacao);
+      res.json(precificacao);
     } else {
-        res.status(404).send('Protocolo não encontrado.');
+      res.status(404).send('Protocolo não encontrado.');
     }
-});
-app.get('/exportar-protocolos', (req, res) => {
+  });
+
+  app.get('/exportar-protocolos', (req, res) => {
     const csv = precificacoesSalvas.map(p => 
-        `${p.protocolo},${p.valorEmenda},${p.valorTotal},${p.data.toISOString()}`
+      `${p.protocolo},${p.valorEmenda},${p.valorTotal},${p.data.toISOString()}`
     ).join('\n');
-    
     res.setHeader('Content-Type', 'text/csv');
     res.setHeader('Content-Disposition', 'attachment; filename=protocolos.csv');
     res.send('Protocolo,Valor Emenda,Valor Gasto,Data\n' + csv);
-});
+  });
 
   app.get('/api/planilha', async (req, res) => {
     try {
@@ -167,7 +170,6 @@ app.get('/exportar-protocolos', (req, res) => {
       const firstSheetName = workbook.SheetNames[0];
       const worksheet = workbook.Sheets[firstSheetName];
       const dados = XLSX.utils.sheet_to_json(worksheet);
-
       res.json({
         success: true,
         data: processarDadosPlanilha(dados),
@@ -181,11 +183,11 @@ app.get('/exportar-protocolos', (req, res) => {
 
   app.get('/api/projetos/:proposalNumber', (req, res) => {
     const { proposalNumber } = req.params;
-    const projetos = {
+    const projetosData = {
       "222": { proposalNumber: "222", objeto: "Evento Esportivo", status: "Aprovado" },
       "333": { proposalNumber: "333", objeto: "Projeto Cultural", status: "Em Análise" },
     };
-    const projeto = projetos[proposalNumber];
+    const projeto = projetosData[proposalNumber];
     if (projeto) res.json(projeto);
     else res.status(404).json({ error: "Projeto não encontrado." });
   });
@@ -225,14 +227,16 @@ app.get('/exportar-protocolos', (req, res) => {
     }
   });
 
-  // Rotas personalizadas (useRoutes) por último
-  app.use('/', useRoutes);
+  // Use routes with the initialized pool
+  app.use('/', useRoutes(pool));
 
+  // Logging middleware
   app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
   });
 
+  // 404 handler
   app.use((req, res) => {
     console.log('Rota não encontrada:', req.originalUrl);
     res.status(404).send(`Cannot GET ${req.originalUrl}`);
@@ -244,6 +248,7 @@ app.get('/exportar-protocolos', (req, res) => {
   });
 }
 
+// Start the application
 startApp().catch((err) => {
   console.error('Erro ao iniciar o aplicativo:', err);
   process.exit(1);

@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Precificação - Ministério do Esporte</title>
+    <style>
+        /* Reset Básico */
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f4f4f9;
+            color: #333;
+            line-height: 1.6;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Cabeçalho */
+        header {
+            background-color: #003087;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        header img {
+            max-width: 200px;
+            height: auto;
+        }
+
+        header h1 {
+            font-size: 1.2rem;
+            font-weight: bold;
+            white-space: nowrap;
+        }
+
+        /* Estilo do container de precificação */
+        .precificacao-container {
+            background: #fff;
+            margin: 80px auto 20px;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            max-width: 600px;
+            text-align: center;
+        }
+
+        .precificacao-container h3 {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #003087;
+            margin-bottom: 20px;
+        }
+
+        .precificacao-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        @media (min-width: 600px) {
+            .precificacao-form {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 15px;
+            }
+            .precificacao-form .input-container,
+            .precificacao-form input[type="text"] {
+                grid-column: 1 / 3;
+            }
+            .precificacao-form button {
+                width: auto;
+            }
+        }
+
+        /* Estilo para o campo de precificação com símbolo de moeda */
+        .input-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .input-container::before {
+            content: 'R$';
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #333;
+            font-size: 1rem;
+            font-weight: bold;
+        }
+
+        /* Estilo para campos de entrada */
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 12px 12px 40px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 1rem;
+            background-color: #fff;
+            transition: border-color 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #003087;
+            outline: none;
+        }
+
+        /* Estilo para botões */
+        button {
+            background-color: #003087;
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            width: 100%;
+        }
+
+        button:hover {
+            background-color: #002766;
+        }
+
+        /* Rodapé */
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #003087;
+            color: #fff;
+            font-size: 0.8rem;
+            margin-top: auto;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            text-align: left;
+            max-width: 800px;
+            width: 90%;
+        }
+
+        /* Responsividade */
+        @media (max-width: 600px) {
+            .precificacao-container {
+                margin: 70px 10px 20px;
+                padding: 20px;
+            }
+
+            header h1 {
+                font-size: 1rem;
+            }
+
+            input[type="text"], button {
+                padding: 10px 10px 10px 35px;
+                font-size: 0.9rem;
+            }
+
+            .input-container::before {
+                left: 10px;
+                font-size: 0.9rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Cabeçalho -->
+    <header>
+        <div class="header-left">
+            <img src="/images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="Logo Ministério do Esporte">
+            <h1>Ministério do Esporte</h1>
+        </div>
+    </header>
+
+    <!-- Seção de Precificação -->
+    <div class="precificacao-container">
+        <h3><i class="fas fa-calculator"></i> Precificação de Emenda</h3>
+        <div class="precificacao-form">
+            <div class="input-container">
+                <input type="text" name="valorPrecificacao" id="valorPrecificacao" placeholder="Digite o valor em reais" required>
+            </div>
+            <input type="text" name="numeroProtocolo" id="numeroProtocolo" placeholder="Digite o número do protocolo" required>
+            <button type="button" onclick="consultarProtocolo()" class="action-btn">
+                <i class="fas fa-search"></i> Consultar Protocolo
+            </button>
+            <button type="button" onclick="redirecionarParaPrecificacao()" class="action-btn">
+                <i class="fas fa-arrow-right"></i> Ir para Precificação
+            </button>
+        </div>
+    </div>
+
+    <!-- Rodapé -->
+    <footer>
+        <p>© 2025 Ministério do Esporte</p>
+    </footer>
+
+    <!-- Script para formatar o valor e redirecionar -->
+    <script>
+        const inputValor = document.getElementById('valorPrecificacao');
+
+        // Função para formatar o valor em reais
+        function formatarMoeda() {
+            let valor = inputValor.value.replace(/\D/g, '');
+            valor = (valor / 100).toFixed(2);
+            valor = parseFloat(valor).toLocaleString('pt-BR', { minimumFractionDigits: 2 });
+            inputValor.value = valor;
+        }
+
+        // Formatação enquanto digita
+        inputValor.addEventListener('input', () => {
+            inputValor.value = inputValor.value.replace(/[^0-9]/g, '');
+            formatarMoeda();
+        });
+
+        // Inicialização do campo
+        inputValor.addEventListener('focus', () => {
+            if (!inputValor.value) {
+                inputValor.value = '0,00';
+            }
+        });
+
+        function redirecionarParaPrecificacao() {
+            const input = document.getElementById('valorPrecificacao');
+            let valorNumerico = input.value.replace(/[^\d,]/g, '').replace(',', '.');
+            valorNumerico = parseFloat(valorNumerico);
+
+            if (isNaN(valorNumerico) || valorNumerico <= 0) {
+                alert('Digite um valor válido maior que zero para a emenda!');
+                input.focus();
+                return;
+            }
+
+            window.location.href = `/precificacao?valor=${valorNumerico}`;
+        }
+
+        function consultarProtocolo() {
+            const numeroProtocolo = document.getElementById('numeroProtocolo').value.trim();
+            if (!numeroProtocolo) {
+                alert('Digite um número de protocolo válido!');
+                return;
+            }
+
+            fetch(`/consulta-protocolo?protocolo=${encodeURIComponent(numeroProtocolo)}`)
+                .then(response => {
+                    if (!response.ok) throw new Error('Protocolo não encontrado.');
+                    return response.json();
+                })
+                .then(data => {
+                    exibirCarrinhoFinalizado(data);
+                })
+                .catch(err => {
+                    alert(err.message);
+                    console.error('Erro ao consultar protocolo:', err);
+                });
+        }
+
+        function exibirCarrinhoFinalizado(data) {
+            const container = document.createElement('div');
+            container.classList.add('modal');
+            container.innerHTML = `
+                <div class="modal-content">
+                    <h2 style="color: #003087; margin-bottom: 20px;">Detalhes da Precificação</h2>
+                    <p><strong>Protocolo:</strong> ${data.protocolo}</p>
+                    <p><strong>Data:</strong> ${new Date(data.data).toLocaleString('pt-BR')}</p>
+                    <p><strong>Valor Total da Emenda:</strong> ${formatarValor(data.valorEmenda)}</p>
+                    <p><strong>Valor Gasto:</strong> ${formatarValor(data.valorTotal)}</p>
+                    <p><strong>Valor Restante:</strong> ${formatarValor(data.valorEmenda - data.valorTotal)}</p>
+                    <h3 style="color: #003087; margin-top: 20px;">Itens do Carrinho</h3>
+                    <div class="carrinho-lista" style="max-height: 300px; overflow-y: auto; background: #f9f9f9; padding: 10px; border-radius: 5px;">
+                        ${data.itens.length === 0 ? '<p style="text-align: center; color: #666;">Nenhum item encontrado.</p>' : 
+                            data.itens.map(item => `
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #fff; border: 1px solid #eee; border-radius: 5px; margin: 5px 0;">
+                                    <div>
+                                        <strong>${item.subitem}</strong><br>
+                                        <span style="font-size: 0.9rem; color: #666;">Código: ${item.codigo} | Quantidade: ${item.quantidade}</span>
+                                    </div>
+                                    <div style="font-weight: bold; color: #003087;">${formatarValor(item.total)}</div>
+                                </div>
+                            `).join('')
+                        }
+                    </div>
+                    <div style="margin-top: 20px; text-align: center;">
+                        <button onclick="this.parentElement.parentElement.parentElement.remove()" style="background-color: #003087; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer;">Fechar</button>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(container);
+            container.style.display = 'flex';
+        }
+
+        function formatarValor(valor) {
+            return valor.toLocaleString('pt-BR', {
+                style: 'currency',
+                currency: 'BRL',
+                minimumFractionDigits: 2
+            });
+        }
+    </script>
+</body>
+</html>

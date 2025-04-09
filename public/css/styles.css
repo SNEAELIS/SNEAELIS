@@ -144,7 +144,7 @@ iframe {
 
 /* Header */
 header {
-    background-color: #005CAA;
+    background-color: #003087;
     color: white;
     padding: 10px 20px;
     display: flex;
@@ -181,7 +181,7 @@ header img {
 footer {
     text-align: center;
     padding: 10px;
-    background-color: #0033A0;
+    background-color: #003087;
     color: white;
     position: fixed;
     width: 100%;
@@ -341,7 +341,7 @@ form button[type="submit"]:hover {
     margin-bottom: 15px;
     font-size: 1.2rem;
     font-weight: bold;
-    color: #005CAA;
+    color: #003087;
 }
 
 table {
@@ -374,7 +374,7 @@ table tr:hover td {
 /* Rodapé */
 footer {
     text-align: center;
-    background-color: #005CAA;
+    background-color: #003087;
     color: white;
     padding: 10px;
     position: fixed;
