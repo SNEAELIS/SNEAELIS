@@ -3,940 +3,1502 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário Técnico - Projeto/Evento</title>
-    <!-- Link para estilos externos -->
-    <link rel="stylesheet" href="/public/css/styles.css">
+    <title>Formulário Técnico - Projeto Esportivo</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
     <style>
-        /* =========================== Global Reset =========================== */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-body {
-    font-family: 'Roboto', sans-serif;
-    background: linear-gradient(135deg, #f0f4ff, #d9e8ff);
-    color: #333;
-    line-height: 1.6;
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
-}
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            line-height: 1.6;
+        }
 
-/* =========================== Header =========================== */
-header {
-    background-color: #002766;
-    color: #fff;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px 40px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-}
+        /* Cabeçalho */
+        header {
+            background-color: #003087;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            height: 60px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
 
-header h1 {
-    font-size: 2em;
-    font-weight: 700;
-}
+        .container {
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #fff;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
 
-.logo-header {
-    height: 60px;
-}
+        .tabs-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
 
-/* =========================== Main Content =========================== */
-.container {
-    max-width: 1200px;
-    margin: 50px auto;
-    padding: 30px;
-    background: #ffffff;
-    border-radius: 12px;
-    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
-}
+        .tab-button {
+            padding: 10px 15px;
+            background: #e0e0e0;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
 
-/* =========================== Tabs =========================== */
-.tabs {
-    display: flex;
-    border-bottom: 2px solid #002766;
-    background-color: #e6f0ff;
-    border-radius: 12px 12px 0 0;
-    overflow-x: auto;
-}
+        .tab-button:hover {
+            background: #d0d0d0;
+        }
 
-.tab {
-    flex: 1;
-    text-align: center;
-    padding: 15px;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 600;
-    color: #002766;
-    background-color: #e6f0ff;
-    border-right: 1px solid #d1d5db;
-    transition: all 0.3s ease-in-out;
-}
+        .tab-button.active {
+            background: #002766;
+            color: white;
+        }
 
-.tab:last-child {
-    border-right: none;
-}
+        .tab-content {
+            display: none;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            background: #fff;
+        }
 
-.tab:hover,
-.tab.active {
-    background-color: #002766;
-    color: #ffffff;
-    border-bottom: 2px solid #ffffff;
-}
+        .tab-content.active {
+            display: block;
+        }
 
-.tab-content {
-    display: none;
-    padding: 30px;
-    animation: fadeIn 0.4s ease-in-out;
-}
+        fieldset {
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
 
-.tab-content.active {
-    display: block;
-}
+        legend {
+            padding: 0 10px;
+            font-weight: bold;
+            color: #002766;
+        }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
+        label {
+            display: block;
+            margin: 10px 0 5px;
+            font-weight: 500;
+        }
 
-/* =========================== Forms =========================== */
-form {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-}
+        input, textarea, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
 
-fieldset {
-    border: 2px solid #002766;
-    border-radius: 12px;
-    padding: 25px;
-    background-color: #f8faff;
-}
+        textarea {
+            min-height: 100px;
+            resize: vertical;
+        }
 
-legend {
-    font-weight: bold;
-    color: #002766;
-    font-size: 1.2em;
-    padding: 0 12px;
-}
+        button {
+            padding: 10px 15px;
+            background: #002766;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-right: 10px;
+            margin-top: 10px;
+        }
 
-form label {
-    font-weight: 600;
-    color: #002766;
-    margin-bottom: 10px;
-    display: block;
-}
+        button:hover {
+            background: #001a47;
+        }
 
-form input,
-form textarea,
-form select {
-    width: 100%;
-    padding: 15px;
-    border: 1px solid #ccd5ff;
-    border-radius: 8px;
-    font-size: 16px;
-    background-color: #ffffff;
-    transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
+        .radio-group, .checkbox-group {
+            margin: 10px 0;
+        }
 
-form input:focus,
-form textarea:focus,
-form select:focus {
-    border-color: #002766;
-    box-shadow: 0 0 8px rgba(0, 39, 102, 0.3);
-    outline: none;
-}
+        .radio-group label, .checkbox-group label {
+            display: inline-flex;
+            align-items: center;
+            margin-right: 20px;
+            cursor: pointer;
+        }
 
-form textarea {
-    resize: vertical;
-    min-height: 120px;
-}
+        .radio-group input, .checkbox-group input {
+            width: auto;
+            margin-right: 5px;
+        }
 
-form button {
-    align-self: flex-start;
-    background-color: #002766;
-    color: #ffffff;
-    padding: 15px 30px;
-    border: none;
-    border-radius: 8px;
-    font-size: 18px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease-in-out;
-}
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
 
-form button:hover {
-    background-color: #001a47;
-}
+        table, th, td {
+            border: 1px solid #ddd;
+        }
 
-/* Botão Enviar Todos */
-#submitAll {
-    margin: 30px auto;
-    display: block;
-    background-color: #28a745;
-    color: #ffffff;
-    padding: 18px 36px;
-    font-size: 20px;
-    font-weight: bold;
-    border: none;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: background-color 0.3s ease;
-}
+        th, td {
+            padding: 10px;
+            text-align: left;
+        }
 
-#submitAll:hover {
-    background-color: #218838;
-}
+        th {
+            background: #f0f0f0;
+        }
 
-/* Estilo para inputs de rádio */
-.radio-group {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    margin: 15px 0;
-}
+        .action-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
 
-.radio-group input[type="radio"] {
-    display: none;
-}
+        .add-row {
+            background: #28a745;
+        }
 
-.radio-group label {
-    display: flex;
-    align-items: center;
-    cursor: pointer;
-    font-weight: 600;
-    color: #002766;
-    transition: color 0.3s ease-in-out;
-}
+        .remove-row {
+            background: #dc3545;
+        }
 
-.radio-group label::before {
-    content: '';
-    display: inline-block;
-    width: 18px;
-    height: 18px;
-    border: 2px solid #ccd5ff;
-    border-radius: 50%;
-    margin-right: 10px;
-    transition: background-color 0.3s ease, border-color 0.3s ease;
-}
+        .generate-pdf {
+            background: #17a2b8;
+            font-size: 16px;
+            padding: 12px 25px;
+        }
 
-.radio-group input[type="radio"]:checked + label::before {
-    background-color: #002766;
-    border-color: #002766;
-}
+        .save-all {
+            background: #ffc107;
+            color: #212529;
+        }
 
-/* =========================== Footer =========================== */
-footer {
-    text-align: center;
-    background-color: #002766;
-    color: #ffffff;
-    padding: 20px;
-    font-size: 0.95em;
-    margin-top: auto;
-}
+        .form-section {
+            margin-bottom: 30px;
+        }
 
-/* =========================== Responsiveness =========================== */
-@media (max-width: 768px) {
-    .tabs {
-        flex-direction: column;
-    }
+        .form-section h3 {
+            margin-bottom: 15px;
+            color: #002766;
+            border-bottom: 2px solid #002766;
+            padding-bottom: 5px;
+        }
 
-    .tab {
-        text-align: left;
-        padding: 12px 20px;
-        border-bottom: 1px solid #d1d5db;
-    }
-
-    .tab:last-child {
-        border-bottom: none;
-    }
-
-    #submitAll {
-        font-size: 16px;
-        padding: 15px 25px;
-    }
-
-    form {
-        gap: 20px;
-    }
-}
-
-    </style>  
+        .required:after {
+            content: " *";
+            color: red;
+        }
+                /* Rodapé */
+        footer {
+            text-align: center;
+            padding: 10px;
+            background-color: #003087;
+            color: #fff;
+            font-size: 0.8rem;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+        }
+    </style>
 </head>
-
 <body>
     <header>
-        <h1>Ministério do Esporte</h1>
-        <img src="images/ASSINATURAS_ESPORTE__FUNDO PRETO 2 HORIZONTAL.png" class="logo-header" alt="Ministério do Esporte">
+        <h1>Formulário Técnico - Projeto Esportivo</h1>
+        <p>Ministério do Esporte</p>
     </header>
-        <div class="container">
-            <button class="tab active" data-tab="tab1">1.1 Identificação</button>
-            <button class="tab" data-tab="tab2">1.2 Responsável</button>
-            <button class="tab" data-tab="tab3">1.3 Dimensão</button>
-            <button class="tab" data-tab="tab4">1.4 Localidade</button>
-            <button class="tab" data-tab="tab5">1.5 População</button>
-            <button class="tab" data-tab="tab6">1.6 Entidade</button>
-            <button class="tab" data-tab="tab7">1.7 Entidades Parceiras</button>
-            <button class="tab" data-tab="tab8">1.8 Coordenador</button>
-            <button class="tab" data-tab="tab9">1.9 Capacidade Técnica</button>
-            <button class="tab" data-tab="tab10">2.1 Objeto</button>
-            <button class="tab" data-tab="tab11">2.2 Justificativa</button>
-            <button class="tab" data-tab="tab12">2.3 Objetivos</button>
-            <button class="tab" data-tab="tab13">2.4 Objetivos Específicos</button>
-            <button class="tab" data-tab="tab14">3.1 Metodologia</button>
-            <button class="tab" data-tab="tab15">3.2 Nucleo</button>
-            <button class="tab" data-tab="tab16">3.3 Modalidades</button>
-            <button class="tab" data-tab="tab17">3.4 Reuniões</button>
-            <button class="tab" data-tab="tab18">3.5 Materiais</button>
-            <button class="tab" data-tab="tab19">3.6 Uniformes</button>
-            <button class="tab" data-tab="tab20">3.7 Equipe de Trabalho</button>
-            <button class="tab" data-tab="tab21">3.8 Divulgação</button>
-            <button class="tab" data-tab="tab22">4.1 Identificação do Evento</button>
-            <button class="tab" data-tab="tab23">4.2 Cronograma de Execução</button>
-            <button class="tab" data-tab="tab24">4.3 Vigência do Evento</button>
-            <button class="tab" data-tab="tab25">4.4 Prestação de Contas</button>
+
+    <div class="container">
+        <div class="tabs-container">
+            <button class="tab-button active" data-tab="info-proponente">1. Informações do Proponente</button>
+            <button class="tab-button" data-tab="dados-projeto">2. Dados do Projeto</button>
+            <button class="tab-button" data-tab="info-projeto">3. Informações do Projeto</button>
+            <button class="tab-button" data-tab="desenvolvimento">4. Desenvolvimento</button>
         </div>
-        <!-- Conteúdo das Abas -->
-        <div class="tab-content active" id="tab1">
-            <form id="formTab1">
+
+        <!-- TAB 1: Informações do Proponente -->
+        <div id="info-proponente" class="tab-content active">
+            <form id="formProponente">
                 <fieldset>
-                    <legend>1.1 Identificação da Proponente</legend>
-                    <label for="cnpjProponente">CNPJ da Proponente:</label>
-                    <input type="text" id="cnpjProponente" name="cnpjProponente" required onblur="buscarDadosCNPJ()">
-                    <label for="nomeProponente">Nome da Proponente:</label>
+                    <legend>1.1 Identificação do Proponente</legend>
+                    <label for="cnpj" class="required">CNPJ Proponente:</label>
+                    <input type="text" id="cnpj" name="cnpj" required placeholder="00.000.000/0000-00">
+                    
+                    <label for="nomeProponente" class="required">Nome Proponente:</label>
                     <input type="text" id="nomeProponente" name="nomeProponente" required>
-                    <label for="nomeDirigente">Nome do Dirigente:</label>
+                    
+                    <label for="nomeDirigente" class="required">Nome do Dirigente:</label>
                     <input type="text" id="nomeDirigente" name="nomeDirigente" required>
-                    <label for="telefoneDirigente">Telefone de Contato (DDD):</label>
-                    <input type="text" id="telefoneDirigente" name="telefoneDirigente" required>
-                    <label for="emailDirigente">E-mail:</label>
-                    <input type="email" id="emailDirigente" name="emailDirigente" required>
-                    <label for="proposalNumber">Número da Proposta:</label>
-                    <input type="text" id="proposalNumber" name="proposalNumber" required>
+                    
+                    <label for="telefone" class="required">Telefone de contato com DDD:</label>
+                    <input type="text" id="telefone" name="telefone" required placeholder="(00) 00000-0000">
+                    
+                    <label for="email" class="required">E-mail:</label>
+                    <input type="email" id="email" name="email" required>
+                    
+                    <label for="numeroProposta" class="required">Número da Proposta (Plataforma Transferegov):</label>
+                    <input type="text" id="numeroProposta" name="numeroProposta" required>
                 </fieldset>
-                <button type="button" onclick="saveTab('formTab1')">Salvar</button>
-            </form>
-        </div>
 
-        <!-- Repetir a estrutura acima para cada aba subsequente -->
-        <!-- Exemplo para "1.2 Responsável pela Elaboração" -->
-        <div class="tab-content" id="tab2">
-            <form id="formTab2">
                 <fieldset>
-                    <legend>1.2 Responsável pela Elaboração</legend>
-                    <label for="responsavelNome">Nome:</label>
+                    <legend>1.2 Responsável pela Elaboração do Projeto Técnico</legend>
+                    <label for="responsavelNome" class="required">Nome:</label>
                     <input type="text" id="responsavelNome" name="responsavelNome" required>
-                    <label for="responsavelEmail">E-mail:</label>
+                    
+                    <label for="responsavelEmail" class="required">E-mail:</label>
                     <input type="email" id="responsavelEmail" name="responsavelEmail" required>
-                    <label for="responsavelTelefone">Telefone de Contato (DDD):</label>
-                    <input type="text" id="responsavelTelefone" name="responsavelTelefone" required>
+                    
+                    <label for="responsavelVinculo" class="required">Vínculo com a Entidade (Cargo/Função):</label>
+                    <input type="text" id="responsavelVinculo" name="responsavelVinculo" required>
+                    
+                    <label for="responsavelTelefone" class="required">Telefone de contato com DDD:</label>
+                    <input type="text" id="responsavelTelefone" name="responsavelTelefone" required placeholder="(00) 00000-0000">
                 </fieldset>
-                <button type="button" onclick="saveTab('formTab2')">Salvar Responsável</button>
+
+                <fieldset>
+                    <legend>1.3 Dimensão do Projeto</legend>
+                    <div class="radio-group">
+                        <input type="radio" id="dimensao1" name="dimensaoProjeto" value="Projeto Educacional" required>
+                        <label for="dimensao1">Projeto Educacional</label>
+                        
+                        <input type="radio" id="dimensao2" name="dimensaoProjeto" value="Projeto de Participação">
+                        <label for="dimensao2">Projeto de Participação</label>
+                    </div>
+                    <p id="descricaoDimensao" style="font-style: italic; color: #555; margin-top: 10px;"></p>
+                </fieldset>
+
+                <fieldset>
+                    <legend>1.4 Localidade</legend>
+                    <label for="cidade" class="required">Cidade:</label>
+                    <input type="text" id="cidade" name="cidade" required>
+                    
+                    <label for="uf" class="required">UF:</label>
+                    <input type="text" id="uf" name="uf" required maxlength="2" style="width: 50px;">
+                    
+                    <label for="idh" class="required">IDH:</label>
+                    <input type="text" id="idh" name="idh" required>
+                    
+                    <label for="anoIDH" class="required">Ano de Referência:</label>
+                    <input type="number" id="anoIDH" name="anoIDH" required min="2000" max="2099">
+                </fieldset>
+
+                <fieldset>
+                    <legend>1.5 População</legend>
+                    <label for="numHabitantes" class="required">Nº de habitantes:</label>
+                    <input type="number" id="numHabitantes" name="numHabitantes" required>
+                    
+                    <label for="anoHabitantes" class="required">Ano de referência:</label>
+                    <input type="number" id="anoHabitantes" name="anoHabitantes" required min="2000" max="2099">
+                </fieldset>
+
+                <fieldset>
+                    <legend>1.6 Informações sobre a Entidade Proponente do Projeto</legend>
+                    <div class="radio-group">
+                        <label>A Entidade já celebrou parcerias com o Ministério do Esporte?</label>
+                        <input type="radio" id="parceriaSim" name="temParceria" value="sim">
+                        <label for="parceriaSim">Sim</label>
+                        <input type="radio" id="parceriaNao" name="temParceria" value="nao">
+                        <label for="parceriaNao">Não</label>
+                    </div>
+                    
+                    <div id="parceriaInfo" style="display: none;">
+                        <label for="numParcerias">Nº de parcerias:</label>
+                        <input type="number" id="numParcerias" name="numParcerias" min="0">
+                    </div>
+                    
+                    <div class="radio-group" style="margin-top: 15px;">
+                        <label>A Entidade já deu publicidade às parcerias celebradas em seu respectivo site?</label>
+                        <input type="radio" id="publicidadeSim" name="temPublicidade" value="sim">
+                        <label for="publicidadeSim">Sim</label>
+                        <input type="radio" id="publicidadeNao" name="temPublicidade" value="nao">
+                        <label for="publicidadeNao">Não</label>
+                    </div>
+                </fieldset>
+
+                <fieldset>
+                    <legend>1.7 Informações sobre o Estatuto da Entidade</legend>
+                    <label for="artigo2">Artigo 2º, inciso I, da Lei 13.019/2014:</label>
+                    <input type="text" id="artigo2" name="artigo2" placeholder="Número do artigo">
+                    
+                    <label for="artigo33I">Artigo 33, inciso I, da Lei 13.019/2014:</label>
+                    <input type="text" id="artigo33I" name="artigo33I" placeholder="Número do artigo">
+                    
+                    <label for="artigo33III">Artigo 33, inciso III, da Lei 13.019/2014:</label>
+                    <input type="text" id="artigo33III" name="artigo33III" placeholder="Número do artigo">
+                </fieldset>
+
+                <button type="button" onclick="saveForm('formProponente')">Salvar</button>
+                <button type="button" class="tab-button" data-tab="dados-projeto">Próxima Seção</button>
             </form>
         </div>
 
-<!-- Abas para 1.3 Dimensão -->
-<div class="tab-content" id="tab3">
-    <h3>1.3 Dimensão do Projeto</h3>
-    <form id="formTab3">
-        <fieldset>
-            <legend>Selecione a Dimensão do Projeto:</legend>
+        <!-- TAB 2: Dados do Projeto -->
+        <div id="dados-projeto" class="tab-content">
+            <form id="formDadosProjeto">
+                <fieldset>
+                    <legend>2.1 Objeto</legend>
+                    <label for="objetoProjeto" class="required">Identificação do Projeto:</label>
+                    <textarea id="objetoProjeto" name="objetoProjeto" required>Implementação e desenvolvimento do Projeto XXXXXXXXXXXXX na Cidade ou Estado/UF.</textarea>
+                </fieldset>
 
-            <!-- Opção 1: Formação Esportiva -->
-            <label for="dimensaoFormacao">
-                <input type="radio" id="dimensaoFormacao" name="dimensaoEvento" value="formacao" required>
-                Formação Esportiva
-            </label>
-            <p class="dimensao-descricao">
-                Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.
-            </p>
+                <fieldset>
+                    <legend>2.2 Objetivo Geral</legend>
+                    <label for="objetivoGeral" class="required">Objetivo Geral:</label>
+                    <textarea id="objetivoGeral" name="objetivoGeral" required>Promover a inclusão social e a melhoria da qualidade de vida por meio das práticas esportivas e de lazer como ferramenta de transformação social, utilizando o esporte como instrumento de formação esportiva, disciplinar e valores fundamentais, através do estímulo do bem estar físico, psicológico dos beneficiados envolvidos.</textarea>
+                </fieldset>
 
-            <!-- Opção 2: Esporte para toda vida -->
-            <label for="dimensaoEsporteVida">
-                <input type="radio" id="dimensaoEsporteVida" name="dimensaoEvento" value="esporte_vida" required>
-                Esporte para toda vida
-            </label>
-            <p class="dimensao-descricao">
-                Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.
-            </p>
-        </fieldset>
-        <button type="button" onclick="saveTab('formTab3')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>2.3 Objetivos Específicos</legend>
+                    <div id="objetivosEspecificos">
+                        <div class="objetivo-item">
+                            <textarea name="objetivoEspecifico" required>Oportunizar a prática esportiva sistematizada para crianças, adolescentes, jovens, adultos e idosos;</textarea>
+                            <button type="button" onclick="removeObjetivo(this)" class="remove-row">Remover</button>
+                        </div>
+                    </div>
+                    <button type="button" onclick="addObjetivo()" class="add-row">Adicionar Objetivo</button>
+                </fieldset>
 
-<!-- Abas para 1.4 Localidade -->
-<div class="tab-content" id="tab4">
-    <h3>1.4 Localidade</h3>
-    <form id="formTab4">
-        <label for="idh">IDH:</label>
-        <input type="text" id="idh" name="idh" required>
-        <label for="idhFonte">Fonte:</label>
-        <input type="text" id="idhFonte" name="idhFonte" required>
-        <label for="idhAno">Ano de Referência:</label>
-        <input type="number" id="idhAno" name="idhAno" required>
-        <button type="button" onclick="saveTab('formTab4')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>2.4 Público-Alvo</legend>
+                    <label for="publicoDireto" class="required">Público direto (beneficiários):</label>
+                    <input type="number" id="publicoDireto" name="publicoDireto" required>
+                    
+                    <label for="faixaEtaria" class="required">Faixa etária do público direto:</label>
+                    <input type="text" id="faixaEtaria" name="faixaEtaria" required placeholder="Ex: 06 a 18 anos">
+                    
+                    <label for="publicoIndireto" class="required">Público indireto:</label>
+                    <input type="number" id="publicoIndireto" name="publicoIndireto" required>
+                    <p style="font-style: italic; color: #555;">(Famílias dos alunos e comunidade local: previsão de 3 (três) beneficiários indiretos a cada 1 (um) beneficiário direto)</p>
+                </fieldset>
 
-<!-- Abas para 1.5 População -->
-<div class="tab-content" id="tab5">
-    <h3>1.5 População</h3>
-    <form id="formTab5">
-        <label for="numeroHabitantes">Número de Habitantes:</label>
-        <input type="number" id="numeroHabitantes" name="numeroHabitantes" required>
-        <label for="habitantesFonte">Fonte:</label>
-        <input type="text" id="habitantesFonte" name="habitantesFonte" required>
-        <label for="habitantesAno">Ano de Referência:</label>
-        <input type="number" id="habitantesAno" name="habitantesAno" required>
-        <button type="button" onclick="saveTab('formTab5')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>2.5 Vigência do Projeto</legend>
+                    <label for="periodoEstruturação" class="required">Período de Estruturação:</label>
+                    <input type="text" id="periodoEstruturação" name="periodoEstruturação" required placeholder="Ex: 2 meses">
+                    <p style="font-style: italic; color: #555;">(Em caso de Termo de Fomento a previsão é de até 2 (dois) meses de pagamento de RH na estruturação – Portaria MEsp nº 102/2024)</p>
+                    
+                    <label for="periodoExecução" class="required">Período de Execução:</label>
+                    <input type="text" id="periodoExecução" name="periodoExecução" required placeholder="Ex: 6 meses">
+                    <p style="font-style: italic; color: #555;">(no mínimo 6 (seis) meses)</p>
+                    
+                    <label for="vigenciaTotal" class="required">Vigência Total:</label>
+                    <input type="text" id="vigenciaTotal" name="vigenciaTotal" required placeholder="Ex: 8 meses">
+                    <p style="font-style: italic; color: #555;">(a soma do período de estruturação e execução)</p>
+                </fieldset>
 
-<!-- Abas para 1.6 Entidade -->
-<div class="tab-content" id="tab6">
-    <h3>1.6 Entidade</h3>
-    <form id="formTab6">
-        <label>A Entidade já celebrou parceria com o Ministério?</label>
-        <label for="parceriaSim">
-            <input type="radio" id="parceriaSim" name="parceriaMinisterio" value="sim" required>
-            Sim
-        </label>
-        <label for="parceriaNao">
-            <input type="radio" id="parceriaNao" name="parceriaMinisterio" value="nao" required>
-            Não
-        </label>
-        <label for="numeroParcerias">Número de Parcerias:</label>
-        <input type="number" id="numeroParcerias" name="numeroParcerias">
-        <label for="resultadosParcerias">Resultados das Parcerias:</label>
-        <textarea id="resultadosParcerias" name="resultadosParcerias"></textarea>
-        <button type="button" onclick="saveTab('formTab6')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>2.6 Núcleos (onde serão realizadas as atividades)</legend>
+                    <label for="quantidadeNucleos" class="required">Quantidade de núcleos:</label>
+                    <input type="number" id="quantidadeNucleos" name="quantidadeNucleos" required>
+                    
+                    <label for="localidadeNucleos" class="required">Localidade:</label>
+                    <input type="text" id="localidadeNucleos" name="localidadeNucleos" required>
+                </fieldset>
 
-<!-- Abas para 1.7 Entidades Parceiras -->
-<div class="tab-content" id="tab7">
-    <h3>1.7 Entidades Parceiras</h3>
-    <form id="formTab7">
-        <label for="entidadeNome">Nome:</label>
-        <input type="text" id="entidadeNome" name="entidadeNome" required>
-        <label for="entidadeEmail">E-mail:</label>
-        <input type="email" id="entidadeEmail" name="entidadeEmail" required>
-        <label for="entidadeTelefone">Telefone:</label>
-        <input type="text" id="entidadeTelefone" name="entidadeTelefone" required>
-        <label for="entidadeEndereco">Endereço:</label>
-        <input type="text" id="entidadeEndereco" name="entidadeEndereco" required>
-        <label for="entidadeMunicipio">Município:</label>
-        <input type="text" id="entidadeMunicipio" name="entidadeMunicipio" required>
-        <label for="entidadeUF">UF:</label>
-        <input type="text" id="entidadeUF" name="entidadeUF" required>
-        <label for="entidadeCEP">CEP:</label>
-        <input type="text" id="entidadeCEP" name="entidadeCEP" required>
-        <label for="contribuicaoEntidade">Contribuição:</label>
-        <textarea id="contribuicaoEntidade" name="contribuicaoEntidade"></textarea>
-        <button type="button" onclick="saveTab('formTab7')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>2.7 Modalidades a serem Desenvolvidas</legend>
+                    <table id="modalidadesTable">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Modalidade</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" name="modalidade" required></td>
+                                <td><button type="button" onclick="removeRow(this)" class="remove-row">Remover</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="addModalidade()" class="add-row">Adicionar Modalidade</button>
+                </fieldset>
 
-<!-- Abas para 1.8 Coordenador -->
-<div class="tab-content" id="tab8">
-    <h3>1.8 Coordenador</h3>
-    <form id="formTab8">
-        <label for="coordenadorNome">Nome:</label>
-        <input type="text" id="coordenadorNome" name="coordenadorNome" required>
-        <label for="coordenadorEmail">E-mail:</label>
-        <input type="email" id="coordenadorEmail" name="coordenadorEmail" required>
-        <label for="coordenadorTelefone">Telefone:</label>
-        <input type="text" id="coordenadorTelefone" name="coordenadorTelefone" required>
-        <button type="button" onclick="saveTab('formTab8')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>2.8 Cronograma de Execução Físico-Financeira</legend>
+                    <label for="valorConcedente" class="required">Valor do Concedente:</label>
+                    <input type="text" id="valorConcedente" name="valorConcedente" required placeholder="R$">
+                    
+                    <label for="valorContrapartida">Valor do Convenente – Contrapartida (somente em caso de Convênio):</label>
+                    <input type="text" id="valorContrapartida" name="valorContrapartida" placeholder="R$">
+                    
+                    <label for="valorGlobal" class="required">Valor Global:</label>
+                    <input type="text" id="valorGlobal" name="valorGlobal" required placeholder="R$">
+                </fieldset>
 
-<!-- Abas para 1.9 Capacidade Técnica -->
-<div class="tab-content" id="tab9">
-    <h3>1.9 Capacidade Técnica</h3>
-    <form id="formTab9">
-        <label>Capacidade Técnica:</label>
-        <label for="capacidadeSim">
-            <input type="radio" id="capacidadeSim" name="capacidadeTecnica" value="sim" required>
-            Sim
-        </label>
-        <label for="capacidadeNao">
-            <input type="radio" id="capacidadeNao" name="capacidadeTecnica" value="nao" required>
-            Não
-        </label>
-        <label for="historicoCapacidade">Histórico:</label>
-        <textarea id="historicoCapacidade" name="historicoCapacidade"></textarea>
-        <button type="button" onclick="saveTab('formTab9')">Salvar</button>
-    </form>
-</div>
+                <button type="button" onclick="saveForm('formDadosProjeto')">Salvar</button>
+                <button type="button" class="tab-button" data-tab="info-proponente">Seção Anterior</button>
+                <button type="button" class="tab-button" data-tab="info-projeto">Próxima Seção</button>
+            </form>
+        </div>
 
-<div class="tab-content" id="tab10">
-    <h3>2.1 Objeto</h3>
-    <form id="formTab10">
-        <label for="objetoEvento">Descrever o Objeto do Evento:</label>
-        <textarea id="objetoEvento" name="objetoEvento" required></textarea>
-        <button type="button" onclick="saveTab('FormTab10')">Salvar</button>
-    </form>
-</div>
+        <!-- TAB 3: Informações do Projeto -->
+        <div id="info-projeto" class="tab-content">
+            <form id="formInfoProjeto">
+                <fieldset>
+                    <legend>3.1 Metodologia de Desenvolvimento do Projeto</legend>
+                    <label for="metodologia" class="required">Metodologia:</label>
+                    <textarea id="metodologia" name="metodologia" required>Este Projeto, visa combater o sedentarismo e promover um estilo de vida saudável através da prática regular de atividades físicas e fortalecimento da inclusão social. A implementação deste projeto trará benefícios significativos na qualidade de vida dos beneficiados, visando criar uma comunidade mais ativa e integrada. O projeto terá duração de XX (xxxxxx) meses, sendo XX (xxxxxx) para estruturação e XX (xxxxxx) para execução.</textarea>
+                </fieldset>
 
-<!-- Abas para 2.2 Justificativa -->
-<div class="tab-content" id="tab11">
-    <h3>2.2 Justificativa</h3>
-    <form id="formTab11">
-        <label for="justificativaInteresses">Caracterização dos Interesses Recíprocos:</label>
-        <textarea id="justificativaInteresses" name="justificativaInteresses" required></textarea>
-        <label for="justificativaObjetivos">Relação com os Objetivos:</label>
-        <textarea id="justificativaObjetivos" name="justificativaObjetivos" required></textarea>
-        <label for="justificativaPublico">Público-Alvo:</label>
-        <textarea id="justificativaPublico" name="justificativaPublico" required></textarea>
-        <label for="problemaResolvido">Problema a ser Resolvido:</label>
-        <textarea id="problemaResolvido" name="problemaResolvido" required></textarea>
-        <label for="resultadosEsperados">Resultados Esperados:</label>
-        <textarea id="resultadosEsperados" name="resultadosEsperados" required></textarea>
-        <button type="button" onclick="saveTab('formTab11')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>3.2 Estruturação do Projeto</legend>
+                    <p>Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:</p>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="estruturacao1" name="estruturacao" value="Contratação de recursos humanos" checked>
+                        <label for="estruturacao1">Contratação de recursos humanos</label><br>
+                        
+                        <input type="checkbox" id="estruturacao2" name="estruturacao" value="Contratação de prestação de serviços" checked>
+                        <label for="estruturacao2">Contratação de prestação de serviços</label><br>
+                        
+                        <input type="checkbox" id="estruturacao3" name="estruturacao" value="Aquisição de materiais esportivos" checked>
+                        <label for="estruturacao3">Aquisição de materiais esportivos</label><br>
+                        
+                        <input type="checkbox" id="estruturacao4" name="estruturacao" value="Aquisição de uniformes e acessórios para os beneficiários" checked>
+                        <label for="estruturacao4">Aquisição de uniformes e acessórios para os beneficiários</label><br>
+                        
+                        <input type="checkbox" id="estruturacao5" name="estruturacao" value="Aquisição dos materiais de identificação e divulgação" checked>
+                        <label for="estruturacao5">Aquisição dos materiais de identificação e divulgação</label>
+                    </div>
+                </fieldset>
 
-<!-- Abas para 2.3 Objetivo Geral -->
-<div class="tab-content" id="tab12">
-    <h3>2.3 Objetivo Geral</h3>
-    <form id="formTab12">
-        <label for="objetivoGeral">Descrever o Objetivo Geral:</label>
-        <textarea id="objetivoGeral" name="objetivoGeral" required></textarea>
-        <button type="button" onclick="saveTab('formTab12')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>3.3 Implementação e Desenvolvimento do Projeto</legend>
+                    <label for="implementacao" class="required">Descrição:</label>
+                    <textarea id="implementacao" name="implementacao" required>Refere-se à execução das aulas e atividades práticas com os beneficiários, promovendo o desenvolvimento técnico, social e inclusivo através do(s) seguintes modalidades: (Informar as modalidades).
+Quanto a metodologia, a implementação do projeto será conduzida de forma estruturada, garantindo o alcance dos objetivos e a participação efetiva dos beneficiários.
+A metodologia adotada se baseia em atividades teóricas, práticas e dinâmicas, organizadas da seguinte forma:</textarea>
+                </fieldset>
 
-<!-- Abas para 2.4 Objetivos Específicos -->
-<div class="tab-content" id="tab13">
-    <h3>2.4 Objetivos Específicos</h3>
-    <form id="formTab13">
-        <label for="objetivosEspecificos">Descrever os Objetivos Específicos:</label>
-        <textarea id="objetivosEspecificos" name="objetivosEspecificos" required></textarea>
-        <button type="button" onclick="saveTab('formTab13')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>3.4 Núcleos</legend>
+                    <label for="descricaoNucleos" class="required">Descrição:</label>
+                    <textarea id="descricaoNucleos" name="descricaoNucleos" required>O (s) núcleo (s) do projeto será (ão) implementados em espaços comunitários (públicos/privados) adequadas às modalidades esportivas propostas, localizado próximo à comunidade beneficiada, que preferencialmente, não demandam transporte para o deslocamento dos beneficiários.
+Esse (s) espaço (s) conta(m) com disponibilidade de área adequada para a prática esportiva, existência de infraestrutura básica, condições de acessibilidade dos espaços e segurança do local.
+O (s) núcleo (s) do projeto serão organizados de forma a proporcionar uma experiência positiva e eficiente para os beneficiários.
+Serão XX (quantitativo por externo) núcleos, cada um contará com um número médio de XX (quantidade por externo) beneficiários, divididos em turmas de acordo com a capacidade e modalidade oferecida.</textarea>
+                </fieldset>
 
-<!-- Abas para 3.1 Metodologia -->
-<div class="tab-content" id="tab14">
-    <h3>3.1 Metodologia</h3>
-    <form id="formTab14">
-        <label for="metodologiaEvento">Descrição Detalhada:</label>
-        <textarea id="metodologiaEvento" name="metodologiaEvento" required></textarea>
-        <button type="button" onclick="saveTab('formTab14')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>3.5 Identificação do Projeto</legend>
+                    <p>Em relação a divulgação do projeto, fundamenta-se como elemento primordial, com vistas ao alcance dos beneficiados junto à comunidade regional. A identificação visual do projeto será aplicada em lugar de visibilidade, no núcleo, observando os padrões estabelecidos no Manual de Identidade Visual, disponível no site do Ministério, para o acompanhamento pela comunidade local e pelos órgãos de controle e fiscalização.</p>
+                    
+                    <p>A identificação visual do Projeto nos espaços físicos:</p>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="identificacao1" name="identificacao" value="Faixas">
+                        <label for="identificacao1">Faixas</label><br>
+                        
+                        <input type="checkbox" id="identificacao2" name="identificacao" value="Banners">
+                        <label for="identificacao2">Banners</label><br>
+                        
+                        <input type="checkbox" id="identificacao3" name="identificacao" value="Outros">
+                        <label for="identificacao3">Outros. Especifique:</label>
+                        <input type="text" id="outrosIdentificacao" name="outrosIdentificacao" style="width: 300px; margin-left: 20px;">
+                    </div>
+                </fieldset>
 
-<!-- Abas para 3.2 Programação -->
-<div class="tab-content" id="tab15">
-    <h3>3.2 nucleo</h3>
-    <form id="formTab15">
-        <label for="nomeEvento">Nome do Evento:</label>
-        <input type="text" id="nomeEvento" name="nomeEvento" required>
-        <label for="periodoRealizacao">Período Previsto para Realização:</label>
-        <input type="text" id="periodoRealizacao" name="periodoRealizacao" required>
-        <label for="localEvento">Local:</label>
-        <input type="text" id="localEvento" name="localEvento" required>
-        <button type="button" onclick="saveTab('formTab15')">Salvar</button>
-    </form>
-</div>
-<div class="tab-content" id="tab16">
-    <h3>3.3 Modalidades</h3>
-    <form id="formTab16">
-        <label for="modalidadesProjeto">Modalidades Oferecidas:</label>
-        <textarea id="modalidadesProjeto" name="modalidadesProjeto" rows="4" placeholder="Descreva as modalidades esportivas ou atividades oferecidas pelo projeto." required></textarea>
-        <button type="button" onclick="saveTab('formTab16')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>3.6 Divulgação do Projeto</legend>
+                    <p>Será realizada de forma ampla e irrestrita. O objetivo é dar publicidade aos distintos públicos sobre as ações e o retorno dos resultados das intervenções públicas junto à sociedade.</p>
+                    
+                    <p>Detalhe como ocorrerá a divulgação das ações do Projeto (pode ser assinalada mais de uma alternativa):</p>
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="divulgacao1" name="divulgacao" value="Carros ou bicicletas de som">
+                        <label for="divulgacao1">Carros ou bicicletas de som</label><br>
+                        
+                        <input type="checkbox" id="divulgacao2" name="divulgacao" value="Cartazes">
+                        <label for="divulgacao2">Cartazes</label><br>
+                        
+                        <input type="checkbox" id="divulgacao3" name="divulgacao" value="Faixas">
+                        <label for="divulgacao3">Faixas</label><br>
+                        
+                        <input type="checkbox" id="divulgacao4" name="divulgacao" value="Banners">
+                        <label for="divulgacao4">Banners</label><br>
+                        
+                        <input type="checkbox" id="divulgacao5" name="divulgacao" value="Jornais">
+                        <label for="divulgacao5">Jornais</label><br>
+                        
+                        <input type="checkbox" id="divulgacao6" name="divulgacao" value="Panfletos">
+                        <label for="divulgacao6">Panfletos</label><br>
+                        
+                        <input type="checkbox" id="divulgacao7" name="divulgacao" value="Folder">
+                        <label for="divulgacao7">Folder</label><br>
+                        
+                        <input type="checkbox" id="divulgacao8" name="divulgacao" value="Mídia">
+                        <label for="divulgacao8">Mídia (meios de comunicação social de massas esse meios o rádio e televisão)</label><br>
+                        
+                        <input type="checkbox" id="divulgacao9" name="divulgacao" value="Internet">
+                        <label for="divulgacao9">Internet</label><br>
+                        
+                        <input type="checkbox" id="divulgacao10" name="divulgacao" value="Outros">
+                        <label for="divulgacao10">Outros. Especifique:</label>
+                        <input type="text" id="outrosDivulgacao" name="outrosDivulgacao" style="width: 300px; margin-left: 20px;">
+                    </div>
+                    
+                    <p>Qual será a forma de custeio da divulgação?</p>
+                    <div class="radio-group">
+                        <input type="radio" id="custeio1" name="custeioDivulgacao" value="Recursos da Emenda Parlamentar">
+                        <label for="custeio1">Recursos da Emenda Parlamentar</label>
+                        
+                        <input type="radio" id="custeio2" name="custeioDivulgacao" value="Recursos Próprios da Entidade">
+                        <label for="custeio2">Recursos Próprios da Entidade</label>
+                    </div>
+                </fieldset>
 
-<!-- 3.4 Reuniões -->
-<div class="tab-content" id="tab17">
-    <h3>3.4 Reuniões</h3>
-    <form id="formTab17">
-        <label for="frequenciaReunioes">Frequência das Reuniões:</label>
-        <input type="text" id="frequenciaReunioes" name="frequenciaReunioes" placeholder="Ex: Semanal, Mensal" required>
-        <label for="objetivoReunioes">Objetivo das Reuniões:</label>
-        <textarea id="objetivoReunioes" name="objetivoReunioes" rows="4" required></textarea>
-        <button type="button" onclick="saveTab('formTab17')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>3.7 Inscrições</legend>
+                    <textarea id="inscricoes" name="inscricoes" required>As inscrições deverão ser feitas antes do início do Projeto e devem alcançar o número de participantes previstos na meta do projeto. Salientamos que, caso haja um número inferior de inscritos, deverão ser realizadas ações de divulgação com intuito de preencher novas inscrições, a fim de que os recursos disponibilizados sejam bem aproveitados e a ação atenda o máximo de participantes.
+Poderão ser realizadas em plataformas online e por meio de fichas de inscrição, que deverão estar no local em que será realizado o Projeto ou em local pré-estabelecido durante toda a execução, de forma acessível aos colaboradores para eventuais consultas sobre os participantes. Após o encerramento doProjeto, todas as inscrições deverão ser registradas e preservadas para posterior prestação de contas.
+No caso de menores de idade, as inscrições para o projeto deverão ser feitas pelos responsáveis legais, que serão os responsáveis pelo preenchimento do cadastro e pela apresentação dos documentos necessários.
+Em alguns casos, pode ser exigido que o responsável legal assine um termo de compromisso para garantir a participação do menor no projeto, bem como o direito de imagem.</textarea>
+                </fieldset>
 
-<!-- Abas para 3.5 Materiais -->
-<div class="tab-content" id="tab18">
-    <h3>3.5 Materiais</h3>
-    <form id="formTab18">
-        <label>Adicionar Materiais/Serviços:</label>
-        <table id="materiaisTable">
-            <thead>
-                <tr>
-                    <th>Nº</th>
-                    <th>Descrição</th>
-                    <th>Quantidade</th>
-                    <th>Memória de Cálculo</th>
-                    <th>Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" name="numeroMaterial[]" required></td>
-                    <td><input type="text" name="descricaoMaterial[]" required></td>
-                    <td><input type="number" name="quantidadeMaterial[]" required></td>
-                    <td><textarea name="memoriaCalculo[]" required></textarea></td>
-                    <td><button type="button" onclick="removeRow(this)">Remover</button></td>
-                </tr>
-            </tbody>
-        </table>
-        <button type="button" onclick="addRow('materiaisTable')">Adicionar Linha</button>
-        <button type="button" onclick="saveTab('formTab18')">Salvar</button>
-    </form>
-</div>
-<div class="tab-content" id="tab19">
-    <h3>3.6 Uniformes</h3>
-    <form id="formTab19">
-        <table id="uniformesTable">
-            <thead>
-                <tr>
-                    <th>Vestimenta</th>
-                    <th>Especificação</th>
-                    <th>Quantidade</th>
-                    <th>Memória de Cálculo</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" name="vestimentaUniformes[]" required></td>
-                    <td><input type="text" name="especificacaoUniformes[]" required></td>
-                    <td><input type="number" name="quantidadeUniformes[]" min="1" required></td>
-                    <td><textarea name="memoriaUniformes[]" rows="2" required></textarea></td>
-                    <td><button type="button" onclick="removeRow(this)">Remover</button></td>
-                </tr>
-            </tbody>
-        </table>
-        <button type="button" onclick="addRow('uniformesTable')">Adicionar Uniforme</button>
-        <button type="button" onclick="saveTab('formTab19')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>3.8 Grade Horária das Atividades</legend>
+                    <p>O (s) núcleo (s) do projeto ofertarão, no mínimo, 20 (vinte) horas semanais de atividades, no mínimo 16 (dezesseis) horas de atedimento mais 4 (quatro) horas de planejamento, distribuídas em turmas separadas por faixa etária e perfil dos participantes, de forma a atender os XX (quantitativo por externo), de beneficiários previstos.</p>
+                    
+                    <table id="gradeHorariaTable">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Núcleo (localidade)</th>
+                                <th>Modalidades</th>
+                                <th>RH (Específicos para a execução da modalidade)</th>
+                                <th>Informações do Núcleo</th>
+                                <th>Grade Horária</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" name="nucleoLocalidade" required></td>
+                                <td><input type="text" name="modalidadesNucleo" required></td>
+                                <td><input type="text" name="rhNucleo" required></td>
+                                <td><textarea name="infoNucleo" required></textarea></td>
+                                <td><textarea name="gradeHoraria" required></textarea></td>
+                                <td><button type="button" onclick="removeRow(this)" class="remove-row">Remover</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="addGradeHoraria()" class="add-row">Adicionar Núcleo</button>
+                </fieldset>
 
-<!-- 3.7 Equipe de Trabalho -->
-<div class="tab-content" id="tab20">
-    <h3>3.7 Equipe de Trabalho</h3>
-    <form id="formTab37">
-        <p>(Inserir todos os recursos humanos envolvidos na realização do projeto e identificar quais serão cedidos pela proponente)</p>
-        <table id="equipeTable">
-            <thead>
-                <tr>
-                    <th>Função</th>
-                    <th>Qtd RH</th>
-                    <th>Atribuição / Carga Horária Semanal / Diária</th>
-                    <th>Qtd Meses / Diárias</th>
-                    <th>Ação</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <td><input type="text" name="funcaoEquipe[]" placeholder="Ex: Coordenador Geral" required></td>
-                    <td><input type="number" name="quantidadeRh[]" min="1" required></td>
-                    <td><textarea name="atribuicaoCargaHoraria[]" rows="2" placeholder="Descreva a atribuição e carga horária" required></textarea></td>
-                    <td><input type="number" name="quantidadeMesesDiarias[]" min="1" placeholder="Qtd Meses/Diárias" required></td>
-                    <td><button type="button" onclick="removeRow(this)">Remover</button></td>
-                </tr>
-            </tbody>
-        </table>
-        <button type="button" onclick="addRow('equipeTable')">Adicionar Função</button>
-        <button type="button" onclick="saveTab('formTab37')">Salvar</button>
-    </form>
-</div>
+                <fieldset>
+                    <legend>3.9 Recursos Humanos</legend>
+                    <p>Todos os profissionais envolvidos diretamente no projeto, terão atribuições específicas necessárias à execução do Projeto. Serão (contratados/cedidos) professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.</p>
+                    <p>Inserir os Recursos Humanos envolvidos na realização do Projeto e identificar quais serão cedidos pela Proponente.</p>
+                    
+                    <table id="recursosHumanosTable">
+                        <thead>
+                            <tr>
+                                <th>Função</th>
+                                <th>Qtd.</th>
+                                <th>Atribuição</th>
+                                <th>Carga Horária Semanal / Diária</th>
+                                <th>Qtd Meses/Diárias</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><input type="text" name="funcaoRH" required></td>
+                                <td><input type="number" name="quantidadeRH" required min="1"></td>
+                                <td><textarea name="atribuicaoRH" required></textarea></td>
+                                <td><input type="text" name="cargaHorariaRH" required></td>
+                                <td><input type="text" name="periodoRH" required></td>
+                                <td><button type="button" onclick="removeRow(this)" class="remove-row">Remover</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="addRecursoHumano()" class="add-row">Adicionar Recurso Humano</button>
+                </fieldset>
 
-<!-- Abas para 3.8 Divulgação -->
-<div class="tab-content" id="tab21">
-    <h3>3.8 Divulgação</h3>
-    <form id="formTab21">
-        <fieldset>
-            <legend>3.8.1 Detalhe como ocorrerá a divulgação das ações do Projeto (pode ser assinalada mais de uma alternativa):</legend>
-    
-            <!-- Opções de divulgação -->
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="carros_bicicletas_som">
-                Carros ou bicicletas de som
-            </label><br>
-    
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="cartazes">
-                Cartazes
-            </label><br>
-    
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="faixas">
-                Faixas
-            </label><br>
-    
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="banners">
-                Banners
-            </label><br>
-    
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="jornais">
-                Jornais
-            </label><br>
-    
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="panfletos">
-                Panfletos
-            </label><br>
-    
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="folder">
-                Folder
-            </label><br>
-    
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="midia">
-                Mídia (meios de comunicação social de massa como rádio, cinema e televisão)
-            </label><br>
-    
-            <!-- Internet com especificação -->
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="internet">
-                Internet
-            </label>
-            <input type="text" name="internetEspecificar" placeholder="Especifique os meios usados na internet"><br>
-    
-            <!-- Outros com especificação -->
-            <label>
-                <input type="checkbox" name="meiosDivulgacao[]" value="outros">
-                Outros
-            </label>
-            <input type="text" name="outrosEspecificar" placeholder="Especifique outros meios de divulgação"><br>
-        </fieldset>
-    
-        <button type="button" onclick="saveTab('formTab21')">Salvar</button>
-    </form>
+                <fieldset>
+                    <legend>3.10 Materiais Fornecidos</legend>
+                    <p>Serão adquiridos acessórios específicos para cada modalidade a ser executada, os quais serão distribuídos para cada núcleo de acordo com a modalidade e quantidade de beneficiados. Aqueles de uso coletivo ficarão sob guarda e responsabilidade da Entidade.</p>
+                    
+                    <table id="materiaisTable">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Modalidade</th>
+                                <th>Material</th>
+                                <th>Aquisição ou Locação</th>
+                                <th>Especificação</th>
+                                <th>Justificativa da Necessidade do Item</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" name="modalidadeMaterial" required></td>
+                                <td><input type="text" name="material" required></td>
+                                <td>
+                                    <select name="tipoAquisição" required>
+                                        <option value="Aquisição">Aquisição</option>
+                                        <option value="Locação">Locação</option>
+                                    </select>
+                                </td>
+                                <td><textarea name="especificacaoMaterial" required></textarea></td>
+                                <td><textarea name="justificativaMaterial" required></textarea></td>
+                                <td><button type="button" onclick="removeRow(this)" class="remove-row">Remover</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="addMaterial()" class="add-row">Adicionar Material</button>
+                </fieldset>
+
+                <fieldset>
+                    <legend>3.11 Uniformes</legend>
+                    <p>Para garantir um atendimento adequado aos beneficiários, será realizado a aquisição de uniformes para uso individual dos participantes e uniformes para a comissão técnica. Cada aluno receberá XX (xxxxx) conjuntos de uniforme, além de haver uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.</p>
+                    <p>Descrever os itens de uniformes (de acordo com o número de participantes) para o desenvolvimento das atividades.</p>
+                    
+                    <table id="uniformesTable">
+                        <thead>
+                            <tr>
+                                <th>Nº</th>
+                                <th>Modalidade</th>
+                                <th>Item</th>
+                                <th>Especificação</th>
+                                <th>Ação</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td><input type="text" name="modalidadeUniforme" required></td>
+                                <td><input type="text" name="itemUniforme" required></td>
+                                <td><textarea name="especificacaoUniforme" required></textarea></td>
+                                <td><button type="button" onclick="removeRow(this)" class="remove-row">Remover</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button type="button" onclick="addUniforme()" class="add-row">Adicionar Uniforme</button>
+                </fieldset>
+
+                <fieldset>
+                    <legend>3.12 Frequência nas Aulas</legend>
+                    <textarea id="frequenciaAulas" name="frequenciaAulas" required>Será requisito a todos os beneficiários, incluindo os menores, manter frequência mínima de 70% (setenta porcento) nas aulas. Esse critério visa assegurar o engajamento dos participantes e garantir que eles aproveitem efetivamente os benefícios oferecidos pelo projeto.
+A frequência será monitorada durante a execução das atividades, e os beneficiários que não atingirem o percentual mínimo de presença podem ser Subsituídos ou ter o benefício suspenso, conforme as regras estabelecidas. Isso visa garantir que o projeto seja realizado de maneira eficaz, com a participação ativa de todos os beneficiários.
+Em casos de faltas frequentes por parte dos beneficiários, a vaga será remanejada para outro participante, que poderá ser selecionado a partir de um cadastro reserva. Se não houver cadastro reserva, uma nova divulgação/chamada será feita para preencher as vagas em aberto, de modo a completar o total de participantes do projeto.</textarea>
+                </fieldset>
+
+                <button type="button" onclick="saveForm('formInfoProjeto')">Salvar</button>
+                <button type="button" class="tab-button" data-tab="dados-projeto">Seção Anterior</button>
+                <button type="button" class="tab-button" data-tab="desenvolvimento">Próxima Seção</button>
+            </form>
+        </div>
+
+        <!-- TAB 4: Desenvolvimento -->
+        <div id="desenvolvimento" class="tab-content">
+            <form id="formDesenvolvimento">
+                <fieldset>
+                    <legend>4.1 Estrutura das Aulas</legend>
+                    <textarea id="estruturaAulas" name="estruturaAulas" required>Cada aula esportiva seguirá uma estrutura padronizada para garantir consistência e qualidade, independentemente da modalidade esportiva. Esta estrutura incluirá:
+Aquecimento: Atividades lúdicas que preparam o corpo e a mente para o exercício, promovendo a circulação sanguínea e reduzindo o risco de lesões.
+Instrução Técnica: Foco no desenvolvimento de habilidades técnicas específicas da modalidade, com instruções claras e demonstrações práticas.
+Prática Guiada: Exercícios práticos onde os participantes aplicam as habilidades aprendidas sob a supervisão ativa dos instrutores, com feedback imediato.
+Jogos ou Competições: Atividades que incentivam a aplicação das habilidades em um contexto de jogo ou competição, promovendo o espírito esportivo e a colaboração.
+Intervalo e Socialização: Momento de descanso mais prolongado, permitindo o descanso e interação. Esse intervalo contribui para a recuperação física e fortalece os laços de amizade e pertencimento entre os participantes.
+Alongamento e Desaceleração: Encerramento das aulas com atividades leves para baixar a intensidade física e uma sessão de reflexão sobre as lições aprendidas e a autoavaliação do desempenho.</textarea>
+                </fieldset>
+
+                <fieldset>
+                    <legend>4.2 Metodologia de Ensino</legend>
+                    <textarea id="metodologiaEnsino" name="metodologiaEnsino" required>Aprendizado Baseado em Competências: Focar no desenvolvimento de competências específicas de cada modalidade, garantindo que os alunos progridam em habilidades técnicas e táticas.
+Educação Inclusiva: Adaptação das aulas para atender a diversas necessidades, incluindo ajustes para participantes com diferentes níveis de habilidade e capacidades físicas.
+Ensino Integrado: Integrar lições de vida, como trabalho em equipe, liderança, resiliência e ética esportiva, nas sessões de treinamento.
+Feedback Construtivo: Fornecer feedback regular e construtivo para encorajar e melhorar o desempenho dos alunos, enquanto se mantém um ambiente positivo e de suporte</textarea>
+                </fieldset>
+
+                <fieldset>
+                    <legend>4.3 Detalhamento Específico sobre as Modalidades Oferecidas</legend>
+                    <label for="detalhamentoModalidades" class="required">Detalhamento:</label>
+                    <textarea id="detalhamentoModalidades" name="detalhamentoModalidades" required>Espaço destinado para a Entidade relatar detalhes específicos sobre as modalidades que serão oferecidas neste projeto, visando conectar o projeto a realidade da Instituição e dos objetivos que se pretende alcançar, tais como: desenvolvimento, características, habilidades, materiais, estrutura, vantagens, benefícios, etc.</textarea>
+                </fieldset>
+
+                <fieldset>
+                    <legend>4.4 Avaliação e Progresso</legend>
+                    <textarea id="avaliacaoProgresso" name="avaliacaoProgresso" required>Avaliações Regulares: Realizar avaliações periódicas para monitorar o progresso, ajustar os planos de aula conforme necessário e garantir que todos os participantes estejam alcançando seu potencial máximo.
+Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do progresso de cada participante para acompanhar as melhorias e áreas que necessitam de atenção adicional.</textarea>
+                </fieldset>
+
+                <fieldset>
+                    <legend>4.5 Acompanhamento e Monitoramento das Atividades Desenvolvidas</legend>
+                    <textarea id="acompanhamento" name="acompanhamento" required>As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.</textarea>
+                </fieldset>
+
+                <fieldset>
+                    <legend>4.6 Conclusão</legend>
+                    <textarea id="conclusao" name="conclusao" required>O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.</textarea>
+                </fieldset>
+
+                <div class="action-buttons">
+                    <button type="button" onclick="saveForm('formDesenvolvimento')">Salvar</button>
+                    <button type="button" class="tab-button" data-tab="info-projeto">Seção Anterior</button>
+                    <button type="button" class="generate-pdf" onclick="generatePDF()"><i class="fas fa-file-pdf"></i> Gerar PDF</button>
+                </div>
+            </form>
+        </div>
     </div>
-    <!-- 4.2 Cronograma de Execução Físico-Financeira -->
-<div class="tab-content" id="tab23">
-    <h3>4.2 Cronograma de Execução Físico-Financeira</h3>
-    <form id="formTab23">
-        <fieldset>
-            <legend>Cronograma</legend>
-            <table>
-                <thead>
-                    <tr>
-                        <th>Atividade</th>
-                        <th>Data de Início</th>
-                        <th>Data de Término</th>
-                        <th>Valor Estimado (R$)</th>
-                        <th>Ações</th>
-                    </tr>
-                </thead>
-                <tbody id="cronogramaTable">
-                    <tr>
-                        <td><input type="text" name="atividade[]" required></td>
-                        <td><input type="date" name="dataInicio[]" required></td>
-                        <td><input type="date" name="dataTermino[]" required></td>
-                        <td><input type="number" name="valorEstimado[]" step="0.01" required></td>
-                        <td><button type="button" onclick="removeRow(this)">Remover</button></td>
-                    </tr>
-                </tbody>
-            </table>
-            <button type="button" onclick="addRow('cronogramaTable')">Adicionar Linha</button>
-        </fieldset>
-        <button type="button" onclick="saveTab('formTab23')">Salvar</button>
-    </form>
-</div>
-
-<!-- 4.3 Vigência do Evento -->
-<div class="tab-content" id="tab24">
-    <h3>4.3 Vigência do Evento</h3>
-    <form id="formTab24">
-        <fieldset>
-            <legend>Vigência do Evento</legend>
-            <label for="dataInicioEvento">Data de Início:</label>
-            <input type="date" id="dataInicioEvento" name="dataInicioEvento" required>
-
-            <label for="dataTerminoEvento">Data de Término:</label>
-            <input type="date" id="dataTerminoEvento" name="dataTerminoEvento" required>
-        </fieldset>
-        <button type="button" onclick="saveTab('formTab24')">Salvar</button>
-    </form>
-</div>
-
-<!-- 4.4 Forma de Prestação de Contas -->
-<div class="tab-content" id="tab25">
-    <h3>4.4 Prestação de Contas</h3>
-    <form id="formTab25">
-        <fieldset>
-            <legend>Forma de Prestação de Contas</legend>
-            <label for="relatorioFinal">Relatório Final:</label>
-            <textarea id="relatorioFinal" name="relatorioFinal" rows="4" required></textarea>
-
-            <label for="comprovantes">Comprovantes de Execução (Anexe documentos se necessário):</label>
-            <input type="file" id="comprovantes" name="comprovantes" multiple>
-        </fieldset>
-        <button type="button" onclick="saveTab('formTab25')">Salvar</button>
-    </form>
-</div>
-<button type="button" onclick="salvarProjeto()">Salvar Projeto</button>
-</div>  
-
     <footer>
-        <p>&copy; 2024 Ministério do Esporte</p>
-      </footer>
-
+        <p>© 2025 Ministério do Esporte</p>
+    </footer>
     <script>
-function saveTab(tabId) {
-    const form = document.querySelector(`#${tabId}`);
-    console.log(`Tentando buscar formulário com ID: #${tabId}`);
-    if (!form || form.tagName !== "FORM") {
-        console.error(`Erro: Elemento com ID ${tabId} não é um formulário válido.`);
-        alert(`Erro: Elemento com ID ${tabId} não é um formulário válido.`);
-        return;
-    }
-
-    try {
-        const formData = new FormData(form);
-
-        // Captura os valores de botões de rádio manualmente (se necessário)
-        form.querySelectorAll('input[type="radio"]:checked').forEach((radio) => {
-            formData.append(radio.name, radio.value);
-        });
-
-        const data = Object.fromEntries(formData.entries());
-        localStorage.setItem(tabId, JSON.stringify(data));
-        console.log(`Dados salvos com sucesso para ${tabId}:`, data);
-        alert(`Informações da aba ${tabId} salvas com sucesso!`);
-    } catch (error) {
-        console.error(`Erro ao salvar os dados da aba ${tabId}:`, error);
-        alert(`Erro ao salvar os dados da aba ${tabId}: ${error.message}`);
-    }
-}
-
-document.addEventListener("DOMContentLoaded", () => {
-    const forms = document.querySelectorAll("form");
-
-    forms.forEach((form) => {
-        const savedData = localStorage.getItem(form.id); // Usa o ID completo do formulário
-        if (savedData) {
-            const data = JSON.parse(savedData);
-            Object.keys(data).forEach((key) => {
-                const input = form.querySelector(`[name="${key}"]`);
-                if (input) {
-                    input.value = data[key];
-                }
+// Funções para alternar entre abas
+document.addEventListener('DOMContentLoaded', function() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function() {
+            document.querySelectorAll('.tab-content').forEach(content => {
+                content.classList.remove('active');
             });
-            console.log(`Dados carregados para ${form.id}:`, data);
-        }
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const tabId = this.getAttribute('data-tab');
+            document.getElementById(tabId).classList.add('active');
+            this.classList.add('active');
+        });
     });
+    
+    // Mostrar descrição da dimensão do projeto
+    const dimensaoRadios = document.querySelectorAll('input[name="dimensaoProjeto"]');
+    const descricaoDimensao = document.getElementById('descricaoDimensao');
+    
+    dimensaoRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.id === 'dimensao1') {
+                descricaoDimensao.textContent = "Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.";
+            } else if (this.id === 'dimensao2') {
+                descricaoDimensao.textContent = "Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.";
+            }
+        });
+    });
+    
+    // Mostrar/ocultar campo de número de parcerias
+    const parceriaRadios = document.querySelectorAll('input[name="temParceria"]');
+    const parceriaInfo = document.getElementById('parceriaInfo');
+    
+    parceriaRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.id === 'parceriaSim') {
+                parceriaInfo.style.display = 'block';
+            } else {
+                parceriaInfo.style.display = 'none';
+            }
+        });
+    });
+    
+    // Carregar dados salvos
+    loadSavedData();
 });
 
-// Função para buscar dados do CNPJ
-async function buscarDadosCNPJ() {
-    const cnpjInput = document.getElementById('cnpjProponente');
-    const cnpj = cnpjInput.value.replace(/\D/g, ''); // Remove pontos e barras
+// Função para salvar dados do formulário
+function saveForm(formId) {
+    const form = document.getElementById(formId);
+    const formData = new FormData(form);
+    const data = {};
+    
+    formData.forEach((value, key) => {
+        data[key] = value;
+    });
+    
+    // Para checkboxes e radios
+    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        if (!data[checkbox.name]) {
+            data[checkbox.name] = [];
+        }
+        if (checkbox.checked) {
+            data[checkbox.name].push(checkbox.value);
+        }
+    });
+    
+    const radios = form.querySelectorAll('input[type="radio"]');
+    radios.forEach(radio => {
+        if (radio.checked) {
+            data[radio.name] = radio.value;
+        }
+    });
+    
+    // Para tabelas
+    const tables = form.querySelectorAll('table');
+    tables.forEach(table => {
+        const tableId = table.id;
+        const rows = table.querySelectorAll('tbody tr');
+        const tableData = [];
+        
+        rows.forEach(row => {
+            const rowData = {};
+            const inputs = row.querySelectorAll('input, textarea, select');
+            
+            inputs.forEach(input => {
+                rowData[input.name] = input.value;
+            });
+            
+            tableData.push(rowData);
+        });
+        
+        data[tableId] = tableData;
+    });
+    
+    // Salvar no localStorage
+    localStorage.setItem(formId, JSON.stringify(data));
+    alert('Dados salvos com sucesso!');
+}
 
-    if (cnpj.length !== 14) {
-        alert("Por favor, insira um CNPJ válido com 14 dígitos.");
+// Função para carregar dados salvos
+function loadSavedData() {
+    const forms = document.querySelectorAll('form');
+    
+    forms.forEach(form => {
+        const savedData = localStorage.getItem(form.id);
+        if (savedData) {
+            const data = JSON.parse(savedData);
+            
+            // Preencher campos normais
+            Object.keys(data).forEach(key => {
+                if (key.endsWith('Table')) return;
+                
+                const input = form.querySelector(`[name="${key}"]`);
+                if (input) {
+                    if (input.type === 'checkbox') {
+                        input.checked = data[key].includes(input.value);
+                    } else if (input.type === 'radio') {
+                        if (input.value === data[key]) {
+                            input.checked = true;
+                        }
+                    } else {
+                        input.value = data[key];
+                    }
+                }
+            });
+            
+            // Preencher tabelas
+            Object.keys(data).forEach(key => {
+                if (key.endsWith('Table')) {
+                    const table = document.getElementById(key);
+                    if (table) {
+                        const tbody = table.querySelector('tbody');
+                        while (tbody.rows.length > 1) {
+                            tbody.deleteRow(1);
+                        }
+                        
+                        data[key].forEach((rowData, index) => {
+                            if (index > 0) {
+                                if (key === 'modalidadesTable') addModalidade();
+                                else if (key === 'gradeHorariaTable') addGradeHoraria();
+                                else if (key === 'recursosHumanosTable') addRecursoHumano();
+                                else if (key === 'materiaisTable') addMaterial();
+                                else if (key === 'uniformesTable') addUniforme();
+                            }
+                            
+                            const row = tbody.rows[index];
+                            Object.keys(rowData).forEach(field => {
+                                const input = row.querySelector(`[name="${field}"]`);
+                                if (input) {
+                                    input.value = rowData[field];
+                                }
+                            });
+                        });
+                    }
+                }
+            });
+        }
+    });
+}
+
+// Funções para adicionar/remover objetivos específicos
+function addObjetivo() {
+    const container = document.getElementById('objetivosEspecificos');
+    const count = container.querySelectorAll('.objetivo-item').length + 1;
+    
+    const div = document.createElement('div');
+    div.className = 'objetivo-item';
+    div.innerHTML = `
+        <textarea name="objetivoEspecifico" required></textarea>
+        <button type="button" onclick="removeObjetivo(this)" class="remove-row">Remover</button>
+    `;
+    
+    container.appendChild(div);
+}
+
+function removeObjetivo(button) {
+    const container = document.getElementById('objetivosEspecificos');
+    if (container.querySelectorAll('.objetivo-item').length > 1) {
+        button.parentElement.remove();
+    } else {
+        alert('É necessário ter pelo menos um objetivo específico.');
+    }
+}
+
+// Funções para adicionar/remover modalidades
+function addModalidade() {
+    const tbody = document.querySelector('#modalidadesTable tbody');
+    const rows = tbody.querySelectorAll('tr');
+    const newRow = rows[0].cloneNode(true);
+    
+    newRow.querySelector('input').value = '';
+    newRow.cells[0].textContent = rows.length + 1;
+    
+    tbody.appendChild(newRow);
+}
+
+// Funções para adicionar/remover grade horária
+function addGradeHoraria() {
+    const tbody = document.querySelector('#gradeHorariaTable tbody');
+    const rows = tbody.querySelectorAll('tr');
+    const newRow = rows[0].cloneNode(true);
+    
+    newRow.querySelectorAll('input, textarea').forEach(input => {
+        input.value = '';
+    });
+    
+    newRow.cells[0].textContent = rows.length + 1;
+    
+    tbody.appendChild(newRow);
+}
+
+// Funções para adicionar/remover recursos humanos
+function addRecursoHumano() {
+    const tbody = document.querySelector('#recursosHumanosTable tbody');
+    const rows = tbody.querySelectorAll('tr');
+    const newRow = rows[0].cloneNode(true);
+    
+    newRow.querySelectorAll('input, textarea').forEach(input => {
+        input.value = '';
+    });
+    
+    tbody.appendChild(newRow);
+}
+
+// Funções para adicionar/remover materiais
+function addMaterial() {
+    const tbody = document.querySelector('#materiaisTable tbody');
+    const rows = tbody.querySelectorAll('tr');
+    const newRow = rows[0].cloneNode(true);
+    
+    newRow.querySelectorAll('input, textarea, select').forEach(input => {
+        input.value = '';
+    });
+    
+    newRow.cells[0].textContent = rows.length + 1;
+    
+    tbody.appendChild(newRow);
+}
+
+// Funções para adicionar/remover uniformes
+function addUniforme() {
+    const tbody = document.querySelector('#uniformesTable tbody');
+    const rows = tbody.querySelectorAll('tr');
+    const newRow = rows[0].cloneNode(true);
+    
+    newRow.querySelectorAll('input, textarea').forEach(input => {
+        input.value = '';
+    });
+    
+    newRow.cells[0].textContent = rows.length + 1;
+    
+    tbody.appendChild(newRow);
+}
+
+// Função para remover linhas de tabelas
+function removeRow(button) {
+    const row = button.closest('tr');
+    const tbody = row.parentNode;
+    
+    if (tbody.querySelectorAll('tr').length > 1) {
+        row.remove();
+        
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach((row, index) => {
+            row.cells[0].textContent = index + 1;
+        });
+    } else {
+        alert('É necessário ter pelo menos uma linha na tabela.');
+    }
+}
+
+// Função para gerar PDF
+function generatePDF() {
+    if (!window.jspdf || !window.jspdf.jsPDF) {
+        alert('A biblioteca jsPDF não foi carregada corretamente. Por favor, recarregue a página.');
         return;
     }
-
-    try {
-        const response = await fetch(`http://localhost:3000/buscar-cnpj/${cnpj}`);
-
-        if (!response.ok) {
-            throw new Error(`Erro na API: ${response.status} ${response.statusText}`);
-        }
-
-        const dados = await response.json();
-        document.getElementById('nomeProponente').value = dados.nome || '';
-        document.getElementById('nomeDirigente').value = dados.qsa?.[0]?.nome || '';
-        document.getElementById('telefoneDirigente').value = dados.telefone || '';
-        document.getElementById('emailDirigente').value = dados.email || '';
-
-        alert("Dados do CNPJ carregados com sucesso!");
-    } catch (error) {
-        console.error('Erro ao buscar dados do CNPJ:', error);
-        alert(`Erro ao buscar os dados da entidade: ${error.message}`);
-    }
-}
-
-// Função para alternar abas
-function alternarAbas() {
-    const tabs = document.querySelectorAll(".tab");
-    const contents = document.querySelectorAll(".tab-content");
-
-    tabs.forEach((tab) => {
-        tab.addEventListener("click", () => {
-            tabs.forEach((t) => t.classList.remove("active"));
-            tab.classList.add("active");
-
-            contents.forEach((content) => content.classList.remove("active"));
-            document.getElementById(tab.dataset.tab).classList.add("active");
-        });
-    });
-}
-
-// Função para enviar todos os dados
-async function salvarProjeto() {
-    const form = document.getElementById('formTab1'); // Ajuste o ID para o formulário correto
-    const formData = new FormData(form);
-
-    const data = Object.fromEntries(formData.entries()); // Converte para objeto JSON
     
     try {
-        const response = await fetch('http://localhost:3000/salvar-projeto', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(data) // Envia os dados como JSON
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF({
+            orientation: 'portrait',
+            unit: 'mm',
+            format: 'a4'
         });
-
-        if (!response.ok) throw new Error('Erro ao salvar o projeto.');
-
-        alert('Projeto salvo com sucesso!');
-        window.location.href = '/pre-page2'; // Redirecionar após salvar
+        
+        // Configurações globais
+        const marginLeft = 10;
+        const marginRight = 10;
+        const maxWidth = 190;
+        const lineHeight = 6;
+        const headerColor = [75, 108, 183]; // #4B6CB7
+        
+        // Função auxiliar para adicionar texto com quebra automática
+        function addWrappedText(text, x, y, maxWidth) {
+            const lines = doc.splitTextToSize(text || '', maxWidth);
+            doc.text(lines, x, y);
+            return y + (lines.length * lineHeight);
+        }
+        
+        // Função auxiliar para verificar espaço na página
+        function checkPageSpace(requiredHeight, currentY) {
+            if (currentY + requiredHeight > 270) {
+                doc.addPage();
+                return 20;
+            }
+            return currentY;
+        }
+        
+        // Página 1
+        doc.setFontSize(16);
+        doc.setTextColor(...headerColor);
+        doc.text('PROJETO TÉCNICO', 105, 20, { align: 'center' });
+        doc.text('IMPLEMENTAÇÃO E DESENVOLVIMENTO DE PROJETO', 105, 30, { align: 'center' });
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        doc.text('===== INSERIR PAPEL TIMBRADO DA ENTIDADE =====', 105, 40, { align: 'center' });
+        
+        doc.setFontSize(14);
+        doc.setTextColor(...headerColor);
+        let yPos = 50;
+        doc.text('1. INFORMAÇÕES GERAIS DO PROPONENTE', marginLeft, yPos);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        
+        // Recuperar dados dos formulários
+        const formProponente = JSON.parse(localStorage.getItem('formProponente') || '{}');
+        const formDadosProjeto = JSON.parse(localStorage.getItem('formDadosProjeto') || '{}');
+        const formInfoProjeto = JSON.parse(localStorage.getItem('formInfoProjeto') || '{}');
+        const formDesenvolvimento = JSON.parse(localStorage.getItem('formDesenvolvimento') || '{}');
+        
+        // 1.1 Identificação do Proponente
+        yPos += 10;
+        doc.autoTable({
+            startY: yPos,
+            head: [['1.1 IDENTIFICAÇÃO PROPONENTE']],
+            body: [
+                ['CNPJ Proponente:', formProponente.cnpj || ''],
+                ['Nome Proponente:', formProponente.nomeProponente || ''],
+                ['Nome do Dirigente:', formProponente.nomeDirigente || ''],
+                ['Telefone de contato com DDD:', formProponente.telefone || ''],
+                ['E-mail:', formProponente.email || ''],
+                ['Número da Proposta (PlataformaTransferegov):', formProponente.numeroProposta || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // 1.2 Responsável pela Elaboração
+        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO']],
+            body: [
+                ['Nome:', formProponente.responsavelNome || ''],
+                ['E-mail:', formProponente.responsavelEmail || ''],
+                ['Vínculo com a Entidade (Cargo/Função):', formProponente.responsavelVinculo || ''],
+                ['Telefone de contato com DDD:', formProponente.responsavelTelefone || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // 1.3 Dimensão do Projeto
+        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['1.3 DIMENSÃO DO PROJETO (marque somente uma opção)']],
+            body: [
+                [formProponente.dimensaoProjeto === 'Projeto Educacional' ? '(X)' : '( )', 'Projeto Educacional'],
+                [formProponente.dimensaoProjeto === 'Projeto de Participação' ? '(X)' : '( )', 'Projeto de Participação']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 170 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        yPos = doc.lastAutoTable.finalY + 5;
+        yPos = addWrappedText(
+            formProponente.dimensaoProjeto === 'Projeto Educacional' ?
+                'Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.' :
+                'Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.',
+            marginLeft + 10, yPos, maxWidth - 20
+        );
+        
+        // 1.4 Localidade
+        yPos = checkPageSpace(50, yPos + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['1.4 LOCALIDADE – (onde o projeto será desenvolvido) - Índice de Desenvolvimento Humano (SITE IBGE)']],
+            body: [
+                ['CIDADE:', formProponente.cidade || '', 'UF:', formProponente.uf || ''],
+                ['IDH:', formProponente.idh || '', 'Ano de Referência:', formProponente.anoIDH || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 80 }, 2: { cellWidth: 30 }, 3: { cellWidth: 50 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // 1.5 População
+        yPos = checkPageSpace(40, doc.lastAutoTable.finalY + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['1.5 POPULAÇÃO - Característica demográfica da localidade (SITE IBGE)']],
+            body: [
+                ['Nº de habitantes:', formProponente.numHabitantes || '', 'Ano de referência:', formProponente.anoHabitantes || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 60 }, 2: { cellWidth: 50 }, 3: { cellWidth: 30 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // 1.6 Informações sobre a Entidade
+        yPos = checkPageSpace(50, doc.lastAutoTable.finalY + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE DO PROJETO']],
+            body: [
+                ['A Entidade já celebrou parcerias com o Ministério do Esporte?', 
+                 (formProponente.temParceria === 'sim' ? '(X) Sim' : '( ) Sim') + ' | ' + 
+                 (formProponente.temParceria === 'nao' ? '(X) Não' : '( ) Não') + 
+                 (formProponente.temParceria === 'sim' ? ' | Nº de parcerias: ' + (formProponente.numParcerias || '') : '')],
+                ['A Entidade já deu publicidade às parcerias celebradas em seu respectivo site?', 
+                 (formProponente.temPublicidade === 'sim' ? '(X) Sim' : '( ) Sim') + ' | ' + 
+                 (formProponente.temPublicidade === 'nao' ? '(X) Não' : '( ) Não')]
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 90 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // 1.7 Estatuto
+        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE']],
+            body: [
+                ['Análise Estatutária, em conformidade com o art. 2º, inciso I, da Lei 13.019/2014', formProponente.artigo2 || ''],
+                ['Análise Estatutária, em conformidade com o art. 33, inciso I, da Lei 13.019/2014', formProponente.artigo33I || ''],
+                ['Análise Estatutária, em conformidade com o art. 33, inciso III, da Lei 13.019/2014', formProponente.artigo33III || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 50 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // Página 2: Dados Gerais do Projeto
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(...headerColor);
+        yPos = 20;
+        doc.text('2. DADOS GERAIS DO PROJETO TÉCNICO', marginLeft, yPos);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        
+        // 2.1 Objeto
+        yPos += 10;
+        doc.text('2.1 OBJETO (Identificação do Projeto - O objeto deve ser o mesmo descrito na Aba Dados da proposta)', marginLeft, yPos);
+        yPos = addWrappedText(formDadosProjeto.objetoProjeto || 'Implementação e desenvolvimento do Projeto XXXXXXXXXXXXX na Cidade ou Estado/UF.', marginLeft + 5, yPos + 5, maxWidth - 10);
+        
+        // 2.2 Objetivo Geral
+        yPos = checkPageSpace(40, yPos + 10);
+        doc.text('2.2 OBJETIVO GERAL', marginLeft, yPos);
+        yPos = addWrappedText(
+            formDadosProjeto.objetivoGeral || 'Promover a inclusão social e a melhoria da qualidade de vida por meio das práticas esportivas e de lazer como ferramenta de transformação social, utilizando o esporte como instrumento de formação esportiva, disciplinar e valores fundamentais, através do estímulo do bem estar físico, psicológico dos beneficiados envolvidos.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        // 2.3 Objetivos Específicos
+        yPos = checkPageSpace(60, yPos + 10);
+        doc.text('2.3 OBJETIVOS ESPECÍFICOS', marginLeft, yPos);
+        const objetivosEspecificos = formDadosProjeto.objetivoEspecifico 
+            ? (Array.isArray(formDadosProjeto.objetivoEspecifico) ? formDadosProjeto.objetivoEspecifico : [formDadosProjeto.objetivoEspecifico])
+            : ['Oportunizar a prática esportiva sistematizada para crianças, adolescentes, jovens, adultos e idosos.'];
+        
+        yPos += 5;
+        objetivosEspecificos.forEach((obj, index) => {
+            yPos = checkPageSpace(20, yPos);
+            yPos = addWrappedText(`${index + 1}. ${obj}`, marginLeft + 5, yPos, maxWidth - 10);
+        });
+        
+        // 2.4 Público-Alvo
+        yPos = checkPageSpace(60, yPos + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['2.4 PÚBLICO-ALVO']],
+            body: [
+                ['Público direto (beneficiários):', formDadosProjeto.publicoDireto || ''],
+                ['Faixa etária do público direto:', formDadosProjeto.faixaEtaria || ''],
+                ['Público indireto:', formDadosProjeto.publicoIndireto || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // 2.5 Vigência do Projeto
+        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['2.5 VIGÊNCIA DO PROJETO']],
+            body: [
+                ['Período de Estruturação:', formDadosProjeto.periodoEstruturação || ''],
+                ['Período de Execução:', formDadosProjeto.periodoExecução || ''],
+                ['Vigência:', formDadosProjeto.vigenciaTotal || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // 2.6 Núcleos
+        yPos = checkPageSpace(50, doc.lastAutoTable.finalY + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['2.6 NÚCLEOS (onde serão realizadas as atividades)']],
+            body: [
+                ['Quantidade de núcleos:', formDadosProjeto.quantidadeNucleos || ''],
+                ['Localidade:', formDadosProjeto.localidadeNucleos || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // 2.7 Modalidades
+        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
+        doc.text('2.7 MODALIDADES A SEREM DESENVOLVIDAS', marginLeft, yPos);
+        const modalidades = formDadosProjeto.modalidadesTable || [{ modalidade: '' }];
+        const modalidadesBody = modalidades.map((mod, index) => [`${index + 1}. ${mod.modalidade || ''}`]);
+        
+        doc.autoTable({
+            startY: yPos + 5,
+            body: modalidadesBody,
+            theme: 'plain',
+            bodyStyles: { fontSize: 9 },
+            margin: { left: marginLeft + 5 },
+            columnStyles: { 0: { cellWidth: maxWidth - 10 } }
+        });
+        
+        // 2.8 Cronograma Financeiro
+        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
+        doc.autoTable({
+            startY: yPos,
+            head: [['2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO FINANCEIRA']],
+            body: [
+                ['Valor do Concedente', formDadosProjeto.valorConcedente || ''],
+                ['Valor do Convenente – Contrapartida (somente em caso de Convênio)', formDadosProjeto.valorContrapartida || ''],
+                ['Valor Global', formDadosProjeto.valorGlobal || '']
+            ],
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
+            bodyStyles: { fontSize: 9 },
+            columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 90 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // Página 3: Informações do Projeto
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(...headerColor);
+        yPos = 20;
+        doc.text('3. INFORMAÇÕES DO PROJETO', marginLeft, yPos);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        
+        // 3.1 Metodologia
+        yPos += 10;
+        doc.text('3.1 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO', marginLeft, yPos);
+        yPos = addWrappedText(
+            formInfoProjeto.metodologia || 'Este Projeto, visa combater o sedentarismo e promover um estilo de vida saudável através da prática regular de atividades físicas e fortalecimento da inclusão social. A implementação deste projeto trará benefícios significativos na qualidade de vida dos beneficiados, visando criar uma comunidade mais ativa e integrada.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        // 3.2 Estruturação
+        yPos = checkPageSpace(60, yPos + 10);
+        doc.text('3.2 ESTRUTURAÇÃO DO PROJETO:', marginLeft, yPos);
+        yPos = addWrappedText(
+            'Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        const estruturacoes = formInfoProjeto.estruturacao || [
+            'Contratação de recursos humanos',
+            'Contratação de prestação de serviços',
+            'Aquisição de materiais esportivos',
+            'Aquisição de uniformes e acessórios para os beneficiários',
+            'Aquisição dos materiais de identificação e divulgação'
+        ];
+        
+        estruturacoes.forEach(item => {
+            yPos = checkPageSpace(20, yPos);
+            yPos = addWrappedText(`• ${item}`, marginLeft + 10, yPos, maxWidth - 15);
+        });
+        
+        // 3.3 Recursos Humanos
+        yPos = checkPageSpace(80, yPos + 10);
+        doc.text('3.3 RECURSOS HUMANOS', marginLeft, yPos);
+        yPos = addWrappedText(
+            'Todos os profissionais envolvidos diretamente no projeto, terão atribuições específicas necessárias à execução do Projeto. Serão (contratados/cedidos) professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        const recursosHumanos = formInfoProjeto.recursosHumanosTable || [{ funcaoRH: '', quantidadeRH: '', atribuicaoRH: '', cargaHorariaRH: '', periodoRH: '' }];
+        const recursosHumanosBody = recursosHumanos.map(rh => [
+            rh.funcaoRH || '',
+            rh.quantidadeRH || '',
+            rh.atribuicaoRH || '',
+            rh.cargaHorariaRH || '',
+            rh.periodoRH || ''
+        ]);
+        
+        doc.autoTable({
+            startY: yPos + 5,
+            head: [['FUNÇÃO', 'QTD.', 'ATRIBUIÇÃO', 'CARGA HORÁRIA SEMANAL / DIÁRIA', 'QTD MESES/ DIÁRIAS']],
+            body: recursosHumanosBody,
+            theme: 'grid',
+            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
+            bodyStyles: { fontSize: 8 },
+            columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 20 }, 2: { cellWidth: 70 }, 3: { cellWidth: 40 }, 4: { cellWidth: 20 } },
+            margin: { left: marginLeft, right: marginRight }
+        });
+        
+        // Página 4: Desenvolvimento das Atividades
+        doc.addPage();
+        doc.setFontSize(14);
+        doc.setTextColor(...headerColor);
+        yPos = 20;
+        doc.text('4. DESENVOLVIMENTO DAS ATIVIDADES', marginLeft, yPos);
+        doc.setFontSize(12);
+        doc.setTextColor(0, 0, 0);
+        
+        // 4.1 Estrutura das Aulas
+        yPos += 10;
+        doc.text('4.1 ESTRUTURA DAS AULAS:', marginLeft, yPos);
+        yPos = addWrappedText(
+            formDesenvolvimento.estruturaAulas || 'Cada aula esportiva seguirá uma estrutura padronizada para garantir consistência e qualidade, independentemente da modalidade esportiva. Esta estrutura incluirá: Aquecimento: Atividades lúdicas que preparam o corpo e a mente para o exercício, promovendo a circulação sanguínea e reduzindo o risco de lesões. Instrução Técnica: Foco no desenvolvimento de habilidades técnicas específicas da modalidade, com instruções claras e demonstrações práticas. Prática Guiada: Exercícios práticos onde os participantes aplicam as habilidades aprendidas sob a supervisão ativa dos instrutores, com feedback imediato. Jogos ou Competições: Atividades que incentivam a aplicação das habilidades em um contexto de jogo ou competição, promovendo o espírito esportivo e a colaboração. Intervalo e Socialização: Momento de descanso mais prolongado, permitindo o descanso e interação. Esse intervalo contribui para a recuperação física e fortalece os laços de amizade e pertencimento entre os participantes. Alongamento e Desaceleração: Encerramento das aulas com atividades leves para baixar a intensidade física e uma sessão de reflexão sobre as lições aprendidas e a autoavaliação do desempenho.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        // 4.2 Metodologia de Ensino
+        yPos = checkPageSpace(80, yPos + 10);
+        doc.text('4.2 METODOLOGIA DE ENSINO:', marginLeft, yPos);
+        yPos = addWrappedText(
+            formDesenvolvimento.metodologiaEnsino || 'Aprendizado Baseado em Competências: Focar no desenvolvimento de competências específicas de cada modalidade, garantindo que os alunos progridam em habilidades técnicas e táticas. Educação Inclusiva: Adaptação das aulas para atender a diversas necessidades, incluindo ajustes para participantes com diferentes níveis de habilidade e capacidades físicas. Ensino Integrado: Integrar lições de vida, como trabalho em equipe, liderança, resiliência e ética esportiva, nas sessões de treinamento. Feedback Construtivo: Fornecer feedback regular e construtivo para encorajar e melhorar o desempenho dos alunos, enquanto se mantém um ambiente positivo e de suporte.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        // 4.3 Detalhamento das Modalidades
+        yPos = checkPageSpace(60, yPos + 10);
+        doc.text('4.3 DETALHAMENTO ESPECÍFICO SOBRE AS MODALIDADES OFERECIDAS POR ESTE PROJETO', marginLeft, yPos);
+        yPos = addWrappedText(
+            formDesenvolvimento.detalhamentoModalidades || 'Espaço destinado para a Entidade relatar detalhes específicos sobre as modalidades que serão oferecidas neste projeto, visando conectar o projeto a realidade da Instituição e dos objetivos que se pretende alcançar, tais como: desenvolvimento, características, habilidades, materiais, estrutura, vantagens, benefícios, etc.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        // 4.4 Avaliação e Progresso
+        yPos = checkPageSpace(60, yPos + 10);
+        doc.text('4.4 AVALIAÇÃO E PROGRESSO:', marginLeft, yPos);
+        yPos = addWrappedText(
+            formDesenvolvimento.avaliacaoProgresso || 'Avaliações Regulares: Realizar avaliações periódicas para monitorar o progresso, ajustar os planos de aula conforme necessário e garantir que todos os participantes estejam alcançando seu potencial máximo. Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do progresso de cada participante para acompanhar as melhorias e áreas que necessitam de atenção adicional.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        // 5. Acompanhamento
+        yPos = checkPageSpace(60, yPos + 10);
+        doc.text('5. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES DESENVOLVIDAS:', marginLeft, yPos);
+        yPos = addWrappedText(
+            formDesenvolvimento.acompanhamento || 'As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        // 6. Conclusão
+        yPos = checkPageSpace(60, yPos + 10);
+        doc.text('6. CONCLUSÃO', marginLeft, yPos);
+        yPos = addWrappedText(
+            formDesenvolvimento.conclusao || 'O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.',
+            marginLeft + 5, yPos + 5, maxWidth - 10
+        );
+        
+        // Assinatura
+        yPos = checkPageSpace(60, yPos + 20);
+        const date = new Date();
+        doc.text(
+            `Estado/UF, ${date.getDate()} de ${date.toLocaleString('pt-BR', { month: 'long' })} de ${date.getFullYear()}`,
+            105, yPos, { align: 'center' }
+        );
+        yPos += 20;
+        doc.text('______________________________________________', 105, yPos, { align: 'center' });
+        yPos += 5;
+        doc.text('NOME DO REPRESENTANTE LEGAL DA ENTIDADE', 105, yPos, { align: 'center' });
+        yPos += 5;
+        doc.text('Dirigente', 105, yPos, { align: 'center' });
+        yPos += 10;
+        doc.text('______________________________________________', 105, yPos, { align: 'center' });
+        yPos += 5;
+        doc.text('ESPAÇO RESERVADO PARA ASSINATURA GOV.BR', 105, yPos, { align: 'center' });
+        
+        // Salvar PDF
+        doc.save('Projeto_Tecnico_Esportivo.pdf');
+        
     } catch (error) {
-        console.error(error);
-        alert('Erro ao salvar o projeto.');
+        console.error('Erro ao gerar PDF:', error);
+        alert('Ocorreu um erro ao gerar o PDF. Verifique os dados e tente novamente.');
     }
 }
-
-// Função para adicionar uma nova linha na tabela
-function addRow(tableId) {
-    const table = document.getElementById(tableId);
-    const newRow = table.querySelector("tbody tr").cloneNode(true);
-
-    // Limpa os campos da nova linha
-    newRow.querySelectorAll("input, textarea").forEach((input) => {
-        input.value = "";
-    });
-
-    table.querySelector("tbody").appendChild(newRow);
-}
-
-// Função para remover uma linha da tabela
-function removeRow(button) {
-    const row = button.closest("tr");
-    const tableBody = row.parentNode;
-
-    if (tableBody.querySelectorAll("tr").length > 1) {
-        row.remove();
-    } else {
-        alert("Não é possível remover todas as linhas!");
-    }
-}
-
-// Inicialização das abas
-alternarAbas();
-</script>
+    </script>
 </body>
 </html>
