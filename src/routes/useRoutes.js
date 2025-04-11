@@ -9,7 +9,7 @@ const { verificarNivelAcesso } = require('../middleware/auth');
 module.exports = (pool) => {
   const router = express.Router();
 
-  // Helper Functions
+  // ==================== HELPER FUNCTIONS ====================
   const loadSpreadsheetData = (filePath, sheetName) => {
     try {
       if (!fs.existsSync(filePath)) {
@@ -38,7 +38,13 @@ module.exports = (pool) => {
     }, {});
   };
 
-  // Middleware
+  // Verifica se o template existe
+  const checkTemplateExists = (templateName) => {
+    const templatePath = path.join(__dirname, `../views/${templateName}.ejs`);
+    return fs.existsSync(templatePath);
+  };
+
+  // ==================== MIDDLEWARES ====================
   const checkAuth = (req, res, next) => {
     if (!req.session.user) {
       return res.redirect('/login?error=Faça login para acessar');
@@ -46,6 +52,19 @@ module.exports = (pool) => {
     next();
   };
 
+  // Middleware para verificar template
+  const verifyTemplate = (templateName) => (req, res, next) => {
+    if (!checkTemplateExists(templateName)) {
+      console.error(`Template não encontrado: ${templateName}.ejs`);
+      return res.status(404).render('error', {
+        message: 'Template não encontrado',
+        user: req.session.user
+      });
+    }
+    next();
+  };
+
+  // ==================== ROUTES ====================
   // Public Routes
   router.get('/', (req, res) => res.redirect('/login'));
 
@@ -105,8 +124,10 @@ module.exports = (pool) => {
       if (isNaN(valor) || valor <= 0) {
         return res.redirect('/escolher-formulario?erro=Valor inválido ou não positivo');
       }
+      
       const filePath = path.resolve(__dirname, '../../data/Consolidado_Preços_Esporte_Amador.xlsx');
       const rawData = loadSpreadsheetData(filePath, 'Sheet1');
+      
       const data = rawData.map(row => ({
         codigoCatmat: row['CÓDIGO/CATMAT/CATSER/CBO'] || '',
         codigoSipea: row['CÓDIGO SIPEA'] || '',
@@ -120,6 +141,7 @@ module.exports = (pool) => {
         modalidade: row['MODALIDADE'] || '',
         recursosHumanos: row['Recursos'] || ''
       }));
+      
       res.render('precificacao', {
         valorEmenda: valor,
         valorFormatado: valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
@@ -136,7 +158,6 @@ module.exports = (pool) => {
     res.render('paginaprincipal', { user: req.session.user });
   });
 
-  // New Route for Precificação Form
   router.get('/precificacao-form', checkAuth, (req, res) => {
     res.render('precificacaoForm', { 
       user: req.session.user,
@@ -144,24 +165,28 @@ module.exports = (pool) => {
     });
   });
 
-  // Dynamic Form Routes
+  // Dynamic Form Routes com verificação de template
   const formularios = [
-    { path: 'formulario-merito', title: 'Formulário de Mérito' },
-    { path: 'Formulario_Documentacoes', title: 'Documentações' },
-    { path: 'Ficha_Frequencia', title: 'Ficha de Frequência' },
-    { path: 'Formulario_convenio', title: 'Convênio' },
-    { path: 'formulario-dirigente', title: 'Dirigente' },
-    { path: 'Ficha_RTMA', title: 'RTMA' },
-    { path: 'Formulario', title: 'Formulário Principal' }
+    { path: 'formulario-merito', template: 'formulario-merito', title: 'Formulário de Mérito' },
+    { path: 'Formulario_Documentacoes', template: 'Formulario_Documentacoes', title: 'Documentações' },
+    { path: 'Ficha_Frequencia', template: 'Ficha_Frequencia', title: 'Ficha de Frequência' },
+    { path: 'Formulario_convenio', template: 'Formulario_convenio', title: 'Convênio' },
+    { path: 'formulario-dirigente', template: 'formulario-dirigente', title: 'Dirigente' },
+    { path: 'Ficha_RTMA', template: 'Ficha_RTMA', title: 'RTMA' },
+    { path: 'Formulario', template: 'Formulario', title: 'Formulário Principal' }
   ];
 
   formularios.forEach(form => {
-    router.get(`/${form.path}`, checkAuth, (req, res) => {
-      res.render(form.path, { 
-        title: form.title,
-        user: req.session.user 
-      });
-    });
+    router.get(`/${form.path}`, 
+      checkAuth,
+      verifyTemplate(form.template),
+      (req, res) => {
+        res.render(form.template, { 
+          title: form.title,
+          user: req.session.user 
+        });
+      }
+    );
   });
 
   // Simulation Routes
@@ -209,22 +234,28 @@ module.exports = (pool) => {
     try {
       const templatePath = path.join(__dirname, '../templates/Ficha_Técnica_Template.xlsx');
       const outputDir = path.join(__dirname, '../public/output');
+      
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }
+      
       const workbook = new ExcelJS.Workbook();
       await workbook.xlsx.readFile(templatePath);
       const worksheet = workbook.getWorksheet(1);
+      
       const fields = {
         'A3': req.body.osc,
         'A4': req.body.processo,
         'A5': req.body.termo_fomento,
       };
+      
       Object.entries(fields).forEach(([cell, value]) => {
         worksheet.getCell(cell).value = value;
       });
+      
       const outputPath = path.join(outputDir, `RTMA_${Date.now()}.xlsx`);
       await workbook.xlsx.writeFile(outputPath);
+      
       res.download(outputPath, 'Ficha_RTMA_Preenchida.xlsx', (err) => {
         fs.unlinkSync(outputPath);
         if (err) console.error('Erro no download:', err.stack);
@@ -236,6 +267,22 @@ module.exports = (pool) => {
         user: req.session.user
       });
     }
+  });
+
+  // ==================== ERROR HANDLING ====================
+  router.use((err, req, res, next) => {
+    console.error('Erro interno:', err.stack);
+    res.status(500).render('error', {
+      message: 'Erro interno no servidor',
+      user: req.session.user || null
+    });
+  });
+
+  router.use((req, res) => {
+    res.status(404).render('error', {
+      message: 'Página não encontrada',
+      user: req.session.user || null
+    });
   });
 
   return router;
