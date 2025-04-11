@@ -38,10 +38,28 @@ module.exports = (pool) => {
     }, {});
   };
 
-  // Verifica se o template existe
+  // Verifica se o template existe com tratamento de case sensitivity
   const checkTemplateExists = (templateName) => {
-    const templatePath = path.join(__dirname, `../views/${templateName}.ejs`);
-    return fs.existsSync(templatePath);
+    const viewsDir = path.join(__dirname, '../views');
+    const files = fs.readdirSync(viewsDir);
+    
+    const foundFile = files.find(file => 
+      file.toLowerCase() === `${templateName.toLowerCase()}.ejs`
+    );
+    
+    return !!foundFile;
+  };
+
+  // Obtém o nome correto do arquivo (respeitando o case)
+  const getCorrectTemplateName = (templateName) => {
+    const viewsDir = path.join(__dirname, '../views');
+    const files = fs.readdirSync(viewsDir);
+    
+    const foundFile = files.find(file => 
+      file.toLowerCase() === `${templateName.toLowerCase()}.ejs`
+    );
+    
+    return foundFile ? foundFile.replace('.ejs', '') : null;
   };
 
   // ==================== MIDDLEWARES ====================
@@ -52,15 +70,19 @@ module.exports = (pool) => {
     next();
   };
 
-  // Middleware para verificar template
+  // Middleware para verificar template melhorado
   const verifyTemplate = (templateName) => (req, res, next) => {
-    if (!checkTemplateExists(templateName)) {
+    const correctTemplateName = getCorrectTemplateName(templateName);
+    
+    if (!correctTemplateName) {
       console.error(`Template não encontrado: ${templateName}.ejs`);
-      return res.status(404).render('error', {
+      return res.status(404).render('acesso-negado', {
         message: 'Template não encontrado',
         user: req.session.user
       });
     }
+    
+    req.correctTemplateName = correctTemplateName;
     next();
   };
 
@@ -167,13 +189,13 @@ module.exports = (pool) => {
 
   // Dynamic Form Routes com verificação de template
   const formularios = [
-    { path: 'formulario-merito', template: 'formulario-merito', title: 'Formulário de Mérito' },
-    { path: 'Formulario_Documentacoes', template: 'Formulario_Documentacoes', title: 'Documentações' },
-    { path: 'Ficha_Frequencia', template: 'Ficha_Frequencia', title: 'Ficha de Frequência' },
-    { path: 'Formulario_convenio', template: 'Formulario_convenio', title: 'Convênio' },
+    { path: 'formulario-merito', template: 'Formulario-merito', title: 'Formulário de Mérito' },
+    { path: 'formulario-documentacoes', template: 'Formulario_Documentacoes', title: 'Documentações' },
+    { path: 'ficha-frequencia', template: 'Ficha_Frequencia', title: 'Ficha de Frequência' },
+    { path: 'formulario-convenio', template: 'Formulario_convenio', title: 'Convênio' },
     { path: 'formulario-dirigente', template: 'formulario-dirigente', title: 'Dirigente' },
-    { path: 'Ficha_RTMA', template: 'Ficha_RTMA', title: 'RTMA' },
-    { path: 'Formulario', template: 'Formulario', title: 'Formulário Principal' }
+    { path: 'ficha-rtma', template: 'Ficha_RTMA', title: 'RTMA' },
+    { path: 'formulario-principal', template: 'Formulario', title: 'Formulário Principal' }
   ];
 
   formularios.forEach(form => {
@@ -181,7 +203,7 @@ module.exports = (pool) => {
       checkAuth,
       verifyTemplate(form.template),
       (req, res) => {
-        res.render(form.template, { 
+        res.render(req.correctTemplateName, { 
           title: form.title,
           user: req.session.user 
         });
@@ -230,7 +252,7 @@ module.exports = (pool) => {
     }
   });
 
-  router.post('/Ficha_RTMA', checkAuth, async (req, res) => {
+  router.post('/ficha-rtma', checkAuth, async (req, res) => {
     try {
       const templatePath = path.join(__dirname, '../templates/Ficha_Técnica_Template.xlsx');
       const outputDir = path.join(__dirname, '../public/output');
@@ -262,7 +284,7 @@ module.exports = (pool) => {
       });
     } catch (error) {
       console.error('Erro ao gerar RTMA:', error.stack);
-      res.status(500).render('error', {
+      res.status(500).render('acesso-negado', {
         message: 'Erro ao gerar documento',
         user: req.session.user
       });
@@ -272,14 +294,14 @@ module.exports = (pool) => {
   // ==================== ERROR HANDLING ====================
   router.use((err, req, res, next) => {
     console.error('Erro interno:', err.stack);
-    res.status(500).render('error', {
+    res.status(500).render('acesso-negado', {
       message: 'Erro interno no servidor',
       user: req.session.user || null
     });
   });
 
   router.use((req, res) => {
-    res.status(404).render('error', {
+    res.status(404).render('acesso-negado', {
       message: 'Página não encontrada',
       user: req.session.user || null
     });
