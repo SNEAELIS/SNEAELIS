@@ -35,12 +35,14 @@
             z-index: 1000;
             height: 60px;
             box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-inline-end: 30px;
         }
 
         .container {
             max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
+            margin-top: 100px;
             background: #fff;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0,0,0,0.1);
@@ -765,738 +767,820 @@ Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do prog
         <p>© 2025 Ministério do Esporte</p>
     </footer>
     <script>
-// Funções para alternar entre abas
-document.addEventListener('DOMContentLoaded', function() {
-    const tabButtons = document.querySelectorAll('.tab-button');
-    
-    tabButtons.forEach(button => {
-        button.addEventListener('click', function() {
-            document.querySelectorAll('.tab-content').forEach(content => {
-                content.classList.remove('active');
-            });
-            document.querySelectorAll('.tab-button').forEach(btn => {
-                btn.classList.remove('active');
-            });
+        // Funções para alternar entre abas
+        document.addEventListener('DOMContentLoaded', function() {
+            const tabButtons = document.querySelectorAll('.tab-button');
             
-            const tabId = this.getAttribute('data-tab');
-            document.getElementById(tabId).classList.add('active');
-            this.classList.add('active');
-        });
-    });
-    
-    // Mostrar descrição da dimensão do projeto
-    const dimensaoRadios = document.querySelectorAll('input[name="dimensaoProjeto"]');
-    const descricaoDimensao = document.getElementById('descricaoDimensao');
-    
-    dimensaoRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.id === 'dimensao1') {
-                descricaoDimensao.textContent = "Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.";
-            } else if (this.id === 'dimensao2') {
-                descricaoDimensao.textContent = "Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.";
-            }
-        });
-    });
-    
-    // Mostrar/ocultar campo de número de parcerias
-    const parceriaRadios = document.querySelectorAll('input[name="temParceria"]');
-    const parceriaInfo = document.getElementById('parceriaInfo');
-    
-    parceriaRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.id === 'parceriaSim') {
-                parceriaInfo.style.display = 'block';
-            } else {
-                parceriaInfo.style.display = 'none';
-            }
-        });
-    });
-    
-    // Carregar dados salvos
-    loadSavedData();
-});
-
-// Função para salvar dados do formulário
-function saveForm(formId) {
-    const form = document.getElementById(formId);
-    const formData = new FormData(form);
-    const data = {};
-    
-    formData.forEach((value, key) => {
-        data[key] = value;
-    });
-    
-    // Para checkboxes e radios
-    const checkboxes = form.querySelectorAll('input[type="checkbox"]');
-    checkboxes.forEach(checkbox => {
-        if (!data[checkbox.name]) {
-            data[checkbox.name] = [];
-        }
-        if (checkbox.checked) {
-            data[checkbox.name].push(checkbox.value);
-        }
-    });
-    
-    const radios = form.querySelectorAll('input[type="radio"]');
-    radios.forEach(radio => {
-        if (radio.checked) {
-            data[radio.name] = radio.value;
-        }
-    });
-    
-    // Para tabelas
-    const tables = form.querySelectorAll('table');
-    tables.forEach(table => {
-        const tableId = table.id;
-        const rows = table.querySelectorAll('tbody tr');
-        const tableData = [];
-        
-        rows.forEach(row => {
-            const rowData = {};
-            const inputs = row.querySelectorAll('input, textarea, select');
-            
-            inputs.forEach(input => {
-                rowData[input.name] = input.value;
+            tabButtons.forEach(button => {
+                button.addEventListener('click', function() {
+                    // Remove a classe 'active' de todas as abas e botões
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+                    document.querySelectorAll('.tab-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    
+                    // Adiciona a classe 'active' à aba e botão selecionados
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(tabId).classList.add('active');
+                    this.classList.add('active');
+                });
             });
             
-            tableData.push(rowData);
-        });
-        
-        data[tableId] = tableData;
-    });
-    
-    // Salvar no localStorage
-    localStorage.setItem(formId, JSON.stringify(data));
-    alert('Dados salvos com sucesso!');
-}
-
-// Função para carregar dados salvos
-function loadSavedData() {
-    const forms = document.querySelectorAll('form');
-    
-    forms.forEach(form => {
-        const savedData = localStorage.getItem(form.id);
-        if (savedData) {
-            const data = JSON.parse(savedData);
+            // Mostrar descrição da dimensão do projeto
+            const dimensaoRadios = document.querySelectorAll('input[name="dimensaoProjeto"]');
+            const descricaoDimensao = document.getElementById('descricaoDimensao');
             
-            // Preencher campos normais
-            Object.keys(data).forEach(key => {
-                if (key.endsWith('Table')) return;
-                
-                const input = form.querySelector(`[name="${key}"]`);
-                if (input) {
-                    if (input.type === 'checkbox') {
-                        input.checked = data[key].includes(input.value);
-                    } else if (input.type === 'radio') {
-                        if (input.value === data[key]) {
-                            input.checked = true;
-                        }
+            dimensaoRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.id === 'dimensao1') {
+                        descricaoDimensao.textContent = "Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.";
+                    } else if (this.id === 'dimensao2') {
+                        descricaoDimensao.textContent = "Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.";
+                    }
+                });
+            });
+            
+            // Mostrar/ocultar campo de número de parcerias
+            const parceriaRadios = document.querySelectorAll('input[name="temParceria"]');
+            const parceriaInfo = document.getElementById('parceriaInfo');
+            
+            parceriaRadios.forEach(radio => {
+                radio.addEventListener('change', function() {
+                    if (this.id === 'parceriaSim') {
+                        parceriaInfo.style.display = 'block';
                     } else {
-                        input.value = data[key];
+                        parceriaInfo.style.display = 'none';
                     }
+                });
+            });
+            
+            // Carregar dados salvos
+            loadSavedData();
+        });
+        
+        // Função para salvar dados do formulário
+        function saveForm(formId) {
+            const form = document.getElementById(formId);
+            const formData = new FormData(form);
+            const data = {};
+            
+            formData.forEach((value, key) => {
+                data[key] = value;
+            });
+            
+            // Para checkboxes e radios
+            const checkboxes = form.querySelectorAll('input[type="checkbox"]');
+            checkboxes.forEach(checkbox => {
+                if (!data[checkbox.name]) {
+                    data[checkbox.name] = [];
+                }
+                if (checkbox.checked) {
+                    data[checkbox.name].push(checkbox.value);
                 }
             });
             
-            // Preencher tabelas
-            Object.keys(data).forEach(key => {
-                if (key.endsWith('Table')) {
-                    const table = document.getElementById(key);
-                    if (table) {
-                        const tbody = table.querySelector('tbody');
-                        while (tbody.rows.length > 1) {
-                            tbody.deleteRow(1);
-                        }
+            const radios = form.querySelectorAll('input[type="radio"]');
+            radios.forEach(radio => {
+                if (radio.checked) {
+                    data[radio.name] = radio.value;
+                }
+            });
+            
+            // Para tabelas
+            const tables = form.querySelectorAll('table');
+            tables.forEach(table => {
+                const tableId = table.id;
+                const rows = table.querySelectorAll('tbody tr');
+                const tableData = [];
+                
+                rows.forEach(row => {
+                    const rowData = {};
+                    const inputs = row.querySelectorAll('input, textarea, select');
+                    
+                    inputs.forEach(input => {
+                        rowData[input.name] = input.value;
+                    });
+                    
+                    tableData.push(rowData);
+                });
+                
+                data[tableId] = tableData;
+            });
+            
+            // Salvar no localStorage
+            localStorage.setItem(formId, JSON.stringify(data));
+            alert('Dados salvos com sucesso!');
+        }
+        
+        // Função para carregar dados salvos
+        function loadSavedData() {
+            const forms = document.querySelectorAll('form');
+            
+            forms.forEach(form => {
+                const savedData = localStorage.getItem(form.id);
+                if (savedData) {
+                    const data = JSON.parse(savedData);
+                    
+                    // Preencher campos normais
+                    Object.keys(data).forEach(key => {
+                        // Ignorar dados de tabelas (tratados separadamente)
+                        if (key.endsWith('Table')) return;
                         
-                        data[key].forEach((rowData, index) => {
-                            if (index > 0) {
-                                if (key === 'modalidadesTable') addModalidade();
-                                else if (key === 'gradeHorariaTable') addGradeHoraria();
-                                else if (key === 'recursosHumanosTable') addRecursoHumano();
-                                else if (key === 'materiaisTable') addMaterial();
-                                else if (key === 'uniformesTable') addUniforme();
-                            }
-                            
-                            const row = tbody.rows[index];
-                            Object.keys(rowData).forEach(field => {
-                                const input = row.querySelector(`[name="${field}"]`);
-                                if (input) {
-                                    input.value = rowData[field];
+                        const input = form.querySelector(`[name="${key}"]`);
+                        if (input) {
+                            if (input.type === 'checkbox') {
+                                input.checked = data[key].includes(input.value);
+                            } else if (input.type === 'radio') {
+                                if (input.value === data[key]) {
+                                    input.checked = true;
                                 }
-                            });
-                        });
-                    }
+                            } else {
+                                input.value = data[key];
+                            }
+                        }
+                    });
+                    
+                    // Preencher tabelas
+                    Object.keys(data).forEach(key => {
+                        if (key.endsWith('Table')) {
+                            const table = document.getElementById(key);
+                            if (table) {
+                                // Limpar linhas existentes (exceto cabeçalho e primeira linha)
+                                const tbody = table.querySelector('tbody');
+                                while (tbody.rows.length > 1) {
+                                    tbody.deleteRow(1);
+                                }
+                                
+                                // Adicionar linhas salvas
+                                data[key].forEach((rowData, index) => {
+                                    if (index > 0) {
+                                        // Adicionar nova linha
+                                        if (key === 'modalidadesTable') addModalidade();
+                                        else if (key === 'gradeHorariaTable') addGradeHoraria();
+                                        else if (key === 'recursosHumanosTable') addRecursoHumano();
+                                        else if (key === 'materiaisTable') addMaterial();
+                                        else if (key === 'uniformesTable') addUniforme();
+                                    }
+                                    
+                                    // Preencher dados da linha
+                                    const row = tbody.rows[index];
+                                    Object.keys(rowData).forEach(field => {
+                                        const input = row.querySelector(`[name="${field}"]`);
+                                        if (input) {
+                                            input.value = rowData[field];
+                                        }
+                                    });
+                                });
+                            }
+                        }
+                    });
                 }
             });
         }
-    });
-}
-
-// Funções para adicionar/remover objetivos específicos
-function addObjetivo() {
-    const container = document.getElementById('objetivosEspecificos');
-    const count = container.querySelectorAll('.objetivo-item').length + 1;
-    
-    const div = document.createElement('div');
-    div.className = 'objetivo-item';
-    div.innerHTML = `
-        <textarea name="objetivoEspecifico" required></textarea>
-        <button type="button" onclick="removeObjetivo(this)" class="remove-row">Remover</button>
-    `;
-    
-    container.appendChild(div);
-}
-
-function removeObjetivo(button) {
-    const container = document.getElementById('objetivosEspecificos');
-    if (container.querySelectorAll('.objetivo-item').length > 1) {
-        button.parentElement.remove();
-    } else {
-        alert('É necessário ter pelo menos um objetivo específico.');
-    }
-}
-
-// Funções para adicionar/remover modalidades
-function addModalidade() {
-    const tbody = document.querySelector('#modalidadesTable tbody');
-    const rows = tbody.querySelectorAll('tr');
-    const newRow = rows[0].cloneNode(true);
-    
-    newRow.querySelector('input').value = '';
-    newRow.cells[0].textContent = rows.length + 1;
-    
-    tbody.appendChild(newRow);
-}
-
-// Funções para adicionar/remover grade horária
-function addGradeHoraria() {
-    const tbody = document.querySelector('#gradeHorariaTable tbody');
-    const rows = tbody.querySelectorAll('tr');
-    const newRow = rows[0].cloneNode(true);
-    
-    newRow.querySelectorAll('input, textarea').forEach(input => {
-        input.value = '';
-    });
-    
-    newRow.cells[0].textContent = rows.length + 1;
-    
-    tbody.appendChild(newRow);
-}
-
-// Funções para adicionar/remover recursos humanos
-function addRecursoHumano() {
-    const tbody = document.querySelector('#recursosHumanosTable tbody');
-    const rows = tbody.querySelectorAll('tr');
-    const newRow = rows[0].cloneNode(true);
-    
-    newRow.querySelectorAll('input, textarea').forEach(input => {
-        input.value = '';
-    });
-    
-    tbody.appendChild(newRow);
-}
-
-// Funções para adicionar/remover materiais
-function addMaterial() {
-    const tbody = document.querySelector('#materiaisTable tbody');
-    const rows = tbody.querySelectorAll('tr');
-    const newRow = rows[0].cloneNode(true);
-    
-    newRow.querySelectorAll('input, textarea, select').forEach(input => {
-        input.value = '';
-    });
-    
-    newRow.cells[0].textContent = rows.length + 1;
-    
-    tbody.appendChild(newRow);
-}
-
-// Funções para adicionar/remover uniformes
-function addUniforme() {
-    const tbody = document.querySelector('#uniformesTable tbody');
-    const rows = tbody.querySelectorAll('tr');
-    const newRow = rows[0].cloneNode(true);
-    
-    newRow.querySelectorAll('input, textarea').forEach(input => {
-        input.value = '';
-    });
-    
-    newRow.cells[0].textContent = rows.length + 1;
-    
-    tbody.appendChild(newRow);
-}
-
-// Função para remover linhas de tabelas
-function removeRow(button) {
-    const row = button.closest('tr');
-    const tbody = row.parentNode;
-    
-    if (tbody.querySelectorAll('tr').length > 1) {
-        row.remove();
         
-        const rows = tbody.querySelectorAll('tr');
-        rows.forEach((row, index) => {
-            row.cells[0].textContent = index + 1;
-        });
-    } else {
-        alert('É necessário ter pelo menos uma linha na tabela.');
-    }
-}
-
-// Função para gerar PDF
-function generatePDF() {
-    if (!window.jspdf || !window.jspdf.jsPDF) {
-        alert('A biblioteca jsPDF não foi carregada corretamente. Por favor, recarregue a página.');
-        return;
-    }
-    
-    try {
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({
-            orientation: 'portrait',
-            unit: 'mm',
-            format: 'a4'
-        });
-        
-        // Configurações globais
-        const marginLeft = 10;
-        const marginRight = 10;
-        const maxWidth = 190;
-        const lineHeight = 6;
-        const headerColor = [75, 108, 183]; // #4B6CB7
-        
-        // Função auxiliar para adicionar texto com quebra automática
-        function addWrappedText(text, x, y, maxWidth) {
-            const lines = doc.splitTextToSize(text || '', maxWidth);
-            doc.text(lines, x, y);
-            return y + (lines.length * lineHeight);
+        // Funções para adicionar/remover objetivos específicos
+        function addObjetivo() {
+            const container = document.getElementById('objetivosEspecificos');
+            const count = container.querySelectorAll('.objetivo-item').length + 1;
+            
+            const div = document.createElement('div');
+            div.className = 'objetivo-item';
+            div.innerHTML = `
+                <textarea name="objetivoEspecifico" required></textarea>
+                <button type="button" onclick="removeObjetivo(this)" class="remove-row">Remover</button>
+            `;
+            
+            container.appendChild(div);
         }
         
-        // Função auxiliar para verificar espaço na página
-        function checkPageSpace(requiredHeight, currentY) {
-            if (currentY + requiredHeight > 270) {
-                doc.addPage();
-                return 20;
+        function removeObjetivo(button) {
+            const container = document.getElementById('objetivosEspecificos');
+            if (container.querySelectorAll('.objetivo-item').length > 1) {
+                button.parentElement.remove();
+            } else {
+                alert('É necessário ter pelo menos um objetivo específico.');
             }
-            return currentY;
         }
         
-        // Página 1
+        // Funções para adicionar/remover modalidades
+        function addModalidade() {
+            const tbody = document.querySelector('#modalidadesTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const newRow = rows[0].cloneNode(true);
+            
+            // Limpar valores
+            newRow.querySelector('input').value = '';
+            
+            // Atualizar número
+            newRow.cells[0].textContent = rows.length + 1;
+            
+            tbody.appendChild(newRow);
+        }
+        
+        // Funções para adicionar/remover grade horária
+        function addGradeHoraria() {
+            const tbody = document.querySelector('#gradeHorariaTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const newRow = rows[0].cloneNode(true);
+            
+            // Limpar valores
+            newRow.querySelectorAll('input, textarea').forEach(input => {
+                input.value = '';
+            });
+            
+            // Atualizar número
+            newRow.cells[0].textContent = rows.length + 1;
+            
+            tbody.appendChild(newRow);
+        }
+        
+        // Funções para adicionar/remover recursos humanos
+        function addRecursoHumano() {
+            const tbody = document.querySelector('#recursosHumanosTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const newRow = rows[0].cloneNode(true);
+            
+            // Limpar valores
+            newRow.querySelectorAll('input, textarea').forEach(input => {
+                input.value = '';
+            });
+            
+            tbody.appendChild(newRow);
+        }
+        
+        // Funções para adicionar/remover materiais
+        function addMaterial() {
+            const tbody = document.querySelector('#materiaisTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const newRow = rows[0].cloneNode(true);
+            
+            // Limpar valores
+            newRow.querySelectorAll('input, textarea, select').forEach(input => {
+                input.value = '';
+            });
+            
+            // Atualizar número
+            newRow.cells[0].textContent = rows.length + 1;
+            
+            tbody.appendChild(newRow);
+        }
+        
+        // Funções para adicionar/remover uniformes
+        function addUniforme() {
+            const tbody = document.querySelector('#uniformesTable tbody');
+            const rows = tbody.querySelectorAll('tr');
+            const newRow = rows[0].cloneNode(true);
+            
+            // Limpar valores
+            newRow.querySelectorAll('input, textarea').forEach(input => {
+                input.value = '';
+            });
+            
+            // Atualizar número
+            newRow.cells[0].textContent = rows.length + 1;
+            
+            tbody.appendChild(newRow);
+        }
+        
+        // Função para remover linhas de tabelas
+        function removeRow(button) {
+            const row = button.closest('tr');
+            const tbody = row.parentNode;
+            
+            if (tbody.querySelectorAll('tr').length > 1) {
+                row.remove();
+                
+                // Renumerar as linhas restantes
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach((row, index) => {
+                    row.cells[0].textContent = index + 1;
+                });
+            } else {
+                alert('É necessário ter pelo menos uma linha na tabela.');
+            }
+        }
+        
+        function generatePDF() {
+    try {
+        // Verificar dependência
+        if (!window.jspdf || !window.jspdf.jsPDF) {
+            alert('A biblioteca jsPDF não foi carregada corretamente. Por favor, recarregue a página.');
+            return;
+        }
+
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF();
+        
+        // Configurações
+        const config = {
+            marginLeft: 15,
+            lineHeight: 6,
+            pageHeight: 297, // A4 em mm
+            footerSpace: 25,
+            primaryColor: [0, 39, 102],
+            secondaryColor: [255, 255, 255],
+            tablePadding: 3
+        };
+        
+        let currentY = 20;
+
+        // Funções auxiliares
+        const addText = (text, x, y, maxWidth = 175, options = {}) => {
+            const lines = doc.splitTextToSize(text, maxWidth);
+            doc.text(lines, x, y, options);
+            return y + (lines.length * config.lineHeight);
+        };
+
+        const checkPageBreak = (spaceNeeded = 0) => {
+            if (currentY + spaceNeeded > config.pageHeight - config.footerSpace) {
+                doc.addPage();
+                currentY = 20;
+                return true;
+            }
+            return false;
+        };
+
+        const createTable = (head, body, startY, colWidths = null, headStyles = {}) => {
+            const tableConfig = {
+                startY: startY,
+                head: head,
+                body: body,
+                theme: 'grid',
+                headStyles: {
+                    fillColor: config.primaryColor,
+                    textColor: config.secondaryColor,
+                    fontStyle: 'bold',
+                    cellPadding: config.tablePadding,
+                    ...headStyles
+                },
+                bodyStyles: { cellPadding: config.tablePadding },
+                margin: { left: config.marginLeft }
+            };
+
+            if (colWidths) {
+                tableConfig.columnStyles = {};
+                colWidths.forEach((width, index) => {
+                    tableConfig.columnStyles[index] = { cellWidth: width };
+                });
+            }
+
+            doc.autoTable(tableConfig);
+            return doc.lastAutoTable.finalY + 5;
+        };
+
+        // Carregar dados
+        const loadData = (key) => {
+            try {
+                const item = localStorage.getItem(key);
+                return item ? JSON.parse(item) : {};
+            } catch (e) {
+                console.error(`Erro ao parsear ${key}:`, e);
+                return {};
+            }
+        };
+
+        const formData = {
+            proponente: loadData('formProponente'),
+            dadosProjeto: loadData('formDadosProjeto'),
+            infoProjeto: loadData('formInfoProjeto'),
+            desenvolvimento: loadData('formDesenvolvimento')
+        };
+
+        // Cabeçalho
         doc.setFontSize(16);
-        doc.setTextColor(...headerColor);
-        doc.text('PROJETO TÉCNICO', 105, 20, { align: 'center' });
-        doc.text('IMPLEMENTAÇÃO E DESENVOLVIMENTO DE PROJETO', 105, 30, { align: 'center' });
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        doc.text('===== INSERIR PAPEL TIMBRADO DA ENTIDADE =====', 105, 40, { align: 'center' });
+        doc.setTextColor(...config.primaryColor);
+        doc.text('PROJETO TÉCNICO', 105, currentY, { align: 'center' });
+        doc.text('IMPLEMENTAÇÃO E DESENVOLVIMENTO DE PROJETO', 105, currentY + 10, { align: 'center' });
+        currentY += 25;
         
+        // Seção 1: Informações do Proponente
         doc.setFontSize(14);
-        doc.setTextColor(...headerColor);
-        let yPos = 50;
-        doc.text('1. INFORMAÇÕES GERAIS DO PROPONENTE', marginLeft, yPos);
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
+        doc.text('1. INFORMAÇÕES GERAIS DO PROPONENTE', config.marginLeft, currentY);
+        currentY += 10;
         
-        // Recuperar dados dos formulários
-        const formProponente = JSON.parse(localStorage.getItem('formProponente') || '{}');
-        const formDadosProjeto = JSON.parse(localStorage.getItem('formDadosProjeto') || '{}');
-        const formInfoProjeto = JSON.parse(localStorage.getItem('formInfoProjeto') || '{}');
-        const formDesenvolvimento = JSON.parse(localStorage.getItem('formDesenvolvimento') || '{}');
-        
-        // 1.1 Identificação do Proponente
-        yPos += 10;
-        doc.autoTable({
-            startY: yPos,
-            head: [['1.1 IDENTIFICAÇÃO PROPONENTE']],
-            body: [
-                ['CNPJ Proponente:', formProponente.cnpj || ''],
-                ['Nome Proponente:', formProponente.nomeProponente || ''],
-                ['Nome do Dirigente:', formProponente.nomeDirigente || ''],
-                ['Telefone de contato com DDD:', formProponente.telefone || ''],
-                ['E-mail:', formProponente.email || ''],
-                ['Número da Proposta (PlataformaTransferegov):', formProponente.numeroProposta || '']
+        // Tabela 1.1 - Identificação do Proponente (2 colunas)
+        currentY = createTable(
+            [['1.1 IDENTIFICAÇÃO PROPONENTE', '']],
+            [
+                ['CNPJ Proponente:', formData.proponente.cnpj || ''],
+                ['Nome Proponente:', formData.proponente.nomeProponente || ''],
+                ['Nome do Dirigente:', formData.proponente.nomeDirigente || ''],
+                ['Telefone de contato com DDD:', formData.proponente.telefone || ''],
+                ['E-mail:', formData.proponente.email || ''],
+                ['Número da Proposta:', formData.proponente.numeroProposta || '']
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // 1.2 Responsável pela Elaboração
-        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO']],
-            body: [
-                ['Nome:', formProponente.responsavelNome || ''],
-                ['E-mail:', formProponente.responsavelEmail || ''],
-                ['Vínculo com a Entidade (Cargo/Função):', formProponente.responsavelVinculo || ''],
-                ['Telefone de contato com DDD:', formProponente.responsavelTelefone || '']
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // 1.3 Dimensão do Projeto
-        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['1.3 DIMENSÃO DO PROJETO (marque somente uma opção)']],
-            body: [
-                [formProponente.dimensaoProjeto === 'Projeto Educacional' ? '(X)' : '( )', 'Projeto Educacional'],
-                [formProponente.dimensaoProjeto === 'Projeto de Participação' ? '(X)' : '( )', 'Projeto de Participação']
-            ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 20 }, 1: { cellWidth: 170 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        yPos = doc.lastAutoTable.finalY + 5;
-        yPos = addWrappedText(
-            formProponente.dimensaoProjeto === 'Projeto Educacional' ?
-                'Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.' :
-                'Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.',
-            marginLeft + 10, yPos, maxWidth - 20
+            currentY,
+            [70, 105]
         );
-        
-        // 1.4 Localidade
-        yPos = checkPageSpace(50, yPos + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['1.4 LOCALIDADE – (onde o projeto será desenvolvido) - Índice de Desenvolvimento Humano (SITE IBGE)']],
-            body: [
-                ['CIDADE:', formProponente.cidade || '', 'UF:', formProponente.uf || ''],
-                ['IDH:', formProponente.idh || '', 'Ano de Referência:', formProponente.anoIDH || '']
+
+        // Tabela 1.2 - Responsável pela elaboração (2 colunas)
+        currentY = createTable(
+            [['1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO', '']],
+            [
+                ['Nome:', formData.proponente.responsavelNome || ''],
+                ['E-mail:', formData.proponente.responsavelEmail || ''],
+                ['Vínculo com a Entidade:', formData.proponente.responsavelVinculo || ''],
+                ['Telefone:', formData.proponente.responsavelTelefone || '']
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 30 }, 1: { cellWidth: 80 }, 2: { cellWidth: 30 }, 3: { cellWidth: 50 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // 1.5 População
-        yPos = checkPageSpace(40, doc.lastAutoTable.finalY + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['1.5 POPULAÇÃO - Característica demográfica da localidade (SITE IBGE)']],
-            body: [
-                ['Nº de habitantes:', formProponente.numHabitantes || '', 'Ano de referência:', formProponente.anoHabitantes || '']
+            currentY,
+            [70, 105]
+        );
+
+        // Tabela 1.3 - Dimensão do Projeto (2 colunas)
+        currentY = createTable(
+            [['1.3 DIMENSÃO DO PROJETO (marque uma opção)', '']],
+            [
+                [formData.proponente.dimensaoProjeto === 'Projeto Educacional' ? '(X)' : '( )', 'Projeto Educacional'],
+                [formData.proponente.dimensaoProjeto === 'Projeto de Participação' ? '(X)' : '( )', 'Projeto de Participação']
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 50 }, 1: { cellWidth: 60 }, 2: { cellWidth: 50 }, 3: { cellWidth: 30 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
+            currentY,
+            [20, 155]
+        );
+
+        // Descrição da dimensão
+        const descricao = formData.proponente.dimensaoProjeto === 'Projeto Educacional' ?
+            'Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.' :
+            'Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.';
         
-        // 1.6 Informações sobre a Entidade
-        yPos = checkPageSpace(50, doc.lastAutoTable.finalY + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE DO PROJETO']],
-            body: [
+        currentY = addText(descricao, config.marginLeft + 5, currentY + 5);
+
+        // Tabela 1.4 - Localidade (4 colunas)
+        currentY = createTable(
+            [['1.4 LOCALIDADE - Índice de Desenvolvimento Humano', '', '', '']],
+            [
+                ['CIDADE:', formData.proponente.cidade || '', 'UF:', formData.proponente.uf || ''],
+                ['IDH:', formData.proponente.idh || '', 'Ano de Referência:', formData.proponente.anoIDH || '']
+            ],
+            currentY + 5,
+            [30, 50, 20, 50]
+        );
+
+        // Tabela 1.5 - População (4 colunas)
+        currentY = createTable(
+            [['1.5 POPULAÇÃO - Característica demográfica', '', '', '']],
+            [
+                ['Nº de habitantes:', formData.proponente.numHabitantes || '', 'Ano de referência:', formData.proponente.anoHabitantes || '']
+            ],
+            currentY,
+            [40, 50, 40, 50]
+        );
+
+        // Tabela 1.6 - Informações sobre a entidade
+        currentY = createTable(
+            [['1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE', '']],
+            [
                 ['A Entidade já celebrou parcerias com o Ministério do Esporte?', 
-                 (formProponente.temParceria === 'sim' ? '(X) Sim' : '( ) Sim') + ' | ' + 
-                 (formProponente.temParceria === 'nao' ? '(X) Não' : '( ) Não') + 
-                 (formProponente.temParceria === 'sim' ? ' | Nº de parcerias: ' + (formProponente.numParcerias || '') : '')],
+                 (formData.proponente.temParceria === 'sim' ? '(X) Sim' : '( ) Sim') + ' | ' + 
+                 (formData.proponente.temParceria === 'nao' ? '(X) Não' : '( ) Não') + 
+                 (formData.proponente.temParceria === 'sim' ? ' | Nº de parcerias: ' + (formData.proponente.numParcerias || '') : '')],
                 ['A Entidade já deu publicidade às parcerias celebradas em seu respectivo site?', 
-                 (formProponente.temPublicidade === 'sim' ? '(X) Sim' : '( ) Sim') + ' | ' + 
-                 (formProponente.temPublicidade === 'nao' ? '(X) Não' : '( ) Não')]
+                 (formData.proponente.temPublicidade === 'sim' ? '(X) Sim' : '( ) Sim') + ' | ' + 
+                 (formData.proponente.temPublicidade === 'nao' ? '(X) Não' : '( ) Não')]
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 90 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // 1.7 Estatuto
-        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE']],
-            body: [
-                ['Análise Estatutária, em conformidade com o art. 2º, inciso I, da Lei 13.019/2014', formProponente.artigo2 || ''],
-                ['Análise Estatutária, em conformidade com o art. 33, inciso I, da Lei 13.019/2014', formProponente.artigo33I || ''],
-                ['Análise Estatutária, em conformidade com o art. 33, inciso III, da Lei 13.019/2014', formProponente.artigo33III || '']
+            currentY + 5,
+            [80, 95]
+        );
+
+        // Tabela 1.7 - Informações sobre o estatuto
+        currentY = createTable(
+            [['1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE', '']],
+            [
+                ['Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014', formData.proponente.artigo2 || ''],
+                ['Análise Estatutária, art. 33, inciso I, Lei 13.019/2014', formData.proponente.artigo33I || ''],
+                ['Análise Estatutária, art. 33, inciso III, Lei 13.019/2014', formData.proponente.artigo33III || '']
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 140 }, 1: { cellWidth: 50 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // Página 2: Dados Gerais do Projeto
-        doc.addPage();
+            currentY,
+            [100, 75]
+        );
+
+        // Nova página para seção 2
+        checkPageBreak(30);
         doc.setFontSize(14);
-        doc.setTextColor(...headerColor);
-        yPos = 20;
-        doc.text('2. DADOS GERAIS DO PROJETO TÉCNICO', marginLeft, yPos);
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        
+        doc.text('2. DADOS GERAIS DO PROJETO TÉCNICO', config.marginLeft, currentY);
+        currentY += 10;
+
         // 2.1 Objeto
-        yPos += 10;
-        doc.text('2.1 OBJETO (Identificação do Projeto - O objeto deve ser o mesmo descrito na Aba Dados da proposta)', marginLeft, yPos);
-        yPos = addWrappedText(formDadosProjeto.objetoProjeto || 'Implementação e desenvolvimento do Projeto XXXXXXXXXXXXX na Cidade ou Estado/UF.', marginLeft + 5, yPos + 5, maxWidth - 10);
-        
+        doc.setFontSize(12);
+        currentY = addText('2.1 OBJETO (Identificação do Projeto)', config.marginLeft, currentY);
+        currentY = addText(formData.dadosProjeto.objetoProjeto || 'Implementação e desenvolvimento do Projeto na Cidade ou Estado/UF.', 
+                          config.marginLeft + 5, currentY + 5);
+
         // 2.2 Objetivo Geral
-        yPos = checkPageSpace(40, yPos + 10);
-        doc.text('2.2 OBJETIVO GERAL', marginLeft, yPos);
-        yPos = addWrappedText(
-            formDadosProjeto.objetivoGeral || 'Promover a inclusão social e a melhoria da qualidade de vida por meio das práticas esportivas e de lazer como ferramenta de transformação social, utilizando o esporte como instrumento de formação esportiva, disciplinar e valores fundamentais, através do estímulo do bem estar físico, psicológico dos beneficiados envolvidos.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
+        currentY = addText('2.2 OBJETIVO GERAL', config.marginLeft, currentY + 5);
+        currentY = addText(formData.dadosProjeto.objetivoGeral || 'Promover a inclusão social e a melhoria da qualidade de vida por meio das práticas esportivas.', 
+                          config.marginLeft + 5, currentY + 5);
+
         // 2.3 Objetivos Específicos
-        yPos = checkPageSpace(60, yPos + 10);
-        doc.text('2.3 OBJETIVOS ESPECÍFICOS', marginLeft, yPos);
-        const objetivosEspecificos = formDadosProjeto.objetivoEspecifico 
-            ? (Array.isArray(formDadosProjeto.objetivoEspecifico) ? formDadosProjeto.objetivoEspecifico : [formDadosProjeto.objetivoEspecifico])
-            : ['Oportunizar a prática esportiva sistematizada para crianças, adolescentes, jovens, adultos e idosos.'];
+        currentY = addText('2.3 OBJETIVOS ESPECÍFICOS', config.marginLeft, currentY + 5);
+        const objetivos = formData.dadosProjeto.objetivoEspecifico ?
+            (Array.isArray(formData.dadosProjeto.objetivoEspecifico) ?
+                formData.dadosProjeto.objetivoEspecifico :
+                [formData.dadosProjeto.objetivoEspecifico]) :
+            ['Oportunizar a prática esportiva sistematizada para crianças, adolescentes, jovens, adultos e idosos.'];
         
-        yPos += 5;
-        objetivosEspecificos.forEach((obj, index) => {
-            yPos = checkPageSpace(20, yPos);
-            yPos = addWrappedText(`${index + 1}. ${obj}`, marginLeft + 5, yPos, maxWidth - 10);
+        objetivos.forEach((obj, i) => {
+            currentY = addText(`${i + 1}. ${obj}`, config.marginLeft + 5, currentY + (i === 0 ? 5 : 3));
         });
-        
-        // 2.4 Público-Alvo
-        yPos = checkPageSpace(60, yPos + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['2.4 PÚBLICO-ALVO']],
-            body: [
-                ['Público direto (beneficiários):', formDadosProjeto.publicoDireto || ''],
-                ['Faixa etária do público direto:', formDadosProjeto.faixaEtaria || ''],
-                ['Público indireto:', formDadosProjeto.publicoIndireto || '']
+
+        // Tabela 2.4 - Público-alvo
+        currentY = createTable(
+            [['2.4 PÚBLICO-ALVO', '']],
+            [
+                ['Público direto (beneficiários):', formData.dadosProjeto.publicoDireto || ''],
+                ['Faixa etária do público direto:', formData.dadosProjeto.faixaEtaria || ''],
+                ['Público indireto:', formData.dadosProjeto.publicoIndireto || '']
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // 2.5 Vigência do Projeto
-        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['2.5 VIGÊNCIA DO PROJETO']],
-            body: [
-                ['Período de Estruturação:', formDadosProjeto.periodoEstruturação || ''],
-                ['Período de Execução:', formDadosProjeto.periodoExecução || ''],
-                ['Vigência:', formDadosProjeto.vigenciaTotal || '']
+            currentY + 5,
+            [70, 105]
+        );
+
+        // Tabela 2.5 - Vigência do projeto
+        currentY = createTable(
+            [['2.5 VIGÊNCIA DO PROJETO', '']],
+            [
+                ['Período de Estruturação:', formData.dadosProjeto.periodoEstruturação || ''],
+                ['Período de Execução:', formData.dadosProjeto.periodoExecução || ''],
+                ['Vigência Total:', formData.dadosProjeto.vigenciaTotal || '']
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // 2.6 Núcleos
-        yPos = checkPageSpace(50, doc.lastAutoTable.finalY + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['2.6 NÚCLEOS (onde serão realizadas as atividades)']],
-            body: [
-                ['Quantidade de núcleos:', formDadosProjeto.quantidadeNucleos || ''],
-                ['Localidade:', formDadosProjeto.localidadeNucleos || '']
+            currentY,
+            [70, 105]
+        );
+
+        // Tabela 2.6 - Núcleos
+        currentY = createTable(
+            [['2.6 NÚCLEOS (onde serão realizadas as atividades)', '']],
+            [
+                ['Quantidade de núcleos:', formData.dadosProjeto.quantidadeNucleos || ''],
+                ['Localidade:', formData.dadosProjeto.localidadeNucleos || '']
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 60 }, 1: { cellWidth: 130 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
+            currentY,
+            [70, 105]
+        );
+
         // 2.7 Modalidades
-        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
-        doc.text('2.7 MODALIDADES A SEREM DESENVOLVIDAS', marginLeft, yPos);
-        const modalidades = formDadosProjeto.modalidadesTable || [{ modalidade: '' }];
-        const modalidadesBody = modalidades.map((mod, index) => [`${index + 1}. ${mod.modalidade || ''}`]);
+        currentY = addText('2.7 MODALIDADES A SEREM DESENVOLVIDAS', config.marginLeft, currentY + 5);
         
-        doc.autoTable({
-            startY: yPos + 5,
-            body: modalidadesBody,
-            theme: 'plain',
-            bodyStyles: { fontSize: 9 },
-            margin: { left: marginLeft + 5 },
-            columnStyles: { 0: { cellWidth: maxWidth - 10 } }
-        });
+        const modalidades = formData.dadosProjeto.modalidadesTable || [];
+        const modalidadesBody = modalidades.map((mod, index) => [`${index + 1}.`, mod.modalidade || '']);
         
-        // 2.8 Cronograma Financeiro
-        yPos = checkPageSpace(60, doc.lastAutoTable.finalY + 10);
-        doc.autoTable({
-            startY: yPos,
-            head: [['2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO FINANCEIRA']],
-            body: [
-                ['Valor do Concedente', formDadosProjeto.valorConcedente || ''],
-                ['Valor do Convenente – Contrapartida (somente em caso de Convênio)', formDadosProjeto.valorContrapartida || ''],
-                ['Valor Global', formDadosProjeto.valorGlobal || '']
+        if (modalidadesBody.length > 0) {
+            currentY = createTable(
+                [],
+                modalidadesBody,
+                currentY + 5,
+                [15, 160]
+            );
+        } else {
+            currentY = addText('Nenhuma modalidade informada', config.marginLeft + 5, currentY + 5);
+        }
+
+        // Tabela 2.8 - Cronograma financeiro
+        currentY = createTable(
+            [['2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO FINANCEIRA', '']],
+            [
+                ['Valor do Concedente:', formData.dadosProjeto.valorConcedente || ''],
+                ['Valor do Convenente – Contrapartida:', formData.dadosProjeto.valorContrapartida || ''],
+                ['Valor Global:', formData.dadosProjeto.valorGlobal || '']
             ],
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 10 },
-            bodyStyles: { fontSize: 9 },
-            columnStyles: { 0: { cellWidth: 100 }, 1: { cellWidth: 90 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // Página 3: Informações do Projeto
-        doc.addPage();
+            currentY + 5,
+            [80, 95]
+        );
+
+        // Nova página para seção 3
+        checkPageBreak(30);
         doc.setFontSize(14);
-        doc.setTextColor(...headerColor);
-        yPos = 20;
-        doc.text('3. INFORMAÇÕES DO PROJETO', marginLeft, yPos);
-        doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
-        
+        doc.text('3. INFORMAÇÕES DO PROJETO', config.marginLeft, currentY);
+        currentY += 10;
+
         // 3.1 Metodologia
-        yPos += 10;
-        doc.text('3.1 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO', marginLeft, yPos);
-        yPos = addWrappedText(
-            formInfoProjeto.metodologia || 'Este Projeto, visa combater o sedentarismo e promover um estilo de vida saudável através da prática regular de atividades físicas e fortalecimento da inclusão social. A implementação deste projeto trará benefícios significativos na qualidade de vida dos beneficiados, visando criar uma comunidade mais ativa e integrada.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
-        // 3.2 Estruturação
-        yPos = checkPageSpace(60, yPos + 10);
-        doc.text('3.2 ESTRUTURAÇÃO DO PROJETO:', marginLeft, yPos);
-        yPos = addWrappedText(
-            'Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
-        const estruturacoes = formInfoProjeto.estruturacao || [
-            'Contratação de recursos humanos',
-            'Contratação de prestação de serviços',
-            'Aquisição de materiais esportivos',
-            'Aquisição de uniformes e acessórios para os beneficiários',
-            'Aquisição dos materiais de identificação e divulgação'
-        ];
-        
-        estruturacoes.forEach(item => {
-            yPos = checkPageSpace(20, yPos);
-            yPos = addWrappedText(`• ${item}`, marginLeft + 10, yPos, maxWidth - 15);
-        });
-        
-        // 3.3 Recursos Humanos
-        yPos = checkPageSpace(80, yPos + 10);
-        doc.text('3.3 RECURSOS HUMANOS', marginLeft, yPos);
-        yPos = addWrappedText(
-            'Todos os profissionais envolvidos diretamente no projeto, terão atribuições específicas necessárias à execução do Projeto. Serão (contratados/cedidos) professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
-        const recursosHumanos = formInfoProjeto.recursosHumanosTable || [{ funcaoRH: '', quantidadeRH: '', atribuicaoRH: '', cargaHorariaRH: '', periodoRH: '' }];
-        const recursosHumanosBody = recursosHumanos.map(rh => [
-            rh.funcaoRH || '',
-            rh.quantidadeRH || '',
-            rh.atribuicaoRH || '',
-            rh.cargaHorariaRH || '',
-            rh.periodoRH || ''
-        ]);
-        
-        doc.autoTable({
-            startY: yPos + 5,
-            head: [['FUNÇÃO', 'QTD.', 'ATRIBUIÇÃO', 'CARGA HORÁRIA SEMANAL / DIÁRIA', 'QTD MESES/ DIÁRIAS']],
-            body: recursosHumanosBody,
-            theme: 'grid',
-            headStyles: { fillColor: headerColor, textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 9 },
-            bodyStyles: { fontSize: 8 },
-            columnStyles: { 0: { cellWidth: 40 }, 1: { cellWidth: 20 }, 2: { cellWidth: 70 }, 3: { cellWidth: 40 }, 4: { cellWidth: 20 } },
-            margin: { left: marginLeft, right: marginRight }
-        });
-        
-        // Página 4: Desenvolvimento das Atividades
-        doc.addPage();
-        doc.setFontSize(14);
-        doc.setTextColor(...headerColor);
-        yPos = 20;
-        doc.text('4. DESENVOLVIMENTO DAS ATIVIDADES', marginLeft, yPos);
         doc.setFontSize(12);
-        doc.setTextColor(0, 0, 0);
+        currentY = addText('3.1 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO', config.marginLeft, currentY);
+        currentY = addText(formData.infoProjeto.metodologia || 'Metodologia não informada.', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // 3.2 Estruturação
+        currentY = addText('3.2 ESTRUTURAÇÃO DO PROJETO', config.marginLeft, currentY + 5);
+        currentY = addText('Visa à organização e preparação das condições necessárias para a execução do projeto:', 
+                          config.marginLeft + 5, currentY + 5);
         
+        const estruturacoes = formData.infoProjeto.estruturacao || [];
+        estruturacoes.forEach(item => {
+            currentY = addText(`• ${item}`, config.marginLeft + 10, currentY + 5);
+        });
+
+        // 3.3 Implementação
+        currentY = addText('3.3 IMPLEMENTAÇÃO E DESENVOLVIMENTO DO PROJETO', config.marginLeft, currentY + 5);
+        currentY = addText(formData.infoProjeto.implementacao || 'Implementação não informada.', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // 3.4 Núcleos
+        currentY = addText('3.4 NÚCLEOS', config.marginLeft, currentY + 5);
+        currentY = addText(formData.infoProjeto.descricaoNucleos || 'Descrição dos núcleos não informada.', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // 3.5 Identificação do Projeto
+        currentY = addText('3.5 IDENTIFICAÇÃO DO PROJETO', config.marginLeft, currentY + 5);
+        currentY = addText('Identificação visual do projeto nos espaços físicos:', config.marginLeft + 5, currentY + 5);
+        
+        const identificacao = formData.infoProjeto.identificacao || [];
+        if (identificacao.length > 0) {
+            identificacao.forEach(item => {
+                currentY = addText(`• ${item}`, config.marginLeft + 10, currentY + 5);
+            });
+            
+            if (formData.infoProjeto.outrosIdentificacao) {
+                currentY = addText(`• Outros: ${formData.infoProjeto.outrosIdentificacao}`, 
+                                  config.marginLeft + 10, currentY + 5);
+            }
+        } else {
+            currentY = addText('Nenhum método de identificação informado', config.marginLeft + 5, currentY + 5);
+        }
+
+        // 3.6 Divulgação do Projeto
+        currentY = addText('3.6 DIVULGAÇÃO DO PROJETO', config.marginLeft, currentY + 5);
+        currentY = addText('Métodos de divulgação:', config.marginLeft + 5, currentY + 5);
+        
+        const divulgacao = formData.infoProjeto.divulgacao || [];
+        if (divulgacao.length > 0) {
+            divulgacao.forEach(item => {
+                currentY = addText(`• ${item}`, config.marginLeft + 10, currentY + 5);
+            });
+            
+            if (formData.infoProjeto.outrosDivulgacao) {
+                currentY = addText(`• Outros: ${formData.infoProjeto.outrosDivulgacao}`, 
+                                  config.marginLeft + 10, currentY + 5);
+            }
+        } else {
+            currentY = addText('Nenhum método de divulgação informado', config.marginLeft + 5, currentY + 5);
+        }
+
+        // Custeio da divulgação
+        currentY = addText('Forma de custeio da divulgação:', config.marginLeft, currentY + 5);
+        currentY = addText(formData.infoProjeto.custeioDivulgacao || 'Não informado', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // 3.7 Inscrições
+        currentY = addText('3.7 INSCRIÇÕES', config.marginLeft, currentY + 5);
+        currentY = addText(formData.infoProjeto.inscricoes || 'Informações sobre inscrições não fornecidas.', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // 3.8 Grade Horária
+        currentY = addText('3.8 GRADE HORÁRIA DAS ATIVIDADES', config.marginLeft, currentY + 5);
+        
+        const gradeHoraria = formData.infoProjeto.gradeHorariaTable || [];
+        if (gradeHoraria.length > 0) {
+            const gradeHorariaBody = gradeHoraria.map((grade, index) => [
+                index + 1,
+                grade.nucleoLocalidade || '',
+                grade.modalidadesNucleo || '',
+                grade.rhNucleo || '',
+                grade.infoNucleo || '',
+                grade.gradeHoraria || ''
+            ]);
+            
+            currentY = createTable(
+                ['Nº', 'Núcleo', 'Modalidades', 'RH', 'Informações', 'Grade Horária'],
+                gradeHorariaBody,
+                currentY + 5,
+                [10, 30, 40, 30, 50, 30]
+            );
+        } else {
+            currentY = addText('Nenhuma grade horária informada', config.marginLeft + 5, currentY + 5);
+        }
+
+        // 3.9 Recursos Humanos
+        currentY = addText('3.9 RECURSOS HUMANOS', config.marginLeft, currentY + 5);
+        
+        const recursosHumanos = formData.infoProjeto.recursosHumanosTable || [];
+        if (recursosHumanos.length > 0) {
+            const recursosHumanosBody = recursosHumanos.map(rh => [
+                rh.funcaoRH || '',
+                rh.quantidadeRH || '',
+                rh.atribuicaoRH || '',
+                rh.cargaHorariaRH || '',
+                rh.periodoRH || ''
+            ]);
+            
+            currentY = createTable(
+                ['Função', 'Qtd.', 'Atribuição', 'Carga Horária', 'Período'],
+                recursosHumanosBody,
+                currentY + 5,
+                [40, 15, 60, 30, 30]
+            );
+        } else {
+            currentY = addText('Nenhum recurso humano informado', config.marginLeft + 5, currentY + 5);
+        }
+
+        // 3.10 Materiais Fornecidos
+        currentY = addText('3.10 MATERIAIS FORNECIDOS', config.marginLeft, currentY + 5);
+        
+        const materiais = formData.infoProjeto.materiaisTable || [];
+        if (materiais.length > 0) {
+            const materiaisBody = materiais.map((mat, index) => [
+                index + 1,
+                mat.modalidadeMaterial || '',
+                mat.material || '',
+                mat.tipoAquisição || '',
+                mat.especificacaoMaterial || '',
+                mat.justificativaMaterial || ''
+            ]);
+            
+            currentY = createTable(
+                ['Nº', 'Modalidade', 'Material', 'Tipo', 'Especificação', 'Justificativa'],
+                materiaisBody,
+                currentY + 5,
+                [10, 25, 30, 20, 50, 50]
+            );
+        } else {
+            currentY = addText('Nenhum material informado', config.marginLeft + 5, currentY + 5);
+        }
+
+        // 3.11 Uniformes
+        currentY = addText('3.11 UNIFORMES', config.marginLeft, currentY + 5);
+        
+        const uniformes = formData.infoProjeto.uniformesTable || [];
+        if (uniformes.length > 0) {
+            const uniformesBody = uniformes.map((uni, index) => [
+                index + 1,
+                uni.modalidadeUniforme || '',
+                uni.itemUniforme || '',
+                uni.especificacaoUniforme || ''
+            ]);
+            
+            currentY = createTable(
+                ['Nº', 'Modalidade', 'Item', 'Especificação'],
+                uniformesBody,
+                currentY + 5,
+                [10, 40, 40, 100]
+            );
+        } else {
+            currentY = addText('Nenhum uniforme informado', config.marginLeft + 5, currentY + 5);
+        }
+
+        // 3.12 Frequência nas Aulas
+        currentY = addText('3.12 FREQUÊNCIA NAS AULAS', config.marginLeft, currentY + 5);
+        currentY = addText(formData.infoProjeto.frequenciaAulas || 'Informações sobre frequência não fornecidas.', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // Nova página para seção 4
+        checkPageBreak(30);
+        doc.setFontSize(14);
+        doc.text('4. DESENVOLVIMENTO DAS ATIVIDADES', config.marginLeft, currentY);
+        currentY += 10;
+
         // 4.1 Estrutura das Aulas
-        yPos += 10;
-        doc.text('4.1 ESTRUTURA DAS AULAS:', marginLeft, yPos);
-        yPos = addWrappedText(
-            formDesenvolvimento.estruturaAulas || 'Cada aula esportiva seguirá uma estrutura padronizada para garantir consistência e qualidade, independentemente da modalidade esportiva. Esta estrutura incluirá: Aquecimento: Atividades lúdicas que preparam o corpo e a mente para o exercício, promovendo a circulação sanguínea e reduzindo o risco de lesões. Instrução Técnica: Foco no desenvolvimento de habilidades técnicas específicas da modalidade, com instruções claras e demonstrações práticas. Prática Guiada: Exercícios práticos onde os participantes aplicam as habilidades aprendidas sob a supervisão ativa dos instrutores, com feedback imediato. Jogos ou Competições: Atividades que incentivam a aplicação das habilidades em um contexto de jogo ou competição, promovendo o espírito esportivo e a colaboração. Intervalo e Socialização: Momento de descanso mais prolongado, permitindo o descanso e interação. Esse intervalo contribui para a recuperação física e fortalece os laços de amizade e pertencimento entre os participantes. Alongamento e Desaceleração: Encerramento das aulas com atividades leves para baixar a intensidade física e uma sessão de reflexão sobre as lições aprendidas e a autoavaliação do desempenho.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
+        doc.setFontSize(12);
+        currentY = addText('4.1 ESTRUTURA DAS AULAS', config.marginLeft, currentY);
+        currentY = addText(formData.desenvolvimento.estruturaAulas || 'Estrutura das aulas não informada.', 
+                          config.marginLeft + 5, currentY + 5);
+
         // 4.2 Metodologia de Ensino
-        yPos = checkPageSpace(80, yPos + 10);
-        doc.text('4.2 METODOLOGIA DE ENSINO:', marginLeft, yPos);
-        yPos = addWrappedText(
-            formDesenvolvimento.metodologiaEnsino || 'Aprendizado Baseado em Competências: Focar no desenvolvimento de competências específicas de cada modalidade, garantindo que os alunos progridam em habilidades técnicas e táticas. Educação Inclusiva: Adaptação das aulas para atender a diversas necessidades, incluindo ajustes para participantes com diferentes níveis de habilidade e capacidades físicas. Ensino Integrado: Integrar lições de vida, como trabalho em equipe, liderança, resiliência e ética esportiva, nas sessões de treinamento. Feedback Construtivo: Fornecer feedback regular e construtivo para encorajar e melhorar o desempenho dos alunos, enquanto se mantém um ambiente positivo e de suporte.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
+        currentY = addText('4.2 METODOLOGIA DE ENSINO', config.marginLeft, currentY + 5);
+        currentY = addText(formData.desenvolvimento.metodologiaEnsino || 'Metodologia de ensino não informada.', 
+                          config.marginLeft + 5, currentY + 5);
+
         // 4.3 Detalhamento das Modalidades
-        yPos = checkPageSpace(60, yPos + 10);
-        doc.text('4.3 DETALHAMENTO ESPECÍFICO SOBRE AS MODALIDADES OFERECIDAS POR ESTE PROJETO', marginLeft, yPos);
-        yPos = addWrappedText(
-            formDesenvolvimento.detalhamentoModalidades || 'Espaço destinado para a Entidade relatar detalhes específicos sobre as modalidades que serão oferecidas neste projeto, visando conectar o projeto a realidade da Instituição e dos objetivos que se pretende alcançar, tais como: desenvolvimento, características, habilidades, materiais, estrutura, vantagens, benefícios, etc.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
+        currentY = addText('4.3 DETALHAMENTO DAS MODALIDADES', config.marginLeft, currentY + 5);
+        currentY = addText(formData.desenvolvimento.detalhamentoModalidades || 'Detalhamento das modalidades não informado.', 
+                          config.marginLeft + 5, currentY + 5);
+
         // 4.4 Avaliação e Progresso
-        yPos = checkPageSpace(60, yPos + 10);
-        doc.text('4.4 AVALIAÇÃO E PROGRESSO:', marginLeft, yPos);
-        yPos = addWrappedText(
-            formDesenvolvimento.avaliacaoProgresso || 'Avaliações Regulares: Realizar avaliações periódicas para monitorar o progresso, ajustar os planos de aula conforme necessário e garantir que todos os participantes estejam alcançando seu potencial máximo. Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do progresso de cada participante para acompanhar as melhorias e áreas que necessitam de atenção adicional.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
+        currentY = addText('4.4 AVALIAÇÃO E PROGRESSO', config.marginLeft, currentY + 5);
+        currentY = addText(formData.desenvolvimento.avaliacaoProgresso || 'Avaliação e progresso não informados.', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // 4.5 Acompanhamento
+        currentY = addText('4.5 ACOMPANHAMENTO E MONITORAMENTO', config.marginLeft, currentY + 5);
+        currentY = addText(formData.desenvolvimento.acompanhamento || 'Acompanhamento não informado.', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // 4.6 Conclusão
+        currentY = addText('4.6 CONCLUSÃO', config.marginLeft, currentY + 5);
+        currentY = addText(formData.desenvolvimento.conclusao || 'Conclusão não informada.', 
+                          config.marginLeft + 5, currentY + 5);
+
+        // Rodapé com assinatura (posicionamento correto)
+        const spaceNeeded = 30;
+        if (currentY + spaceNeeded > config.pageHeight - config.footerSpace) {
+            doc.addPage();
+            currentY = 20;
+        }
         
-        // 5. Acompanhamento
-        yPos = checkPageSpace(60, yPos + 10);
-        doc.text('5. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES DESENVOLVIDAS:', marginLeft, yPos);
-        yPos = addWrappedText(
-            formDesenvolvimento.acompanhamento || 'As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
-        // 6. Conclusão
-        yPos = checkPageSpace(60, yPos + 10);
-        doc.text('6. CONCLUSÃO', marginLeft, yPos);
-        yPos = addWrappedText(
-            formDesenvolvimento.conclusao || 'O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.',
-            marginLeft + 5, yPos + 5, maxWidth - 10
-        );
-        
-        // Assinatura
-        yPos = checkPageSpace(60, yPos + 20);
-        const date = new Date();
-        doc.text(
-            `Estado/UF, ${date.getDate()} de ${date.toLocaleString('pt-BR', { month: 'long' })} de ${date.getFullYear()}`,
-            105, yPos, { align: 'center' }
-        );
-        yPos += 20;
-        doc.text('______________________________________________', 105, yPos, { align: 'center' });
-        yPos += 5;
-        doc.text('NOME DO REPRESENTANTE LEGAL DA ENTIDADE', 105, yPos, { align: 'center' });
-        yPos += 5;
-        doc.text('Dirigente', 105, yPos, { align: 'center' });
-        yPos += 10;
-        doc.text('______________________________________________', 105, yPos, { align: 'center' });
-        yPos += 5;
-        doc.text('ESPAÇO RESERVADO PARA ASSINATURA GOV.BR', 105, yPos, { align: 'center' });
-        
-        // Salvar PDF
+        doc.text(`Estado/UF, ${new Date().getDate()} de ${new Date().toLocaleString('pt-BR', { month: 'long' })} de ${new Date().getFullYear()}`, 
+                30, config.pageHeight - 20, { align: 'center' });
+        doc.text('NOME DO REPRESENTANTE LEGAL DA ENTIDADE', 
+                30, config.pageHeight - 10, { align: 'center' });
+        doc.text('Dirigente', 
+                30, config.pageHeight - 5, { align: 'center' });
+
+        // Salvar o PDF
         doc.save('Projeto_Tecnico_Esportivo.pdf');
         
     } catch (error) {
         console.error('Erro ao gerar PDF:', error);
-        alert('Ocorreu um erro ao gerar o PDF. Verifique os dados e tente novamente.');
+        alert('Ocorreu um erro ao gerar o PDF. Por favor, tente novamente.');
     }
 }
     </script>
