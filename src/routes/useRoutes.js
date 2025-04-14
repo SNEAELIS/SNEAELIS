@@ -8,7 +8,7 @@ const xlsx = require('xlsx');
 
 const router = express.Router();
 
-// Helper Functions (moved from helpers.js)
+// Helper Functions (previously in helpers.js)
 const loadSpreadsheetData = (filePath, sheetName) => {
   try {
     if (!fs.existsSync(filePath)) {
@@ -50,6 +50,9 @@ module.exports = (pool) => {
     if (!req.session.user) {
       return res.redirect('/login?error=Faça login para acessar');
     }
+    if (!req.session.user.verificado) {
+      return res.redirect('/login?error=Verifique sua conta antes de fazer login');
+    }
     next();
   };
 
@@ -69,6 +72,109 @@ module.exports = (pool) => {
   // Public Routes
   router.get('/', (req, res) => res.redirect('/login'));
 
+  // Registration Route (GET)
+  router.get('/cadastro', (req, res) => {
+    res.render('cadastro', {
+      error: req.query.error,
+      success: req.query.success,
+    });
+  });
+
+  // Registration Route (POST)
+  router.post('/cadastro', async (req, res) => {
+    try {
+      const { nome_completo, email, cpf, senha } = req.body;
+      if (!nome_completo || !email || !cpf || !senha) {
+        return res.redirect('/cadastro?error=Todos os campos são obrigatórios');
+      }
+
+      // Validate CPF (basic length check, you can add more validation)
+      if (cpf.length !== 11 || !/^\d+$/.test(cpf)) {
+        return res.redirect('/cadastro?error=CPF inválido');
+      }
+
+      // Check if email or CPF already exists
+      const existingUser = await pool.query(
+        'SELECT * FROM users WHERE email = $1 OR cpf = $2',
+        [email, cpf]
+      );
+      if (existingUser.rows.length > 0) {
+        return res.redirect('/cadastro?error=Email ou CPF já cadastrado');
+      }
+
+      // Generate a 6-digit verification code
+      const codigo_verificacao = Math.floor(100000 + Math.random() * 900000).toString();
+
+      // Hash the password using pgcrypto's crypt function
+      await pool.query(
+        'INSERT INTO users (nome_completo, email, cpf, senha, codigo_verificacao, verificado) VALUES ($1, $2, $3, crypt($4, gen_salt(\'bf\')), $5, $6)',
+        [nome_completo, email, cpf, senha, codigo_verificacao, false]
+      );
+
+      // Log the verification code (in a real app, send this via email)
+      console.log(`Código de verificação para ${email}: ${codigo_verificacao}`);
+
+      // Store email in session to use in verification
+      req.session.emailToVerify = email;
+
+      res.redirect('/verificar-codigo?success=Usuário cadastrado! Verifique seu email.');
+    } catch (error) {
+      console.error('Erro ao cadastrar usuário:', error.stack);
+      res.redirect('/cadastro?error=Erro ao cadastrar usuário');
+    }
+  });
+
+  // Verification Route (GET)
+  router.get('/verificar-codigo', (req, res) => {
+    if (!req.session.emailToVerify) {
+      return res.redirect('/cadastro?error=Realize o cadastro primeiro');
+    }
+    res.render('verificar-codigo', {
+      email: req.session.emailToVerify,
+      error: req.query.error,
+      success: req.query.success,
+    });
+  });
+
+  // Verification Route (POST)
+  router.post('/verificar-codigo', async (req, res) => {
+    try {
+      const { codigo } = req.body;
+      const email = req.session.emailToVerify;
+
+      if (!email) {
+        return res.redirect('/cadastro?error=Realize o cadastro primeiro');
+      }
+      if (!codigo) {
+        return res.redirect('/verificar-codigo?error=Código é obrigatório');
+      }
+
+      const result = await pool.query(
+        'SELECT * FROM users WHERE email = $1 AND codigo_verificacao = $2',
+        [email, codigo]
+      );
+
+      if (result.rows.length === 0) {
+        return res.redirect('/verificar-codigo?error=Código inválido');
+      }
+
+      // Mark user as verified
+      await pool.query(
+        'UPDATE users SET verificado = true, codigo_verificacao = NULL WHERE email = $1',
+        [email]
+      );
+
+      // Clear the email from session
+      delete req.session.emailToVerify;
+
+      res.redirect('/login?success=Conta verificada! Faça login.');
+    } catch (error) {
+      console.error('Erro ao verificar código:', error.stack);
+      res.redirect('/verificar-codigo?error=Erro ao verificar código');
+    }
+  });
+
+  // Login Route (GET)
   router.get('/login', (req, res) => {
     res.render('login', {
       error: req.query.error,
@@ -76,20 +182,34 @@ module.exports = (pool) => {
     });
   });
 
+  // Login Route (POST)
   router.post('/login', async (req, res) => {
     try {
       const { email, senha } = req.body;
+      console.log('Tentativa de login:', { email, senha }); // Debug log
+
       if (!email || !senha) {
         return res.redirect('/login?error=Email e senha são obrigatórios');
       }
+
       const result = await pool.query(
         'SELECT * FROM users WHERE email = $1 AND senha = crypt($2, senha)',
         [email, senha]
       );
+
+      console.log('Resultado da consulta:', result.rows); // Debug log
+
       if (result.rows.length === 0) {
         return res.redirect('/login?error=Credenciais inválidas');
       }
-      req.session.user = result.rows[0];
+
+      const user = result.rows[0];
+      if (!user.verificado) {
+        return res.redirect('/login?error=Verifique sua conta antes de fazer login');
+      }
+
+      req.session.user = user;
+      console.log('Usuário logado:', req.session.user); // Debug log
       res.redirect('/escolher-formulario');
     } catch (error) {
       console.error('Erro no login:', error.stack);

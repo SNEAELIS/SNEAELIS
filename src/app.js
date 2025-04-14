@@ -4,7 +4,6 @@ const path = require('path');
 const session = require('express-session');
 const cors = require('cors');
 const initializePool = require('../config/db');
-const useRoutes = require('./routes/useRoutes');
 
 let pool;
 
@@ -141,7 +140,7 @@ async function startApp() {
       secret: process.env.SESSION_SECRET || 'segredo_super_seguranca',
       resave: false,
       saveUninitialized: true,
-      cookie: { secure: process.env.NODE_ENV === 'production' },
+      cookie: { secure: false }, // Temporarily set to false to debug Render login issue
     })
   );
 
@@ -163,7 +162,8 @@ async function startApp() {
   });
 
   // Use routes with the initialized pool
-  app.use('/', useRoutes(pool));
+  const useRoutes = require('./routes/useRoutes')(pool);
+  app.use('/', useRoutes);
 
   // Logging middleware
   app.use((req, res, next) => {
