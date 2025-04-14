@@ -1,50 +1,51 @@
+// src/routes/useRoutes.js
 const express = require('express');
-const xlsx = require('xlsx');
 const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { jsPDF } = require('jspdf');
+const xlsx = require('xlsx');
+
+const router = express.Router();
+
+// Helper Functions (moved from helpers.js)
+const loadSpreadsheetData = (filePath, sheetName) => {
+  try {
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`Arquivo não encontrado: ${filePath}`);
+    }
+    const workbook = xlsx.readFile(filePath);
+    const worksheet = workbook.Sheets[sheetName || workbook.SheetNames[0]];
+    if (!worksheet) {
+      throw new Error(`A aba "${sheetName}" não foi encontrada.`);
+    }
+    return xlsx.utils.sheet_to_json(worksheet);
+  } catch (error) {
+    console.error('Erro ao carregar planilha:', error.stack);
+    throw error;
+  }
+};
+
+const groupByEtapa = (data) => {
+  return data.reduce((acc, item) => {
+    const key = item.etapa || 'Sem Etapa';
+    acc[key] = acc[key] || [];
+    acc[key].push(item);
+    return acc;
+  }, {});
+};
+
+const getCorrectTemplateName = (templateName) => {
+  const viewsDir = path.join(__dirname, '../views');
+  console.log(`Verificando template: ${templateName}.ejs em ${viewsDir}`);
+  const files = fs.readdirSync(viewsDir);
+  const foundFile = files.find(file => file.toLowerCase() === `${templateName.toLowerCase()}.ejs`);
+  console.log(`Template encontrado: ${foundFile || 'Nenhum'}`);
+  return foundFile ? foundFile.replace('.ejs', '') : null;
+};
 
 module.exports = (pool) => {
-  const router = express.Router();
-
-  // ==================== HELPER FUNCTIONS ====================
-  const loadSpreadsheetData = (filePath, sheetName) => {
-    try {
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Arquivo não encontrado: ${filePath}`);
-      }
-      const workbook = xlsx.readFile(filePath);
-      const worksheet = workbook.Sheets[sheetName || workbook.SheetNames[0]];
-      if (!worksheet) {
-        throw new Error(`A aba "${sheetName}" não foi encontrada.`);
-      }
-      return xlsx.utils.sheet_to_json(worksheet);
-    } catch (error) {
-      console.error('Erro ao carregar planilha:', error.stack);
-      throw error;
-    }
-  };
-
-  const groupByEtapa = (data) => {
-    return data.reduce((acc, item) => {
-      const key = item.etapa || 'Sem Etapa';
-      acc[key] = acc[key] || [];
-      acc[key].push(item);
-      return acc;
-    }, {});
-  };
-
-  const getCorrectTemplateName = (templateName) => {
-    const viewsDir = path.join(__dirname, '../views');
-    console.log(`Verificando template: ${templateName}.ejs em ${viewsDir}`);
-    const files = fs.readdirSync(viewsDir);
-    const foundFile = files.find(file => file.toLowerCase() === `${templateName.toLowerCase()}.ejs`);
-    console.log(`Template encontrado: ${foundFile || 'Nenhum'}`);
-    return foundFile ? foundFile.replace('.ejs', '') : null;
-  };
-
-  // ==================== MIDDLEWARES ====================
+  // Middleware to check authentication
   const checkAuth = (req, res, next) => {
     if (!req.session.user) {
       return res.redirect('/login?error=Faça login para acessar');
@@ -65,7 +66,6 @@ module.exports = (pool) => {
     next();
   };
 
-  // ==================== ROUTES ====================
   // Public Routes
   router.get('/', (req, res) => res.redirect('/login'));
 
@@ -361,30 +361,6 @@ module.exports = (pool) => {
     }
   });
 
-  // API Endpoints
-  router.get('/api/pesquisa-preco', checkAuth, async (req, res) => {
-    try {
-      const filePath = path.resolve(__dirname, '../../data/Planilha_Custo.xlsx');
-      const rawData = loadSpreadsheetData(filePath, 'Resultado (3)');
-      const data = rawData.map(row => ({
-        META: row['META'] || '',
-        ETAPA: row['ETAPA'] || '',
-        CLASSIFICACAO: row['CLASSIFICAÇÃO'] || '',
-        MODALIDADE: row['MODALIDADE ESPORTIVA'] || '',
-        ITEM_PADRONIZADO: row['ITEM Padronizado'] || '',
-        TIPO_DESPESA: row['TIPO DE DESPESA'] || '',
-        QUANTIDADE: parseInt(row['QUANTIDADE'], 10) || 0,
-        VALOR_UNITARIO: parseFloat(row['VALOR UNITÁRIO']) || 0,
-        UF_ENTIDADE: (row['UF_ENTIDADE'] || '').trim().toUpperCase(),
-        DATA_BASE: row['DATA BASE'] || '',
-      }));
-      res.json({ success: true, data });
-    } catch (error) {
-      console.error('Erro na API:', error.stack);
-      res.status(500).json({ success: false, error: 'Erro ao processar planilha' });
-    }
-  });
-
   // Ficha RTMA
   router.post('/ficha-rtma', checkAuth, async (req, res) => {
     try {
@@ -422,7 +398,101 @@ module.exports = (pool) => {
     }
   });
 
-  // ==================== ERROR HANDLING ====================
+  // API Endpoints
+  router.get('/api/planilha', checkAuth, async (req, res) => {
+    try {
+      const filePath = path.resolve(__dirname, '../../data/Planilha_Custo.xlsx');
+      const rawData = loadSpreadsheetData(filePath, 'Resultado (3)');
+      const data = rawData.map(row => ({
+        META: row['META'] || '',
+        ETAPA: row['ETAPA'] || '',
+        CLASSIFICACAO: row['CLASSIFICAÇÃO'] || '',
+        MODALIDADE: row['MODALIDADE ESPORTIVA'] || '',
+        ITEM_PADRONIZADO: row['ITEM Padronizado'] || '',
+        TIPO_DESPESA: row['TIPO DE DESPESA'] || '',
+        QUANTIDADE: parseInt(row['QUANTIDADE'], 10) || 0,
+        VALOR_UNITARIO: parseFloat(row['VALOR UNITÁRIO']) || 0,
+        UF_ENTIDADE: (row['UF_ENTIDADE'] || '').trim().toUpperCase(),
+        DATA_BASE: row['DATA BASE'] || '',
+      }));
+      res.json({ success: true, data, timestamp: new Date().toISOString() });
+    } catch (error) {
+      console.error('Erro ao ler planilha:', error.stack);
+      res.status(500).json({ success: false, error: 'Erro ao ler planilha' });
+    }
+  });
+
+  router.get('/api/projetos/:proposalNumber', checkAuth, async (req, res) => {
+    try {
+      const { proposalNumber } = req.params;
+      const result = await pool.query(
+        'SELECT * FROM projetos WHERE numero_proposta = $1 AND user_id = $2',
+        [proposalNumber, req.session.user.id]
+      );
+      if (result.rows.length === 0) {
+        return res.status(404).json({ error: 'Projeto não encontrado.' });
+      }
+      res.json(result.rows[0]);
+    } catch (error) {
+      console.error('Erro ao buscar projeto:', error.stack);
+      res.status(500).json({ error: 'Erro ao buscar projeto.' });
+    }
+  });
+
+  router.get('/buscar-cnpj/:cnpj', checkAuth, async (req, res) => {
+    try {
+      const { cnpj } = req.params;
+      const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpj}`);
+      if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
+      const data = await response.json();
+      res.json(data);
+    } catch (error) {
+      console.error('Erro ao buscar CNPJ:', error.stack);
+      res.status(500).json({ error: 'Erro ao buscar dados.' });
+    }
+  });
+
+  router.post('/salvar-projeto', checkAuth, async (req, res) => {
+    try {
+      const { numeroProposta, nomeProponente } = req.body;
+      if (!numeroProposta || !nomeProponente) {
+        return res.status(400).json({ error: 'Campos obrigatórios ausentes.' });
+      }
+      const result = await pool.query(
+        'INSERT INTO projetos (numero_proposta, nome_proponente, user_id) VALUES ($1, $2, $3) RETURNING *',
+        [numeroProposta, nomeProponente, req.session.user.id]
+      );
+      res.status(201).json({ message: 'Projeto salvo!', projeto: result.rows[0] });
+    } catch (error) {
+      console.error('Erro ao salvar projeto:', error.stack);
+      res.status(500).json({ error: 'Erro ao salvar projeto.' });
+    }
+  });
+
+  router.get('/listar-projetos', checkAuth, async (req, res) => {
+    try {
+      const result = await pool.query(
+        'SELECT * FROM projetos WHERE user_id = $1',
+        [req.session.user.id]
+      );
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Erro ao listar projetos:', error.stack);
+      res.status(500).json({ error: 'Erro ao listar projetos.' });
+    }
+  });
+
+  router.get('/users', checkAuth, async (req, res) => {
+    try {
+      const result = await pool.query('SELECT * FROM users');
+      res.json(result.rows);
+    } catch (error) {
+      console.error('Erro ao buscar usuários:', error.stack);
+      res.status(500).json({ error: 'Erro ao buscar dados.' });
+    }
+  });
+
+  // Error Handling
   router.use((err, req, res, next) => {
     console.error('Erro interno:', err.stack);
     res.status(500).render('acesso-negado', {

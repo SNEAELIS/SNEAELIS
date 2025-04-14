@@ -1,14 +1,12 @@
+// src/app.js
 const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const cors = require('cors');
-const XLSX = require('xlsx');
-const initializePool = require('../config/db'); // Import from db.js
-const useRoutes = require('./routes/useRoutes'); // Import useRoutes as a factory function
+const initializePool = require('../config/db');
+const useRoutes = require('./routes/useRoutes');
 
-// Global variables
 let pool;
-let projetos = [];
 
 async function habilitarPgcrypto(pool) {
   try {
@@ -40,6 +38,24 @@ async function criarTabelaUsuarios(pool) {
   }
 }
 
+async function criarTabelaProjetos(pool) {
+  const query = `
+    CREATE TABLE IF NOT EXISTS projetos (
+      id SERIAL PRIMARY KEY,
+      numero_proposta VARCHAR(255) NOT NULL,
+      nome_proponente VARCHAR(255) NOT NULL,
+      user_id INTEGER REFERENCES users(id),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+  try {
+    await pool.query(query);
+    console.log('Tabela projetos criada ou já existente.');
+  } catch (err) {
+    console.error('Erro ao criar a tabela projetos:', err);
+  }
+}
+
 async function criarTabelaPrecificacoes(pool) {
   const query = `
     CREATE TABLE IF NOT EXISTS precificacoes (
@@ -60,6 +76,42 @@ async function criarTabelaPrecificacoes(pool) {
   }
 }
 
+async function criarTabelaDocumentacoes(pool) {
+  const query = `
+    CREATE TABLE IF NOT EXISTS documentacoes (
+      id SERIAL PRIMARY KEY,
+      documento VARCHAR(255) NOT NULL,
+      descricao TEXT,
+      user_id INTEGER REFERENCES users(id),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+  try {
+    await pool.query(query);
+    console.log('Tabela documentacoes criada ou já existente.');
+  } catch (err) {
+    console.error('Erro ao criar a tabela documentacoes:', err);
+  }
+}
+
+async function criarTabelaConvenios(pool) {
+  const query = `
+    CREATE TABLE IF NOT EXISTS convenios (
+      id SERIAL PRIMARY KEY,
+      numero_convenio VARCHAR(255) NOT NULL,
+      detalhes TEXT,
+      user_id INTEGER REFERENCES users(id),
+      created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+  `;
+  try {
+    await pool.query(query);
+    console.log('Tabela convenios criada ou já existente.');
+  } catch (err) {
+    console.error('Erro ao criar a tabela convenios:', err);
+  }
+}
+
 async function startApp() {
   // Initialize the database pool
   try {
@@ -73,7 +125,10 @@ async function startApp() {
   // Setup database extensions and tables
   await habilitarPgcrypto(pool);
   await criarTabelaUsuarios(pool);
-  await criarTabelaPrecificacoes(pool); // Add the new table
+  await criarTabelaProjetos(pool);
+  await criarTabelaPrecificacoes(pool);
+  await criarTabelaDocumentacoes(pool);
+  await criarTabelaConvenios(pool);
 
   const app = express();
 
@@ -83,17 +138,21 @@ async function startApp() {
   app.use(cors());
   app.use(
     session({
-      secret: 'segredo_super_seguranca',
+      secret: process.env.SESSION_SECRET || 'segredo_super_seguranca',
       resave: false,
       saveUninitialized: true,
-      cookie: { secure: false }, // Set to true if using HTTPS
+      cookie: { secure: process.env.NODE_ENV === 'production' },
     })
   );
 
   // View engine setup
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));
-  app.use(express.static(path.join(__dirname, '../public')));
+
+  // Serve static files
+  const staticPath = path.join(__dirname, '../public');
+  console.log('Serving static files from:', staticPath);
+  app.use(express.static(staticPath));
 
   // Serve .js files with correct MIME type
   app.use((req, res, next) => {
@@ -101,71 +160,6 @@ async function startApp() {
       res.type('application/javascript');
     }
     next();
-  });
-
-  // API Routes
-  app.get('/api/planilha', async (req, res) => {
-    try {
-      const filePath = path.resolve(__dirname, '../data/Planilha_Custo.xlsx');
-      const workbook = XLSX.readFile(filePath);
-      const firstSheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[firstSheetName];
-      const dados = XLSX.utils.sheet_to_json(worksheet);
-      res.json({
-        success: true,
-        data: dados,
-        timestamp: new Date().toISOString()
-      });
-    } catch (error) {
-      console.error('Erro ao ler planilha:', error);
-      res.status(500).json({ success: false, error: 'Erro ao ler planilha' });
-    }
-  });
-
-  app.get('/api/projetos/:proposalNumber', (req, res) => {
-    const { proposalNumber } = req.params;
-    const projetosData = {
-      "222": { proposalNumber: "222", objeto: "Evento Esportivo", status: "Aprovado" },
-      "333": { proposalNumber: "333", objeto: "Projeto Cultural", status: "Em Análise" },
-    };
-    const projeto = projetosData[proposalNumber];
-    if (projeto) res.json(projeto);
-    else res.status(404).json({ error: "Projeto não encontrado." });
-  });
-
-  app.get('/buscar-cnpj/:cnpj', async (req, res) => {
-    const { cnpj } = req.params;
-    try {
-      const response = await fetch(`https://receitaws.com.br/v1/cnpj/${cnpj}`);
-      if (!response.ok) throw new Error(`Erro na API: ${response.status}`);
-      const data = await response.json();
-      res.json(data);
-    } catch (error) {
-      console.error('Erro ao buscar CNPJ:', error);
-      res.status(500).json({ error: 'Erro ao buscar dados.' });
-    }
-  });
-
-  app.post('/salvar-projeto', (req, res) => {
-    const { numeroProposta, nomeProponente } = req.body;
-    if (!numeroProposta || !nomeProponente) {
-      return res.status(400).json({ error: "Campos obrigatórios ausentes." });
-    }
-    const novoProjeto = { id: Date.now().toString(), numeroProposta, nomeProponente };
-    projetos.push(novoProjeto);
-    res.status(201).json({ message: "Projeto salvo!", projeto: novoProjeto });
-  });
-
-  app.get('/listar-projetos', (req, res) => res.json(projetos));
-
-  app.get('/users', async (req, res) => {
-    try {
-      const result = await pool.query('SELECT * FROM users');
-      res.json(result.rows);
-    } catch (err) {
-      console.error('Erro ao buscar usuários:', err.message);
-      res.status(500).json({ error: 'Erro ao buscar dados.' });
-    }
   });
 
   // Use routes with the initialized pool
@@ -181,6 +175,12 @@ async function startApp() {
   app.use((req, res) => {
     console.log('Rota não encontrada:', req.originalUrl);
     res.status(404).send(`Cannot GET ${req.originalUrl}`);
+  });
+
+  // Error handler
+  app.use((err, req, res, next) => {
+    console.error('Erro interno:', err.stack);
+    res.status(500).send('Erro interno no servidor');
   });
 
   const PORT = process.env.PORT || 3000;
