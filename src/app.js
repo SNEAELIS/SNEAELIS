@@ -8,7 +8,6 @@ const useRoutes = require('./routes/useRoutes'); // Import useRoutes as a factor
 
 // Global variables
 let pool;
-let precificacoesSalvas = [];
 let projetos = [];
 
 async function habilitarPgcrypto(pool) {
@@ -41,19 +40,24 @@ async function criarTabelaUsuarios(pool) {
   }
 }
 
-function processarDadosPlanilha(dadosBrutos) {
-  return dadosBrutos.map(item => ({
-    categoria: item.Recursos,
-    item: item.ITEM || 'Sem descrição',
-    subitem: item.SUBITEM || item.ITEM || 'Sem descrição',
-    codigo: item['CÓDIGO/CATMAT/CATSER/CBO'] || 'N/A',
-    gnd: item.GND || 'N/A',
-    uf: item.UF || 'N/A',
-    modalidade: item.MODALIDADE || 'N/A',
-    unidade: item.UNIDADE || 'N/A',
-    valorUnitario: parseFloat(item['VALOR UNITÁRIO (R$)']) || 0,
-    etapa: item['ETAPA ORÇAMENTÁRIA'] || 'N/A'
-  }));
+async function criarTabelaPrecificacoes(pool) {
+  const query = `
+    CREATE TABLE IF NOT EXISTS precificacoes (
+      id SERIAL PRIMARY KEY,
+      protocolo VARCHAR(255) NOT NULL,
+      itens JSONB NOT NULL,
+      valor_total NUMERIC NOT NULL,
+      valor_emenda NUMERIC NOT NULL,
+      data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+      user_id INTEGER REFERENCES users(id)
+    );
+  `;
+  try {
+    await pool.query(query);
+    console.log('Tabela precificacoes criada ou já existente.');
+  } catch (err) {
+    console.error('Erro ao criar a tabela precificacoes:', err);
+  }
 }
 
 async function startApp() {
@@ -69,6 +73,7 @@ async function startApp() {
   // Setup database extensions and tables
   await habilitarPgcrypto(pool);
   await criarTabelaUsuarios(pool);
+  await criarTabelaPrecificacoes(pool); // Add the new table
 
   const app = express();
 
@@ -99,70 +104,6 @@ async function startApp() {
   });
 
   // API Routes
-  app.get('/api/precificacao-dados', (req, res) => {
-    try {
-      const valorEmenda = parseFloat(req.query.valor) || 0;
-      const filePath = path.resolve(__dirname, '../data/Consolidado_Preços_Esporte_Amador.xlsx');
-      const workbook = XLSX.readFile(filePath);
-      const sheetName = workbook.SheetNames[0];
-      const worksheet = workbook.Sheets[sheetName];
-      const rawData = XLSX.utils.sheet_to_json(worksheet);
-
-      const dados = rawData.map(row => {
-        let valorUnitario = row['VALOR UNITÁRIO'];
-        if (typeof valorUnitario === 'string') {
-          valorUnitario = valorUnitario.replace(/[^\d,.]/g, '').replace(',', '.').replace(/\.(?=.*\.)/g, '');
-        }
-        valorUnitario = parseFloat(valorUnitario) || 0;
-
-        return {
-          Recursos: row['Recursos '] || 'Sem categoria',
-          ITEM: row['ITEM'] || 'Sem descrição',
-          SUBITEM: row['SUBITEM'] || row['ITEM'] || 'Sem descrição',
-          CODIGO: row['CÓDIGO/CATMAT/CATSER/CBO'] || 'N/A',
-          CODIGO_SIPEA: row['CÓDIGO SIPEA'] || 'N/A',
-          UNIDADE: row['UNIDADE'] || 'N/A',
-          VALOR_UNITARIO: valorUnitario,
-          UF: row['UF'] || 'N/A',
-          GND: row['GND'] || 'N/A',
-          ETAPA: row['ETAPA ORÇAMENTÁRIA'] || 'N/A',
-          MODALIDADE: row['MODALIDADE'] || 'N/A',
-          PASTA: row['PASTA'] || 'N/A'
-        };
-      });
-
-      res.json({ dados, valorEmenda });
-    } catch (error) {
-      console.error('Erro ao carregar dados da precificação:', error);
-      res.status(500).json({ dados: [], valorEmenda: 0 });
-    }
-  });
-
-  app.post('/salvar-precificacao', express.json(), (req, res) => {
-    const { protocolo, itens, valorTotal, valorEmenda } = req.body;
-    precificacoesSalvas.push({ protocolo, itens, valorTotal, valorEmenda, data: new Date() });
-    res.json({ mensagem: 'Precificação salva com sucesso!', protocolo });
-  });
-
-  app.get('/consulta-protocolo', (req, res) => {
-    const protocolo = req.query.protocolo;
-    const precificacao = precificacoesSalvas.find(p => p.protocolo === protocolo);
-    if (precificacao) {
-      res.json(precificacao);
-    } else {
-      res.status(404).send('Protocolo não encontrado.');
-    }
-  });
-
-  app.get('/exportar-protocolos', (req, res) => {
-    const csv = precificacoesSalvas.map(p => 
-      `${p.protocolo},${p.valorEmenda},${p.valorTotal},${p.data.toISOString()}`
-    ).join('\n');
-    res.setHeader('Content-Type', 'text/csv');
-    res.setHeader('Content-Disposition', 'attachment; filename=protocolos.csv');
-    res.send('Protocolo,Valor Emenda,Valor Gasto,Data\n' + csv);
-  });
-
   app.get('/api/planilha', async (req, res) => {
     try {
       const filePath = path.resolve(__dirname, '../data/Planilha_Custo.xlsx');
@@ -172,7 +113,7 @@ async function startApp() {
       const dados = XLSX.utils.sheet_to_json(worksheet);
       res.json({
         success: true,
-        data: processarDadosPlanilha(dados),
+        data: dados,
         timestamp: new Date().toISOString()
       });
     } catch (error) {
