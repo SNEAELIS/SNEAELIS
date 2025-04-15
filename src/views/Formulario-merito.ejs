@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -370,10 +371,10 @@
                     <div id="objetivosEspecificos">
                         <div class="objetivo-item">
                             <textarea name="objetivoEspecifico" required>Oportunizar a prática esportiva sistematizada para crianças, adolescentes, jovens, adultos e idosos;</textarea>
-                            <button type="button" onclick="removeObjetivo(this)" class="remove-row">Remover</button>
+                           
                         </div>
                     </div>
-                    <button type="button" onclick="addObjetivo()" class="add-row">Adicionar Objetivo</button>
+                    
                 </fieldset>
 
                 <fieldset>
@@ -767,6 +768,232 @@ Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do prog
         <p>© 2025 Ministério do Esporte</p>
     </footer>
     <script>
+        // Adicionando dados mockados para demonstração
+        const entidadesCadastradas = {
+            "00.000.000/0001-91": {
+                nome: "Clube Esportivo Modelo",
+                dirigente: "Carlos Alberto Silva",
+                telefone: "(11) 98765-4321",
+                uf: "SP",
+                municipio: "São Paulo"
+            },
+            "11.111.111/0001-22": {
+                nome: "Associação Atlética Exemplar",
+                dirigente: "Maria Oliveira Santos",
+                telefone: "(21) 99876-5432",
+                uf: "RJ",
+                municipio: "Rio de Janeiro"
+            }
+        };
+
+        // Dados mockados de IDH e população por município
+        const dadosMunicipios = {
+            "SP": {
+                "São Paulo": {
+                    idh: "0.805",
+                    anoIDH: "2010",
+                    populacao: "12325232",
+                    anoPopulacao: "2022"
+                }
+            },
+            "RJ": {
+                "Rio de Janeiro": {
+                    idh: "0.799",
+                    anoIDH: "2010",
+                    populacao: "6747815",
+                    anoPopulacao: "2022"
+                }
+            },
+            "MG": {
+                "Belo Horizonte": {
+                    idh: "0.810",
+                    anoIDH: "2010",
+                    populacao: "2523794",
+                    anoPopulacao: "2022"
+                }
+            }
+        };
+
+        // Lista de municípios por UF (simplificada para demonstração)
+        const municipiosPorUF = {
+            "AC": ["Rio Branco", "Cruzeiro do Sul"],
+            "AL": ["Maceió", "Arapiraca"],
+            "AM": ["Manaus", "Parintins"],
+            "AP": ["Macapá", "Santana"],
+            "BA": ["Salvador", "Feira de Santana"],
+            "CE": ["Fortaleza", "Juazeiro do Norte"],
+            "DF": ["Brasília"],
+            "ES": ["Vitória", "Vila Velha"],
+            "GO": ["Goiânia", "Anápolis"],
+            "MA": ["São Luís", "Imperatriz"],
+            "MG": ["Belo Horizonte", "Uberlândia"],
+            "MS": ["Campo Grande", "Dourados"],
+            "MT": ["Cuiabá", "Várzea Grande"],
+            "PA": ["Belém", "Ananindeua"],
+            "PB": ["João Pessoa", "Campina Grande"],
+            "PE": ["Recife", "Jaboatão dos Guararapes"],
+            "PI": ["Teresina", "Parnaíba"],
+            "PR": ["Curitiba", "Londrina"],
+            "RJ": ["Rio de Janeiro", "Niterói"],
+            "RN": ["Natal", "Mossoró"],
+            "RO": ["Porto Velho", "Ji-Paraná"],
+            "RR": ["Boa Vista", "Rorainópolis"],
+            "RS": ["Porto Alegre", "Caxias do Sul"],
+            "SC": ["Florianópolis", "Joinville"],
+            "SE": ["Aracaju", "Nossa Senhora do Socorro"],
+            "SP": ["São Paulo", "Guarulhos"],
+            "TO": ["Palmas", "Araguaína"]
+        };
+
+       // Função para formatar CNPJ
+function formatarCNPJ(cnpj) {
+    cnpj = cnpj.replace(/\D/g, '');
+    cnpj = cnpj.replace(/^(\d{2})(\d)/, '$1.$2');
+    cnpj = cnpj.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+    cnpj = cnpj.replace(/\.(\d{3})(\d)/, '.$1/$2');
+    cnpj = cnpj.replace(/(\d{4})(\d)/, '$1-$2');
+    return cnpj;
+}
+
+// Função para buscar dados da ReceitaWS via CNPJ
+async function buscarDadosCNPJ() {
+    const cnpjInput = document.getElementById('cnpj');
+    let cnpj = cnpjInput.value.replace(/\D/g, '');
+    cnpjInput.value = formatarCNPJ(cnpj);
+
+    if (cnpj.length === 14) {
+        try {
+            const response = await fetch(`https://www.receitaws.com.br/v1/cnpj/${cnpj}`);
+            const data = await response.json();
+
+            if (data.status !== "ERROR") {
+                document.getElementById('nomeProponente').value = data.nome;
+                document.getElementById('nomeDirigente').value = data.qsa?.[0]?.nome || '';
+                document.getElementById('telefone').value = formatarTelefone(data.telefone);
+                document.getElementById('uf').value = data.uf;
+
+                await carregarMunicipios(data.uf); // carregar municípios do IBGE
+                preencherMunicipio(data.municipio);
+            } else {
+                alert("CNPJ não encontrado.");
+            }
+        } catch (error) {
+            console.error("Erro ao buscar CNPJ:", error);
+        }
+    }
+}
+
+// Formata telefone
+function formatarTelefone(telefone) {
+    telefone = telefone.replace(/\D/g, '');
+    if (telefone.length === 11) {
+        return telefone.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+    } else if (telefone.length === 10) {
+        return telefone.replace(/^(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+    }
+    return telefone;
+}
+
+// Função para carregar municípios via API IBGE
+async function carregarMunicipios(uf) {
+    const estado = uf.toUpperCase();
+    const cidadeInput = document.getElementById('cidade');
+
+    if (cidadeInput && cidadeInput.tagName === 'INPUT') {
+        const container = cidadeInput.parentNode;
+        const select = document.createElement('select');
+        select.id = 'cidadeSelect';
+        select.name = 'cidade';
+        select.required = true;
+        select.className = 'form-control';
+        select.style.width = '100%';
+        select.style.padding = '10px';
+        select.style.marginBottom = '10px';
+        select.onchange = buscarDadosMunicipio;
+
+        const defaultOption = document.createElement('option');
+        defaultOption.value = '';
+        defaultOption.textContent = 'Selecione um município';
+        select.appendChild(defaultOption);
+
+        try {
+            const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${estado}/municipios`);
+            const municipios = await response.json();
+
+            municipios.forEach(mun => {
+                const option = document.createElement('option');
+                option.value = mun.id; // vamos usar o código do IBGE
+                option.textContent = mun.nome;
+                select.appendChild(option);
+            });
+
+            container.replaceChild(select, cidadeInput);
+        } catch (error) {
+            console.error("Erro ao carregar municípios:", error);
+        }
+    }
+}
+
+// Preencher município a partir do nome
+function preencherMunicipio(nomeMunicipio) {
+    const selectCidade = document.getElementById('cidadeSelect');
+    if (selectCidade) {
+        for (let i = 0; i < selectCidade.options.length; i++) {
+            if (selectCidade.options[i].text === nomeMunicipio) {
+                selectCidade.selectedIndex = i;
+                buscarDadosMunicipio();
+                break;
+            }
+        }
+    }
+}
+
+// Buscar dados populacionais do município selecionado
+async function buscarDadosMunicipio() {
+    const selectCidade = document.getElementById('cidadeSelect');
+    const municipioId = selectCidade.value;
+
+    try {
+        // População estimada do IBGE
+        const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/projecoes/populacao/${municipioId}`);
+        const data = await response.json();
+
+        document.getElementById('numHabitantes').value = data.projecao.populacao.toLocaleString();
+        document.getElementById('anoHabitantes').value = new Date(data.projecao.timestamp * 1000).getFullYear();
+    } catch (error) {
+        console.error("Erro ao buscar dados do município:", error);
+        document.getElementById('numHabitantes').value = '';
+        document.getElementById('anoHabitantes').value = '';
+    }
+
+    // Aqui você poderia integrar com base externa ou arquivo local para preencher o IDH
+    document.getElementById('idh').value = ''; // IDH precisa de base alternativa
+    document.getElementById('anoIDH').value = '2010'; // ano do último IDH disponível por município
+}
+
+
+        // Função para formatar telefone enquanto digita
+        function formatarTelefoneInput(input) {
+            input.value = formatarTelefone(input.value);
+        }
+
+        // Adiciona eventos após o DOM carregar
+        document.addEventListener('DOMContentLoaded', function() {
+            // [Seus outros event listeners permanecem aqui]
+            
+            // Adiciona eventos para os novos campos
+            document.getElementById('cnpj').addEventListener('input', buscarDadosCNPJ);
+            document.getElementById('uf').addEventListener('change', carregarMunicipios);
+            document.getElementById('telefone').addEventListener('input', function() {
+                this.value = formatarTelefone(this.value);
+            });
+            
+            // Adiciona máscara ao CNPJ
+            document.getElementById('cnpj').addEventListener('input', function() {
+                this.value = formatarCNPJ(this.value);
+            });
+        });
+
         // Funções para alternar entre abas
         document.addEventListener('DOMContentLoaded', function() {
             const tabButtons = document.querySelectorAll('.tab-button');
@@ -1569,11 +1796,11 @@ Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do prog
         }
         
         doc.text(`Estado/UF, ${new Date().getDate()} de ${new Date().toLocaleString('pt-BR', { month: 'long' })} de ${new Date().getFullYear()}`, 
-                30, config.pageHeight - 20, { align: 'center' });
+                105, config.pageHeight - 20, { align: 'center' });
         doc.text('NOME DO REPRESENTANTE LEGAL DA ENTIDADE', 
-                30, config.pageHeight - 10, { align: 'center' });
+                105, config.pageHeight - 10, { align: 'center' });
         doc.text('Dirigente', 
-                30, config.pageHeight - 5, { align: 'center' });
+                105, config.pageHeight - 5, { align: 'center' });
 
         // Salvar o PDF
         doc.save('Projeto_Tecnico_Esportivo.pdf');

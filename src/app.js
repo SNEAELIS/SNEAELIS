@@ -5,20 +5,31 @@ const session = require('express-session');
 const cors = require('cors');
 const initializePool = require('../config/db');
 
-let pool;
+// Configurações básicas
+const PORT = process.env.PORT || 3000;
+const isProduction = process.env.NODE_ENV === 'production';
 
-async function habilitarPgcrypto(pool) {
+async function configurarBancoDeDados() {
   try {
-    await pool.query('CREATE EXTENSION IF NOT EXISTS pgcrypto;');
-    console.log('Extensão pgcrypto habilitada ou já existente.');
+    const pool = await initializePool();
+    console.log('✅ Pool de conexão com o banco inicializado');
+
+    // Criar extensões e tabelas necessárias
+    await criarExtensoesETabelas(pool);
+    return pool;
   } catch (err) {
-    console.error('Erro ao habilitar pgcrypto:', err);
+    console.error('❌ Falha na configuração do banco:', err);
+    throw err;
   }
 }
 
-async function criarTabelaUsuarios(pool) {
-  const query = `
-    CREATE TABLE IF NOT EXISTS users (
+async function criarExtensoesETabelas(pool) {
+  const queries = [
+    // Extensão pgcrypto
+    'CREATE EXTENSION IF NOT EXISTS pgcrypto',
+    
+    // Tabela de usuários
+    `CREATE TABLE IF NOT EXISTS users (
       id SERIAL PRIMARY KEY,
       nome_completo VARCHAR(255) NOT NULL,
       email VARCHAR(255) UNIQUE NOT NULL,
@@ -27,37 +38,19 @@ async function criarTabelaUsuarios(pool) {
       codigo_verificacao VARCHAR(6),
       verificado BOOLEAN DEFAULT FALSE,
       nivel_acesso INTEGER DEFAULT 1
-    );
-  `;
-  try {
-    await pool.query(query);
-    console.log('Tabela users criada ou já existente.');
-  } catch (err) {
-    console.error('Erro ao criar a tabela users:', err);
-  }
-}
-
-async function criarTabelaProjetos(pool) {
-  const query = `
-    CREATE TABLE IF NOT EXISTS projetos (
+    )`,
+    
+    // Tabela de projetos
+    `CREATE TABLE IF NOT EXISTS projetos (
       id SERIAL PRIMARY KEY,
       numero_proposta VARCHAR(255) NOT NULL,
       nome_proponente VARCHAR(255) NOT NULL,
       user_id INTEGER REFERENCES users(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
-  try {
-    await pool.query(query);
-    console.log('Tabela projetos criada ou já existente.');
-  } catch (err) {
-    console.error('Erro ao criar a tabela projetos:', err);
-  }
-}
-
-async function criarTabelaPrecificacoes(pool) {
-  const query = `
-    CREATE TABLE IF NOT EXISTS precificacoes (
+    )`,
+    
+    // Tabela de precificações
+    `CREATE TABLE IF NOT EXISTS precificacoes (
       id SERIAL PRIMARY KEY,
       protocolo VARCHAR(255) NOT NULL,
       itens JSONB NOT NULL,
@@ -65,95 +58,67 @@ async function criarTabelaPrecificacoes(pool) {
       valor_emenda NUMERIC NOT NULL,
       data TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
       user_id INTEGER REFERENCES users(id)
-    );
-  `;
-  try {
-    await pool.query(query);
-    console.log('Tabela precificacoes criada ou já existente.');
-  } catch (err) {
-    console.error('Erro ao criar a tabela precificacoes:', err);
-  }
-}
-
-async function criarTabelaDocumentacoes(pool) {
-  const query = `
-    CREATE TABLE IF NOT EXISTS documentacoes (
+    )`,
+    
+    // Tabela de documentações
+    `CREATE TABLE IF NOT EXISTS documentacoes (
       id SERIAL PRIMARY KEY,
       documento VARCHAR(255) NOT NULL,
       descricao TEXT,
       user_id INTEGER REFERENCES users(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
-  try {
-    await pool.query(query);
-    console.log('Tabela documentacoes criada ou já existente.');
-  } catch (err) {
-    console.error('Erro ao criar a tabela documentacoes:', err);
-  }
-}
-
-async function criarTabelaConvenios(pool) {
-  const query = `
-    CREATE TABLE IF NOT EXISTS convenios (
+    )`,
+    
+    // Tabela de convênios
+    `CREATE TABLE IF NOT EXISTS convenios (
       id SERIAL PRIMARY KEY,
       numero_convenio VARCHAR(255) NOT NULL,
       detalhes TEXT,
       user_id INTEGER REFERENCES users(id),
       created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    );
-  `;
+    )`
+  ];
+
   try {
-    await pool.query(query);
-    console.log('Tabela convenios criada ou já existente.');
+    for (const query of queries) {
+      await pool.query(query);
+    }
+    console.log('✅ Tabelas e extensões verificadas/criadas');
   } catch (err) {
-    console.error('Erro ao criar a tabela convenios:', err);
+    console.error('❌ Erro ao criar tabelas:', err);
+    throw err;
   }
 }
 
-async function startApp() {
-  // Initialize the database pool
-  try {
-    pool = await initializePool();
-    console.log('Database pool initialized successfully');
-  } catch (err) {
-    console.error('Failed to initialize database pool:', err);
-    process.exit(1);
-  }
-
-  // Setup database extensions and tables
-  await habilitarPgcrypto(pool);
-  await criarTabelaUsuarios(pool);
-  await criarTabelaProjetos(pool);
-  await criarTabelaPrecificacoes(pool);
-  await criarTabelaDocumentacoes(pool);
-  await criarTabelaConvenios(pool);
-
+async function configurarApp(pool) {
   const app = express();
 
-  // Middleware setup
+  // Configuração de middlewares
   app.use(express.urlencoded({ extended: true }));
   app.use(express.json());
   app.use(cors());
-  app.use(
-    session({
-      secret: process.env.SESSION_SECRET || 'segredo_super_seguranca',
-      resave: false,
-      saveUninitialized: true,
-      cookie: { secure: false }, // Temporarily set to false to debug Render login issue
-    })
-  );
+  
+  // Configuração de sessão
+  app.use(session({
+    secret: process.env.SESSION_SECRET || 'segredo-desenvolvimento',
+    resave: false,
+    saveUninitialized: true,
+    cookie: { 
+      secure: isProduction,
+      maxAge: 24 * 60 * 60 * 1000 // 1 dia
+    }
+  }));
 
-  // View engine setup
+  // Configuração do view engine
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));
 
-  // Serve static files
+  // Servir arquivos estáticos
   const staticPath = path.join(__dirname, '../public');
-  console.log('Serving static files from:', staticPath);
   app.use(express.static(staticPath));
+  console.log(`📁 Servindo arquivos estáticos de: ${staticPath}`);
 
-  // Serve .js files with correct MIME type
+  // Middleware para tipo MIME correto de JS
   app.use((req, res, next) => {
     if (req.path.endsWith('.js')) {
       res.type('application/javascript');
@@ -161,36 +126,55 @@ async function startApp() {
     next();
   });
 
-  // Use routes with the initialized pool
-  const useRoutes = require('./routes/useRoutes')(pool);
-  app.use('/', useRoutes);
+  // Configuração de rotas
+  const useRoutes = require('./routes/useRoutes');
+  app.use('/', useRoutes(pool));
 
-  // Logging middleware
+  // Middleware de log
   app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url}`);
     next();
   });
 
-  // 404 handler
+  // Handler para 404
   app.use((req, res) => {
-    console.log('Rota não encontrada:', req.originalUrl);
-    res.status(404).send(`Cannot GET ${req.originalUrl}`);
+    res.status(404).render('error', { 
+      message: 'Página não encontrada',
+      errorCode: 404
+    });
   });
 
-  // Error handler
+  // Handler de erros
   app.use((err, req, res, next) => {
-    console.error('Erro interno:', err.stack);
-    res.status(500).send('Erro interno no servidor');
+    console.error('💥 Erro:', err.stack);
+    res.status(500).render('error', {
+      message: 'Erro interno no servidor',
+      errorCode: 500
+    });
   });
 
-  const PORT = process.env.PORT || 3000;
-  app.listen(PORT, () => {
-    console.log(`Servidor rodando na porta ${PORT}`);
-  });
+  return app;
 }
 
-// Start the application
-startApp().catch((err) => {
-  console.error('Erro ao iniciar o aplicativo:', err);
-  process.exit(1);
-});
+async function iniciarServidor() {
+  try {
+    // Configuração do banco de dados
+    const pool = await configurarBancoDeDados();
+
+    // Configuração do app Express
+    const app = await configurarApp(pool);
+
+    // Iniciar servidor
+    app.listen(PORT, () => {
+      console.log(`🚀 Servidor rodando na porta ${PORT}`);
+      console.log(`🔗 Acesse: http://localhost:${PORT}`);
+    });
+
+  } catch (err) {
+    console.error('❌ Falha ao iniciar o servidor:', err);
+    process.exit(1);
+  }
+}
+
+// Iniciar aplicação
+iniciarServidor();
