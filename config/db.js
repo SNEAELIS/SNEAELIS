@@ -15,7 +15,7 @@ module.exports = async function initializePool() {
   // Configuração baseada em ambiente
   const poolConfig = {
     user: process.env.DB_USER || 'postgres',
-    password: process.env.DB_PASSWORD || 'mesp@123456',
+    password: process.env.DB_PASSWORD || '123',
     host: process.env.DB_HOST || 'localhost',
     database: process.env.DB_NAME || 'site_login',
     port: parseInt(process.env.DB_PORT || '5432', 10),
