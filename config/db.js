@@ -2,18 +2,11 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 module.exports = async function initializePool() {
-  // Validação das variáveis de ambiente em produção
-  if (process.env.NODE_ENV === 'production') {
-    const requiredVars = ['DB_USER', 'DB_PASSWORD', 'DB_HOST', 'DB_NAME'];
-    const missingVars = requiredVars.filter(v => !process.env[v]);
-    
-    if (missingVars.length > 0) {
-      throw new Error(`❌ Variáveis de ambiente faltando no Render: ${missingVars.join(', ')}`);
-    }
-  }
-
-  // Configuração baseada em ambiente
-  const poolConfig = {
+  // Detecta automaticamente se está no Render
+  const isRender = process.env.RENDER || process.env.NODE_ENV === 'production';
+  
+  // Configurações padrão para desenvolvimento local
+  let poolConfig = {
     user: process.env.DB_USER || 'postgres',
     password: process.env.DB_PASSWORD || '123',
     host: process.env.DB_HOST || 'localhost',
@@ -21,19 +14,27 @@ module.exports = async function initializePool() {
     port: parseInt(process.env.DB_PORT || '5432', 10),
   };
 
-  // Configurações específicas para produção
-  if (process.env.NODE_ENV === 'production') {
-    poolConfig.ssl = { 
-      rejectUnauthorized: false,
-      // Configurações adicionais para Render.com
-      sslmode: 'require'
+  // Sobrescreve com configurações do Render se detectado
+  if (isRender) {
+    poolConfig = {
+      user: process.env.DB_USER || 'users_4t7z_user',
+      password: process.env.DB_PASSWORD || 'DlUHjtOhLtrvaWm3bvGRCu7uqVQ3PiH8',
+      host: process.env.DB_HOST || 'dpg-ct0ent1u0jms73c4dslg-a',
+      database: process.env.DB_NAME || 'users_4t7z',
+      port: parseInt(process.env.DB_PORT || '5432', 10),
+      ssl: {
+        rejectUnauthorized: false,
+        sslmode: 'require'
+      },
+      application_name: 'site_login_render'
     };
-    poolConfig.application_name = 'site_login_render';
+    
+    console.log('🔧 Modo Render.com detectado - Configurações de produção ativadas');
   }
 
-  console.log('🔧 Configuração do pool:', {
+  console.log('⚙️ Configuração do Pool:', {
     ...poolConfig,
-    password: poolConfig.password ? '*****' : 'undefined'
+    password: '*****' // Esconde a senha nos logs
   });
 
   const pool = new Pool(poolConfig);
@@ -42,27 +43,29 @@ module.exports = async function initializePool() {
     const client = await pool.connect();
     try {
       const res = await client.query('SELECT NOW() as current_time');
-      console.log('✅ Conexão bem-sucedida. Hora atual do banco:', res.rows[0].current_time);
+      console.log(`✅ Conexão bem-sucedida com ${isRender ? 'Render.com' : 'banco local'}`);
+      console.log('⏱ Hora do banco:', res.rows[0].current_time);
       return pool;
     } finally {
       client.release();
     }
   } catch (err) {
-    console.error('❌ Falha na conexão com o banco:', {
-      message: err.message,
-      code: err.code,
-      stack: process.env.NODE_ENV !== 'production' ? err.stack : undefined
-    });
-
-    // Dicas específicas para Render.com
-    if (process.env.NODE_ENV === 'production') {
+    console.error('❌ Falha na conexão com o banco de dados:');
+    console.error('Mensagem:', err.message);
+    
+    if (isRender) {
       console.error('\n🔧 Dicas para Render.com:');
-      console.error('1. Verifique se criou um banco PostgreSQL no Render');
-      console.error('2. Confira se as variáveis de ambiente estão corretas');
-      console.error('3. O banco pode levar alguns minutos para ficar pronto após a criação');
-      console.error('4. Verifique a conexão externa no painel do banco');
+      console.error('1. Verifique se todas as variáveis de ambiente estão configuradas');
+      console.error('2. Confira se o banco está "Available" no painel');
+      console.error('3. URL de conexão:', 
+        `postgresql://${poolConfig.user}:*****@${poolConfig.host}:${poolConfig.port}/${poolConfig.database}`);
+    } else {
+      console.error('\n🔧 Dicas para ambiente local:');
+      console.error('1. Verifique se o PostgreSQL está rodando localmente');
+      console.error('2. Confira usuário/senha no arquivo .env');
+      console.error('3. Teste a conexão com: psql -U postgres -h localhost');
     }
-
+    
     throw err;
   }
 };

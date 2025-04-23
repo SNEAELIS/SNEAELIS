@@ -157,7 +157,7 @@ async function gerarPDF() {
         }
 
         // Carrega a imagem de fundo
-        const backgroundImage = await getBase64Image('../../images/Ofício_page.jpg');
+        const backgroundImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
         if (!backgroundImage) {
             alert('Erro ao carregar a imagem de fundo.');
             return;
