@@ -2,7 +2,7 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 module.exports = async function initializePool() {
-  // Prioridade máxima para DATABASE_URL (usada pelo Render)
+  // Prioridade para DATABASE_URL (usada pelo Render)
   if (process.env.DATABASE_URL) {
     const poolConfig = {
       connectionString: process.env.DATABASE_URL,
@@ -28,14 +28,9 @@ module.exports = async function initializePool() {
 
 async function testConnection(config, connectionName) {
   // Esconde informações sensíveis nos logs
-  const logConfig = { ...config };
-  if (logConfig.password) logConfig.password = '*****';
-  if (logConfig.connectionString) {
-    logConfig.connectionString = logConfig.connectionString.replace(
-      /:\/\/([^:]+):([^@]+)/, 
-      '://$1:*****'
-    );
-  }
+  const logConfig = config.connectionString 
+    ? { connectionString: config.connectionString.replace(/(:\/\/[^:]+:)([^@]+)/, '$1*****') }
+    : { ...config, password: '*****' };
 
   console.log('⚙️ Configuração do Pool:', logConfig);
 
@@ -55,17 +50,14 @@ async function testConnection(config, connectionName) {
     console.error(`❌ Falha na conexão com ${connectionName}:`);
     console.error('Mensagem:', err.message);
     
-    // Dicas específicas para cada ambiente
     if (connectionName === 'Render PostgreSQL') {
       console.error('\n🔧 Dicas para Render.com:');
-      console.error('1. Verifique se o banco está "Available" no painel');
-      console.error('2. Confira a DATABASE_URL nas variáveis de ambiente');
-      console.error('3. A conexão deve ser externa (não use localhost)');
+      console.error('1. Verifique se a DATABASE_URL está configurada');
+      console.error('2. Confira se o banco está "Available" no painel');
     } else {
       console.error('\n🔧 Dicas para ambiente local:');
       console.error('1. Verifique se o PostgreSQL está rodando');
-      console.error(`2. Teste a conexão manualmente: psql -h ${config.host} -U ${config.user} -d ${config.database}`);
-      console.error('3. Confira o arquivo .env');
+      console.error('2. Teste a conexão com: psql -h localhost -U postgres -d site_login');
     }
     
     throw err;

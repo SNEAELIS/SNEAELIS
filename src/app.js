@@ -126,16 +126,7 @@ async function configurarApp(pool) {
     next();
   });
 
-    // Verifica variáveis de ambiente críticas
-  if (process.env.NODE_ENV === 'production') {
-    const requiredEnvVars = ['DB_HOST', 'DB_USER', 'DB_PASSWORD', 'DB_NAME'];
-    const missingVars = requiredEnvVars.filter(v => !process.env[v]);
-    
-    if (missingVars.length > 0) {
-      console.error('❌ Variáveis de ambiente necessárias faltando:', missingVars);
-      process.exit(1);
-    }
-  }
+
 
   // Configuração de rotas
   const useRoutes = require('./routes/useRoutes');
