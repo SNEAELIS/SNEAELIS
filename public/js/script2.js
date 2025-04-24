@@ -157,7 +157,7 @@ async function gerarPDF() {
         }
 
         // Carrega a imagem de fundo
-        const backgroundImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
+        const backgroundImage = await getBase64Image('../images/Declarações _page-0001.jpg');
         if (!backgroundImage) {
             alert('Erro ao carregar a imagem de fundo.');
             return;
@@ -213,7 +213,7 @@ async function gerarPDF() {
                 width: pageSize.width,
                 height: pageSize.height,
                 absolutePosition: { x: 0, y: 0 },
-                opacity: 0.1
+                opacity: 0.9
             })
         };
 

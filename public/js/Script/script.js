@@ -135,7 +135,7 @@ async function generateAllInOnePDF() {
     const date = formatDate();
 
     // Carrega a imagem de marca d'água
-    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
+    const watermarkImage = await getBase64Image('../IMAGES/Declarações _page-0001.jpg');
 
     var docDefinition = {
         pageSize: 'A4',
@@ -824,7 +824,7 @@ async function generateAtestadoPDF() {
     const date = formatDate();
 
     // Carrega a imagem de marca d'água
-    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
+    const watermarkImage = await getBase64Image('../images/Declarações _page-0001.jpg');
 
     var docDefinition = {
         pageSize: 'A4',
@@ -950,7 +950,8 @@ async function generateTermoCompromissoCoordenadorPDF() {
     const date = formatDate();
 
     // Carrega a imagem de marca d'água
-    const watermarkImage = await getBase64Image('../../images/Modelo-Marcadagua.jpg');
+    const watermarkImage = await getBase64Image('../IMAGES/Declarações _page-0001.jpg');
+    
     
     // Definindo o conteúdo do PDF
     var docDefinition = {
