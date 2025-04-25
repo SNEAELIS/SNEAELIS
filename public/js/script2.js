@@ -184,8 +184,15 @@ async function gerarPDF() {
         // Gera o conteúdo comum com margem superior de 50px (37.5pt)
         const conteudoComum = declaracoesCompletas.map(declaracao => ({
             stack: [
-                { text: declaracao.title || '', style: 'header', margin: [0, 37.5, 0, 10] }, // Margem superior de 50px
-                { text: substituirPlaceholders(declaracao.content, dados), style: 'normal' }
+                { 
+                    text: declaracao.title || '', 
+                    style: 'header', 
+                    margin: [0, 37.5, 0, 10] 
+                },
+                { 
+                    text: substituirPlaceholders(declaracao.content, dados), 
+                    style: 'normalJustify' // Usando estilo com alinhamento justificado
+                }
             ],
             pageBreak: 'after'
         }));
@@ -193,8 +200,15 @@ async function gerarPDF() {
         // Gera o conteúdo específico com margem superior de 50px (37.5pt)
         const conteudoEspecifico = declaracoesEspecificas[opcao].map(declaracao => ({
             stack: [
-                { text: declaracao.title, style: 'header', margin: [0, 37.5, 0, 10] }, // Margem superior de 50px
-                { text: substituirPlaceholders(declaracao.content, dados), style: 'normal', alignment: 'justify' }
+                { 
+                    text: declaracao.title, 
+                    style: 'header', 
+                    margin: [0, 37.5, 0, 10] 
+                },
+                { 
+                    text: substituirPlaceholders(declaracao.content, dados), 
+                    style: 'normalJustify' // Usando estilo com alinhamento justificado
+                }
             ],
             pageBreak: 'after'
         }));
@@ -205,8 +219,20 @@ async function gerarPDF() {
             pageMargins: [40, 40, 40, 40],
             content: [...conteudoComum, ...conteudoEspecifico, ...imageContent],
             styles: {
-                header: { fontSize: 16, bold: true, alignment: 'center' },
-                normal: { fontSize: 12, lineHeight: 1.5 }
+                header: { 
+                    fontSize: 16, 
+                    bold: true, 
+                    alignment: 'center' 
+                },
+                normal: { 
+                    fontSize: 12, 
+                    lineHeight: 1.5 
+                },
+                normalJustify: { // Novo estilo para texto justificado
+                    fontSize: 12,
+                    lineHeight: 1.5,
+                    alignment: 'justify'
+                }
             },
             background: (currentPage, pageSize) => ({
                 image: backgroundImage,
@@ -364,7 +390,7 @@ const declaracoesCompletas = [
         content: `
         INCISO VII DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
         
-        Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR] / [UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso VII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO] / [UF], possui área gestora dos recursos recebidos por transferência voluntária da União, com atribuições definidas para gestão, celebração, execução e prestação de contas, com lotação de, no mínimo, um servidor ou empregado público efetivo.
+        Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR] / [UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso VII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO] / [UF], possui área gestora dos recursos recebidos por transferência voluntária da União, com atribuições definidas para gestão, celebração, execução e prestação de contas, com lotação de, no mínimo, um servidor ou empregado público efetivo.
         
         Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
@@ -380,7 +406,7 @@ const declaracoesCompletas = [
         content: `
         § 17, DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
         
-        Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR] / [UF], cargo [CARGO_DIRIGENTE], que este subscreve, em cumprimento ao § 17, do Art. 29, da Portaria Interministerial MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO] / [UF], não possui área gestora dos recursos recebidos por transferência voluntária da União, com atribuições definidas para gestão, celebração, execução e prestação de contas. Assim, atribuirá a competência pela gestão dos recursos recebidos por transferência voluntária da União a outro setor que possua, no mínimo, um servidor ou empregado público efetivo.
+        Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR] / [UF], cargo [CARGO_DIRIGENTE], que este subscreve, em cumprimento ao § 17, do Art. 29, da Portaria Interministerial MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO] / [UF], não possui área gestora dos recursos recebidos por transferência voluntária da União, com atribuições definidas para gestão, celebração, execução e prestação de contas. Assim, atribuirá a competência pela gestão dos recursos recebidos por transferência voluntária da União a outro setor que possua, no mínimo, um servidor ou empregado público efetivo.
         
         Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
@@ -396,7 +422,7 @@ const declaracoesCompletas = [
         content: `
         INCISO XXXIV, DO ART. 29, DA PORTARIA CONJUNTA N.º 33/2023
         
-        Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR] / [UF], cargo [CARGO_DIRIGENTE], que essa subscreve, em cumprimento ao disposto no inciso XXXIV, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO] / [UF], não possui legislação, na localidade de execução do objeto, que estabeleça a cobrança de taxa de administração de contrato, em consonância com a vedação do art. 21, parágrafo único, inciso I, da Portaria Conjunta MGI/MF/CGU n.º 33/2023.
+        Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR] / [UF], cargo [CARGO_DIRIGENTE], que essa subscreve, em cumprimento ao disposto no inciso XXXIV, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO] / [UF], não possui legislação, na localidade de execução do objeto, que estabeleça a cobrança de taxa de administração de contrato, em consonância com a vedação do art. 21, parágrafo único, inciso I, da Portaria Conjunta MGI/MF/CGU n.º 33/2023.
         
         Por ser verdade, firmo a presente no exercício do respectivo cargo.
         
@@ -404,7 +430,7 @@ const declaracoesCompletas = [
         
         
         [NOME]
-        Chefe do Poder Executivo ou Secretário de Finanças
+        Chefe do Poder Executivo (ou Secretário de Finanças)
         `
     },
     {
@@ -496,7 +522,7 @@ const declaracoesEspecificas = {
                 Eu, [NOME], CPF [CPF], RG [RG], expedida pelo [ORGAO_EMISSOR] / [UF], 
                 cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso II do art. 29 da 
                 Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o 
-                [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], 
+                [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], 
                 [MUNICIPIO] / [UF], está regular quanto ao pagamento de precatórios judiciais, nos termos do 
                 Art. 97, do Ato das Disposições Constitucionais Transitórias.
     
@@ -516,7 +542,7 @@ const declaracoesEspecificas = {
     
                 Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
                 cargo [CARGO_DIRIGENTE], que esta subscreve, em cumprimento ao inciso XX, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
                 CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular no fornecimento da relação das empresas públicas e das 
                 sociedades de economia mista junto ao Registro Público de Empresas Mercantis e Atividades Afins, nos termos 
                 do Art. 92, da Lei nº 13.303, de 30 de junho de 2016.
@@ -537,7 +563,7 @@ const declaracoesEspecificas = {
 
             Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
             cargo [CARGO_DIRIGENTE], que esta subscreve, em cumprimento aos incisos XXIX, XXX E XXXI, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-            DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+            DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
             CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular: 
             
             I. no cumprimento do limite das dívidas consolidada e mobiliária, nos termos do Art. 25, § 1º, Inciso IV, Alínea "c", da Lei Complementar nº 101, de 2000; 
@@ -560,7 +586,7 @@ const declaracoesEspecificas = {
     
                 Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
                 cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXIII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
                 CEP [CEP], [MUNICIPIO]/[UF], está regular na destinação dos precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério 
                 e aos demais profissionais da educação básica, estabelecido no Art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 12 de abril de 2022.
     
@@ -580,7 +606,7 @@ const declaracoesEspecificas = {
 
             Eu, [NOME], CPF [CPF], RG [RG], [ORGAO]/[UF], cargo [Governador do Estado de xx ou Prefeito do Município xxx ou Secretário de Finanças do Estado ou Secretário de Finanças de Educação ou Município xxxx], 
             que essa subscrevo, em cumprimento ao disposto no § 16, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-            DECLARO, sob as penas da lei, que o [NOME DO ESTADO OU MUNICÍPIO/UF], CNPJ: [CNPJ], endereço [ENDEREÇO], 
+            DECLARO, sob as penas da lei, que o [NOME DO ESTADO OU MUNICÍPIO/UF], CNPJ [CNPJ], endereço [ENDEREÇO], 
             CEP [CEP], [CIDADE/UF], não possui precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério 
             e aos demais profissionais da educação básica, estabelecido no art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 2022.
 
@@ -755,7 +781,7 @@ const declaracoesEspecificas = {
         
                 Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
                 cargo [CARGO_DIRIGENTE], que esta subscrevo, em cumprimento aos incisos XXIX, XXX E XXXI, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
                 CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular:
         
                 I. no cumprimento do limite das dívidas consolidada e mobiliária, nos termos do Art. 25, § 1º, Inciso IV, Alínea "c", da Lei Complementar nº 101, de 2000;
@@ -778,7 +804,7 @@ const declaracoesEspecificas = {
 
                 Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
                 cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXIII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
                 CEP [CEP], [MUNICIPIO]/[UF], está regular na destinação dos precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério 
                 e aos demais profissionais da educação básica, estabelecido no Art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 12 de abril de 2022.
 
@@ -798,7 +824,7 @@ const declaracoesEspecificas = {
         
                 Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
                 cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no § 16, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
                 CEP [CEP], [MUNICIPIO]/[UF], não possui precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério 
                 e aos demais profissionais da educação básica, estabelecido no art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 2022.
         
@@ -818,7 +844,7 @@ const declaracoesEspecificas = {
 
                 Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
                 cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso II do art. 29 da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
                 CEP [CEP], [MUNICIPIO]/[UF], está regular quanto ao pagamento de precatórios judiciais, nos termos do Art. 97, do Ato das Disposições Constitucionais Transitórias.
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
@@ -837,7 +863,7 @@ const declaracoesEspecificas = {
 
                 Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
                 cargo [CARGO_DIRIGENTE], que esta subscreve, em cumprimento ao inciso XX, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
                 CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular no fornecimento da relação das empresas públicas e das 
                 sociedades de economia mista junto ao Registro Público de Empresas Mercantis e Atividades Afins, nos termos 
                 do Art. 92, da Lei nº 13.303, de 30 de junho de 2016.
@@ -858,7 +884,7 @@ const declaracoesEspecificas = {
         
                 Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], 
                 cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, 
-                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], 
+                DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], 
                 CEP [CEP], [MUNICIPIO]/[UF], está regular na contratação de operação de crédito com instituição financeira, nos termos do Art. 33, da Lei Complementar nº 101, de 2000.
         
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
@@ -915,7 +941,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISOS XXIX, XXX E XXXI, DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que esta subscrevo, em cumprimento aos incisos XXIX, XXX E XXXI, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular:
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que esta subscrevo, em cumprimento aos incisos XXIX, XXX E XXXI, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular:
     
                 I. no cumprimento do limite das dívidas consolidada e mobiliária, nos termos do Art. 25, § 1º, Inciso IV, Alínea "c", da Lei Complementar nº 101, de 2000; 
                 II. no cumprimento do limite de inscrição em restos a pagar, nos termos do Art. 25, § 1º, Inciso IV, Alínea "c", da Lei Complementar nº 101, de 2000; e
@@ -935,7 +961,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISO XXXIII, DO ART. 29, DA PORTARIA CONJUNTA N.º 33/2023
 
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXIII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular na destinação dos precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério e aos demais profissionais da educação básica, estabelecido no Art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 12 de abril de 2022.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXIII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular na destinação dos precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério e aos demais profissionais da educação básica, estabelecido no Art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 12 de abril de 2022.
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
@@ -951,7 +977,7 @@ const declaracoesEspecificas = {
             content: `
                 § 16, DO ART. 29, DA PORTARIA CONJUNTA N.º 33/2023
 
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no § 16, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], não possui precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério e aos demais profissionais da educação básica, estabelecido no art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 2022.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no § 16, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], não possui precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério e aos demais profissionais da educação básica, estabelecido no art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 2022.
 
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
 
@@ -967,7 +993,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISO II DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso II do art. 29 da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular quanto ao pagamento de precatórios judiciais, nos termos do Art. 97, do Ato das Disposições Constitucionais Transitórias.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso II do art. 29 da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular quanto ao pagamento de precatórios judiciais, nos termos do Art. 97, do Ato das Disposições Constitucionais Transitórias.
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
@@ -983,7 +1009,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISO XX DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que esta subscreve, em cumprimento ao inciso XX, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular no fornecimento da relação das empresas públicas e das sociedades de economia mista junto ao Registro Público de Empresas Mercantis e Atividades Afins, nos termos do Art. 92, da Lei nº 13.303, de 30 de junho de 2016.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que esta subscreve, em cumprimento ao inciso XX, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular no fornecimento da relação das empresas públicas e das sociedades de economia mista junto ao Registro Público de Empresas Mercantis e Atividades Afins, nos termos do Art. 92, da Lei nº 13.303, de 30 de junho de 2016.
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
@@ -999,7 +1025,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISO XXXII, DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular na contratação de operação de crédito com instituição financeira, nos termos do Art. 33, da Lei Complementar nº 101, de 2000.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular na contratação de operação de crédito com instituição financeira, nos termos do Art. 33, da Lei Complementar nº 101, de 2000.
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
@@ -1133,7 +1159,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISOS XXIX, XXX E XXXI, DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que esta subscrevo, em cumprimento aos incisos XXIX, XXX E XXXI, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP],[MUNICIPIO]/[UF], encontra-se regular:
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que esta subscrevo, em cumprimento aos incisos XXIX, XXX E XXXI, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP],[MUNICIPIO]/[UF], encontra-se regular:
     
                 I. no cumprimento do limite das dívidas consolidada e mobiliária, nos termos do Art. 25, § 1º, Inciso IV, Alínea "c", da Lei Complementar nº 101, de 2000; 
                 II. no cumprimento do limite de inscrição em restos a pagar, nos termos do Art. 25, § 1º, Inciso IV, Alínea "c", da Lei Complementar nº 101, de 2000; e
@@ -1153,7 +1179,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISO XXXIII, DO ART. 29, DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXIII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular na destinação dos precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério e aos demais profissionais da educação básica, estabelecido no Art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 12 de abril de 2022.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso XXXIII, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular na destinação dos precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério e aos demais profissionais da educação básica, estabelecido no Art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 12 de abril de 2022.
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
@@ -1169,7 +1195,7 @@ const declaracoesEspecificas = {
             content: `
                 § 16, DO ART. 29, DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no § 16, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], não possui precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério e aos demais profissionais da educação básica, estabelecido no art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 2022.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no § 16, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], não possui precatórios correspondentes ao rateio dos percentuais destinados aos profissionais do magistério e aos demais profissionais da educação básica, estabelecido no art. 47-A, §§ 1º e 2º, da Lei nº 14.113, de 2020, e no art. 3º da Lei nº 14.325, de 2022.
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
@@ -1185,7 +1211,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISO II DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso II do art. 29 da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular quanto ao pagamento de precatórios judiciais, nos termos do Art. 97, do Ato das Disposições Constitucionais Transitórias.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que essa subscrevo, em cumprimento ao disposto no inciso II do art. 29 da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], está regular quanto ao pagamento de precatórios judiciais, nos termos do Art. 97, do Ato das Disposições Constitucionais Transitórias.
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
@@ -1201,7 +1227,7 @@ const declaracoesEspecificas = {
             content: `
                 INCISO XX DO ART. 29 DA PORTARIA CONJUNTA N.º 33/2023
     
-                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que esta subscreve, em cumprimento ao inciso XX, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ: [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular no fornecimento da relação das empresas públicas e das sociedades de economia mista junto ao Registro Público de Empresas Mercantis e Atividades Afins, nos termos do Art. 92, da Lei nº 13.303, de 30 de junho de 2016.
+                Eu, [NOME], CPF [CPF], RG [RG], [ORGAO_EMISSOR]/[UF], cargo [CARGO_DIRIGENTE], que esta subscreve, em cumprimento ao inciso XX, do Art. 29, da Portaria Conjunta MGI/MF/CGU n.º 33/2023, DECLARO, sob as penas da lei, que o [ENTIDADE], CNPJ [CNPJ], endereço [ENDERECO], CEP [CEP], [MUNICIPIO]/[UF], encontra-se regular no fornecimento da relação das empresas públicas e das sociedades de economia mista junto ao Registro Público de Empresas Mercantis e Atividades Afins, nos termos do Art. 92, da Lei nº 13.303, de 30 de junho de 2016.
     
                 Por ser verdade, firmo a presente no exercício do respectivo cargo.
     
