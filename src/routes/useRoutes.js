@@ -44,7 +44,7 @@ module.exports = (pool) => {
     { path: 'ficha-rtma', template: 'Ficha_RTMA', title: 'RTMA' },
     { path: 'formulario-principal', template: 'Formulario', title: 'Formulário Principal' },
     { path: 'precificacao-form', template: 'precificacaoForm', title: 'Formulário de Precificação' },
-    { path: 'formulario-merito', template: 'formulario-merito', title: 'Formulário de Mérito' }
+    { path: 'Formulario-merito', template: 'Formulario-merito', title: 'Formulário de Mérito' }
   ];
 
   // Rota Principal
