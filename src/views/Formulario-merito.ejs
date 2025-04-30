@@ -683,6 +683,7 @@
         // 1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE
         checkPageBreak(50);
         doc.setFontSize(14);
+        doc.setTextColor(0, 0, 0); // Título em preto
         doc.text('1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE*', config.marginLeft, currentY);
         currentY += 10;
         const estatutoData = [
@@ -705,14 +706,20 @@
             currentY,
             [140, 40],
             {
-                bodyStyles: { fontSize: config.fontSize.small, minCellHeight: 10 },
+                bodyStyles: { 
+                    minCellHeight: 10, 
+                    textColor: [0, 0, 0] // Corpo da tabela em preto
+                },
+                headStyles: { 
+                    textColor: [255, 255, 255], // Texto do cabeçalho em branco
+                    fillColor: [0, 38, 102] // Fundo do cabeçalho em azul escuro (ajustado para corresponder a "2.1 OBJETO")
+                },
                 columnStyles: {
                     0: { cellWidth: 140, halign: 'left' },
                     1: { cellWidth: 40, halign: 'center' }
                 }
             }
         );
-
         // Seção 2
         checkPageBreak(30);
         doc.setFontSize(14);
@@ -1015,13 +1022,14 @@
         const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados) ? formData.infoProjeto.eventosSelecionados : [];
         const eventosData = [
             ['Os eventos têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica, reforçando a integração e o espírito comunitário.'],
-            [`Os eventos serão realizados: ${abrangencia} ${abrangencia === 'Por Núcleo' ? `(${numNucleos} núcleo(s))` : '(1 ocorrência por evento)'}.`],
+            [`Os eventos serão realizados: ${abrangencia === 'Por Núcleo' ? `em cada núcleo (${numNucleos} núcleo(s))` : 'em uma única ocorrência por evento'}.`],
             [eventosSelecionados.length > 0 ? `Eventos selecionados: ${eventosSelecionados.join(' e ')}.` : 'Nenhum evento selecionado.']
         ];
+
         if (eventosSelecionados.includes('Evento de Abertura')) {
             eventosData.push(
                 ['3.7.1 EVENTO DE ABERTURA'],
-                [`Será(ão) realizado(s) ${multiplicador} evento(s) de abertura, um por núcleo, caso a abrangência seja por núcleo, ou um único evento, caso contrário.`],
+                [`Será(ão) realizado(s) ${multiplicador} evento(s) de abertura ${abrangencia === 'Por Núcleo' ? ' (um por núcleo)' : ' (em uma única ocorrência)'}.`],
                 ['O evento de abertura apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania.'],
                 ['Atividades planejadas incluem:'],
                 ['1. Divulgação ampla: Informar à comunidade sobre o projeto, seus objetivos e como participar.'],
@@ -1030,10 +1038,11 @@
                 ['Durante o evento, serão distribuídos kits lanches aos beneficiários e à equipe técnica, promovendo um momento de confraternização.']
             );
         }
+
         if (eventosSelecionados.includes('Evento de Encerramento')) {
             eventosData.push(
                 ['3.7.2 EVENTO DE ENCERRAMENTO'],
-                [`Será(ão) realizado(s) ${multiplicador} evento(s) de encerramento, um por núcleo, caso a abrangência seja por núcleo, ou um único evento, caso contrário.`],
+                [`Será(ão) realizado(s) ${multiplicador} evento(s) de encerramento ${abrangencia === 'Por Núcleo' ? ' (um por núcleo)' : ' (em uma única ocorrência)'}.`],
                 ['O evento de encerramento celebrará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades adquiridas pelos beneficiários.'],
                 ['Atividades planejadas incluem:'],
                 ['1. Competições/torneios: Promover a prática esportiva em um ambiente festivo e competitivo.'],
@@ -1042,6 +1051,7 @@
                 ['Durante o evento, serão distribuídos kits lanches aos beneficiários e à equipe técnica, celebrando as conquistas alcançadas.']
             );
         }
+
         currentY = createTable(
             [['3.7 EVENTOS']],
             eventosData,
