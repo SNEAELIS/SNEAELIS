@@ -113,6 +113,7 @@
                     divulgacao: [],
                     outrosDivulgacao: '',
                     custeioDivulgacao: '',
+                    quantidadeConjuntosUniforme: '',
                     gradeHoraria: [{
                         nucleoLocalidade: '',
                         modalidadesNucleo: '',
@@ -139,6 +140,8 @@
                         itemUniforme: '',
                         especificacaoUniforme: ''
                     }],
+                    eventosSelecionados: [], // Adicione esta linha
+                    abrangenciaEventos: '',
                     detalhamentoModalidades: 'Espaço destinado para a Entidade relatar detalhes específicos sobre as modalidades que serão oferecidas neste projeto, visando conectar o projeto à realidade da Instituição e dos objetivos que se pretende alcançar, tais como: desenvolvimento, características, habilidades, materiais, estrutura, vantagens, benefícios, etc.',
                     acompanhamento: 'As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.',
                     conclusao: 'O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.'
@@ -221,65 +224,156 @@
             };
 
             const buscarDadosCNPJ = async (cnpj) => {
-                cnpj = cnpj.replace(/\D/g, '');
-                if (cnpj.length !== 14) return;
-                try {
-                    const response = await fetch(`https://www.receitaws.com.br/v1/cnpj/${cnpj}`);
-                    if (!response.ok) {
-                        throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                    }
-                    const data = await response.json();
-                    if (data.status !== "ERROR") {
-                        setFormData(prev => ({
-                            ...prev,
-                            proponente: {
-                                ...prev.proponente,
-                                nomeProponente: data.nome || '',
-                                nomeDirigente: data.qsa?.find(q => q.qual === "05-Administrador" || q.qual === "49-Sócio Administrador")?.nome || '',
-                                uf: data.uf || ''
-                            }
-                        }));
-                        setIsCNPJEditable(false);
-                        await carregarMunicipios(data.uf);
-                        preencherMunicipio(data.municipio);
-                    } else {
-                        alert("CNPJ não encontrado.");
-                        setIsCNPJEditable(true);
-                    }
-                } catch (error) {
-                    alert("Erro ao buscar dados do CNPJ.");
-                    setIsCNPJEditable(true);
-                }
-            };
-
-            
-
-            const carregarMunicipios = async (uf, retries = 3) => {
-                if (!uf) {
-                    setMunicipios([]);
-                    return;
-                }
-                for (let attempt = 1; attempt <= retries; attempt++) {
+                    cnpj = cnpj.replace(/\D/g, '');
+                    if (cnpj.length !== 14) return;
                     try {
-                        const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
+                        const response = await fetch(`https://www.receitaws.com.br/v1/cnpj/${cnpj}`);
                         if (!response.ok) {
                             throw new Error(`Erro ${response.status}: ${response.statusText}`);
                         }
                         const data = await response.json();
-                        // Fallback para DF
-                        if (uf === 'DF' && (!data || data.length === 0)) {
-                            setMunicipios([{ id: '5300108', nome: 'Brasília' }]);
+                        console.log('Dados retornados pela API do CNPJ:', data);
+                        if (data.status !== "ERROR") {
+                            const uf = data.uf || '';
+                            const municipio = data.municipio || '';
+                            setFormData(prev => ({
+                                ...prev,
+                                proponente: {
+                                    ...prev.proponente,
+                                    nomeProponente: data.nome || '',
+                                    nomeDirigente: data.qsa?.find(q => q.qual === "05-Administrador" || q.qual === "49-Sócio Administrador")?.nome || '',
+                                    uf: uf
+                                }
+                            }));
+                            setIsCNPJEditable(false);
+                            if (uf) {
+                                await carregarMunicipios(uf);
+                            } else {
+                                console.warn('UF não fornecida pela API do CNPJ:', data);
+                                setMunicipios([]);
+                            }
+                            if (municipio) {
+                                console.log('Chamando preencherMunicipio com município:', municipio);
+                                await preencherMunicipio(municipio);
+                            } else {
+                                console.warn('Município não fornecido pela API do CNPJ:', data);
+                                setFormData(prev => ({
+                                    ...prev,
+                                    proponente: { ...prev.proponente, cidade: '' }
+                                }));
+                            }
                         } else {
-                            setMunicipios(data);
+                            alert("CNPJ não encontrado.");
+                            setIsCNPJEditable(true);
                         }
-                        return;
                     } catch (error) {
-                        console.error(`Tentativa ${attempt} falhou ao carregar municípios:`, error);
-                        if (attempt === retries) {
-                            alert('Não foi possível carregar os municípios. Verifique sua conexão ou tente novamente.');
-                            setMunicipios(uf === 'DF' ? [{ id: '5300108', nome: 'Brasília' }] : []);
+                        console.error('Erro ao buscar dados do CNPJ:', error);
+                        alert("Erro ao buscar dados do CNPJ.");
+                        setIsCNPJEditable(true);
+                    }
+                };
+
+            
+
+                const carregarMunicipios = async (uf, retries = 3) => {
+                    if (!uf || !/^[A-Z]{2}$/.test(uf)) {
+                        console.warn(`UF inválida: "${uf}". Definindo municipios como vazio.`);
+                        setMunicipios([]);
+                        return [];
+                    }
+                    for (let attempt = 1; attempt <= retries; attempt++) {
+                        try {
+                            const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
+                            if (!response.ok) {
+                                throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                            }
+                            const data = await response.json();
+                            console.log(`Municípios carregados para UF ${uf}:`, data);
+                            setMunicipios(data || []);
+                            return data || [];
+                        } catch (error) {
+                            console.error(`Tentativa ${attempt} falhou ao carregar municípios para UF ${uf}:`, error);
+                            if (attempt === retries) {
+                                console.warn(`Não foi possível carregar municípios para UF ${uf}.`);
+                                alert(`Não foi possível carregar os municípios para UF ${uf}. Verifique sua conexão ou tente novamente.`);
+                                setMunicipios([]);
+                                return [];
+                            }
                         }
                     }
+                };
+
+
+            const preencherMunicipio = async (nomeMunicipio) => {
+                if (!nomeMunicipio) {
+                    console.warn('Nome do município não fornecido.');
+                    setFormData(prev => ({
+                        ...prev,
+                        proponente: { ...prev.proponente, cidade: '' }
+                    }));
+                    return;
+                }
+
+                // Verificar se nomeMunicipio é um ID (ex.: '1300102')
+                if (/^\d+$/.test(nomeMunicipio)) {
+                    console.warn(`nomeMunicipio "${nomeMunicipio}" parece ser um ID, não um nome.`);
+                    
+                    setFormData(prev => ({
+                        ...prev,
+                        proponente: { ...prev.proponente, cidade: nomeMunicipio }
+                    }));
+
+                    if (formData.proponente.uf) {
+                        const lista = await carregarMunicipios(formData.proponente.uf);
+
+                        if (Array.isArray(lista)) {
+                            const municipioId = Number(nomeMunicipio.trim());
+                            const municipio = lista.find(mun => mun.id === municipioId);
+
+                            if (municipio) {
+                                console.log('Município encontrado pelo ID:', municipio.nome);
+                                buscarDadosMunicipio(municipio.id);
+                            } else {
+                                console.warn(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
+                                alert(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
+                            }
+                        } else {
+                            console.warn('Falha ao obter a lista de municípios.');
+                            alert('Erro ao carregar municípios. Tente novamente.');
+                        }
+                    }
+                    return;
+                }
+                // Garantir que municipios esteja carregado
+                if (!municipios.length && formData.proponente.uf) {
+                    console.log(`Carregando municípios para UF ${formData.proponente.uf}...`);
+                    await carregarMunicipios(formData.proponente.uf);
+                }
+
+                const normalizedInput = normalizeString(nomeMunicipio);
+                const municipio = municipios.find(mun => {
+                    const normalizedMun = normalizeString(mun.nome);
+                    return (
+                        normalizedMun === normalizedInput ||
+                        normalizedMun.includes(normalizedInput) ||
+                        normalizedInput.includes(normalizedMun)
+                    );
+                });
+
+                if (municipio) {
+                    console.log('Município encontrado pelo nome:', municipio.nome, 'ID:', municipio.id);
+                    setFormData(prev => ({
+                        ...prev,
+                        proponente: { ...prev.proponente, cidade: municipio.id }
+                    }));
+                    buscarDadosMunicipio(municipio.id);
+                } else {
+                    console.warn(`Município "${nomeMunicipio}" não encontrado para UF ${formData.proponente.uf}. Municipios disponíveis:`, municipios);
+                    setFormData(prev => ({
+                        ...prev,
+                        proponente: { ...prev.proponente, cidade: '' }
+                    }));
+                    alert(`Município "${nomeMunicipio}" não encontrado na lista de municípios da UF ${formData.proponente.uf}.`);
                 }
             };
 
@@ -291,81 +385,9 @@
                     .replace(/[^a-z0-9\s]/g, ''); // Remove caracteres especiais
             };
 
-            const preencherMunicipio = (nomeMunicipio) => {
-                if (!nomeMunicipio) return;
-
-                const normalizedInput = normalizeString(nomeMunicipio);
-                // Busca município com correspondência exata ou parcial
-                const municipio = municipios.find(mun => {
-                    const normalizedMun = normalizeString(mun.nome);
-                    return (
-                        normalizedMun === normalizedInput ||
-                        normalizedMun.includes(normalizedInput) ||
-                        normalizedInput.includes(normalizedMun)
-                    );
-                });
-
-                if (municipio) {
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: { ...prev.proponente, cidade: municipio.id }
-                    }));
-                    buscarDadosMunicipio(municipio.id);
-                } else if (formData.proponente.uf === 'DF') {
-                    // Fallback para Brasília
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: { ...prev.proponente, cidade: '5300108' }
-                    }));
-                    buscarDadosMunicipio('5300108');
-                } else {
-                    console.warn(`Município "${nomeMunicipio}" não encontrado.`);
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: { ...prev.proponente, cidade: '' }
-                    }));
-                    alert(`Município "${nomeMunicipio}" não encontrado na lista de municípios da UF ${formData.proponente.uf}.`);
-                }
-            };
-            const buscarDadosMunicipio = async (municipioId) => {
-            if (!municipioId) return;
-            try {
-                const response = await fetch(`https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2021/variaveis/9324?localidades=N6[${municipioId}]`);
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-                const data = await response.json();
-                if (data && data[0]?.resultados?.[0]?.series?.[0]?.serie?.['2021']) {
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: {
-                            ...prev.proponente,
-                            numHabitantes: data[0].resultados[0].series[0].serie['2021'].toLocaleString('pt-BR') || '',
-                            anoHabitantes: '2021',
-                            idh: '0.805',
-                            anoIDH: '2010'
-                        }
-                    }));
-                } else {
-                    throw new Error('Dados do município não encontrados.');
-                }
-            } catch (error) {
-                console.error("Erro ao buscar dados do município:", error);
-                setFormData(prev => ({
-                    ...prev,
-                    proponente: {
-                        ...prev.proponente,
-                        numHabitantes: 'Dados indisponíveis',
-                        anoHabitantes: 'N/A',
-                        idh: '0.805',
-                        anoIDH: '2010'
-                    }
-                }));
-            }
-        };
 
             const calcularVigenciaTotal = () => {
-                const periodoEstruturacao = parseFloat(formData.dadosProjeto.periodoEstruturacao) || 0;
+                const periodoEstruturacao = parseFloat(formData.dadosProjeto.periodoEstruturacao) || 1;
                 const periodoExecucao = parseFloat(formData.dadosProjeto.periodoExecucao) || 0;
                 const vigenciaTotal = periodoEstruturacao + periodoExecucao;
                 setFormData(prev => ({
@@ -373,6 +395,18 @@
                     dadosProjeto: { ...prev.dadosProjeto, vigenciaTotal: vigenciaTotal.toString() }
                 }));
             };
+            useEffect(() => {
+                const estruturacao = parseInt(formData.dadosProjeto.periodoEstruturacao) || 0;
+                const execucao = parseInt(formData.dadosProjeto.periodoExecucao) || 0;
+                const total = estruturacao + execucao;
+                setFormData(prev => ({
+                    ...prev,
+                    dadosProjeto: {
+                        ...prev.dadosProjeto,
+                        vigenciaTotal: total > 0 ? total.toString() : ''
+                    }
+                }));
+            }, [formData.dadosProjeto.periodoEstruturacao, formData.dadosProjeto.periodoExecucao]);
 
             const calcularValorGlobal = () => {
                 const valorConcedente = parseMoeda(formData.dadosProjeto.valorConcedente);
@@ -495,6 +529,8 @@
             }
         };
 
+        
+
         // Validate external dependencies
         const validateDependencies = () => {
             const missing = [];
@@ -577,21 +613,27 @@
             [190]
         );
 
-            // 1.4 LOCALIDADE - Recuperação da cidade com fallback para DF
+            // 1.4 LOCALIDADE - Recuperação da cidade com base no nome selecionado
             const selectedCity = (() => {
-                // Valida se municipios é um array válido e não vazio
-                if (!Array.isArray(municipios) || municipios.length === 0) {
-                    return formData?.proponente?.uf === 'DF' ? 'Brasília' : 'Cidade não encontrada';
-                }
+                    const cityId = formData?.proponente?.cidade || '';
+                    const uf = formData?.proponente?.uf || '';
 
-                // Busca a cidade pelo ID
-                const city = municipios.find(m => m.id === formData?.proponente?.cidade)?.nome;
+                    console.log('Selecionando cidade com ID:', cityId, 'para UF:', uf);
 
-                // Aplica fallback para DF se a cidade não for encontrada
-                return city || (formData?.proponente?.uf === 'DF' ? 'Brasília' : 'Cidade não encontrada');
-            })();
+                    if (cityId && Array.isArray(municipios) && municipios.length > 0) {
+                        const municipio = municipios.find(m => m.id === Number(cityId));
+                        if (municipio) {
+                            console.log('Cidade encontrada:', municipio.nome);
+                            return municipio.nome;
+                        }
+                        console.warn(`Nenhum município encontrado para ID ${cityId} em municipios:`, municipios);
+                    } else {
+                        console.warn('Municípios inválidos ou vazios:', municipios, 'UF:', uf);
+                    }
 
-            // Monta os dados da localidade
+                    return uf ? `Cidade não encontrada para UF ${uf}` : 'Cidade não encontrada';
+                })();
+
             const localidadeData = [
                 `Cidade: ${selectedCity}`,
                 `UF: ${formData?.proponente?.uf ?? 'N/A'}`,
@@ -599,7 +641,6 @@
                 `Ano de Referência: ${formData?.proponente?.anoIDH ?? 'N/A'}`
             ];
 
-            // Gera a tabela
             currentY = createTable(
                 [['1.4 LOCALIDADE - (onde o projeto será desenvolvido) - Índice de Desenvolvimento Humano* (SITE IBGE)']],
                 [[localidadeData.join('\n')]],
@@ -988,97 +1029,175 @@ currentY = doc.lastAutoTable.finalY + 5;
             [190]
         );
 
-        // 3.7 EVENTOS
-        const eventosData = [
-            'Têm como objetivo não apenas celebrar o início e o sucesso do projeto, mas também fortalecer o engajamento da comunidade e promover um ambiente seguro e acolhedor para os beneficiários e suas famílias. Essas celebrações destacam o impacto positivo do projeto, incentivando a continuidade da prática esportiva e a inclusão social. Durante cada evento será distribuído kits lanches aos beneficiados e a equipe técnica do projeto.',
+    // 3.7 EVENTOS
+    const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
+    const multiplicador = formData.infoProjeto.abrangenciaEventos === 'Por Núcleo' ? numNucleos : 1;
+    const eventosSelecionados = formData.infoProjeto.eventosSelecionados || [];
+    const eventosData = [
+        `Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica.`,
+        `Eventos serão realizados: ${formData.infoProjeto.abrangenciaEventos || 'N/A'} (${formData.infoProjeto.abrangenciaEventos === 'Por Núcleo' ? `${numNucleos} núcleo(s)` : '1 ocorrência por evento'}).`,
+        eventosSelecionados.length > 0 ? `Eventos selecionados: ${eventosSelecionados.join(' e ')}.` : 'Nenhum evento selecionado.'
+    ];
+
+    if (eventosSelecionados.includes('Evento de Abertura')) {
+        eventosData.push(
             '3.7.1 EVENTO DE ABERTURA',
-            'Tem como principal objetivo apresentar o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, além de promover os valores fundamentais que o esporte oferece, como inclusão social, saúde, cidadania e trabalho em equipe. Dará início ao projeto, com uma saudação e explicação dos objetivos e da programação, tais como:',
-            '1. Divulgação ampla: Informar à comunidade local sobre a existência do projeto, seus objetivos e como as pessoas podem participar ou apoiar. Esse momento de apresentação é essencial para atrair beneficiados, entusiastas do esporte, famílias e potenciais parceiros ou patrocinadores.',
-            '2. Educação e conscientização: Utilização do evento para sensibilizar a comunidade sobre temas relacionados ao esporte, como saúde, prevenção de doenças, importância da disciplina e trabalho em equipe.',
-            '3. Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de organizar e sustentar um projeto transformador, reforçando o orgulho local.',
+            `Será(ão) realizado(s) ${multiplicador} evento(s) de abertura.`,
+            'Apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania.',
+            '1. Divulgação ampla: Informar à comunidade sobre o projeto e como participar.',
+            '2. Educação e conscientização: Sensibilizar sobre temas relacionados ao esporte.',
+            '3. Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de sustentar um projeto transformador.'
+        );
+    }
+
+    if (eventosSelecionados.includes('Evento de Encerramento')) {
+        eventosData.push(
             '3.7.2 EVENTO DE ENCERRAMENTO',
-            'Será organizado um evento de encerramento para comemorar o término do projeto e reconhecer os esforços e o progresso dos participantes, por meio de realização de competições/torneios entre os beneficiados. Com cerimônia de premiação, demonstrações de habilidades, apresentações, discursos de agradecimento e fotos/vídeos das atividades realizadas. Todos os participantes receberão medalhas personalizadas em reconhecimento ao seu esforço. Os três melhores colocados receberão troféus especiais.'
-        ];
-        currentY = createTable(
-            [['3.7 EVENTOS']],
-            [[eventosData.join('\n')]],
-            currentY,
-            [190]
+            `Será(ão) realizado(s) ${multiplicador} evento(s) de encerramento.`,
+            'Comemorará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades. Todos os participantes receberão medalhas, e os três melhores colocados receberão troféus.'
         );
+    }
 
-        // 3.8 RECURSOS HUMANOS
-        const contratadosCedeidos = formData.infoProjeto.contratadosCedeidos === 'contratados' ? 'contratados' : formData.infoProjeto.contratadosCedeidos === 'cedidos' ? 'cedidos' : 'N/A';
-        const recursosHumanosIntro = [
-            `Todos os profissionais envolvidos diretamente no projeto, terão atribuições específicas necessárias à execução do Projeto. Serão ${contratadosCedeidos} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.`
-        ];
-        currentY = createTable(
-            [['3.8 RECURSOS HUMANOS']],
-            [[recursosHumanosIntro.join('\n')]],
-            currentY,
-            [190]
-        );
-        currentY = createTable(
-            [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias']],
-            Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
-                ? formData.infoProjeto.recursosHumanos.map(row => [
-                    row.funcaoRH || 'N/A',
-                    row.quantidadeRH || 'N/A',
-                    row.atribuicaoRH || 'N/A',
-                    row.cargaHorariaRH || 'N/A',
-                    row.periodoRH || 'N/A',
-                ])
-                : [['Nenhum recurso humano especificado', '', '', '', '']],
-            currentY,
-            [30, 15, 55, 40, 50]
-        );
+    currentY = createTable(
+        [['3.7 EVENTOS']],
+        [[eventosData.join('\n')]],
+        currentY,
+        [190]
+    );
+ 
+// Função para aplicar o fundo azul escuro
+const applyDarkBlueBackground = {
+  fillColor: '#003366',  // Cor de fundo azul escuro
+  fontSize: 9,           // Tamanho da fonte
+  cellPadding: 2         // Espaçamento das células
+};
 
-        // 3.9 MATERIAIS FORNECIDOS
-        const materiaisIntro = [
-            'Serão adquiridos os acessórios específicos para cada modalidade a ser executada, os quais serão distribuídos para cada núcleo de acordo com a modalidade e a quantidade de beneficiados. Aqueles de uso coletivo ficarão sob guarda e responsabilidade da Entidade.'
-        ];
-        currentY = createTable(
-            [['3.9 MATERIAIS FORNECIDOS']],
-            [[materiaisIntro.join('\n')]],
-            currentY,
-            [190]
-        );
-        currentY = createTable(
-            [['Modalidade', 'Material', 'Aquisição ou Locação', 'Especificação', 'Justificativa']],
-            Array.isArray(formData.infoProjeto.materiais) && formData.infoProjeto.materiais.length > 0 
-                ? formData.infoProjeto.materiais.map(row => [
-                    row.modalidadeMaterial || 'N/A',
-                    row.material || 'N/A',
-                    row.tipoAquisicao || 'N/A',
-                    row.especificacaoMaterial || 'N/A',
-                    row.justificativaMaterial || 'N/A'
-                ])
-                : [['Nenhum material especificado', '', '', '', '']],
-            currentY,
-            [30, 30, 30, 40, 60]
-        );
+// 3.8 RECURSOS HUMANOS
+const contratadosCedeidos = formData.infoProjeto.contratadosCedeidos === 'contratados'
+  ? 'contratados'
+  : formData.infoProjeto.contratadosCedeidos === 'cedidos'
+  ? 'cedidos'
+  : 'N/A';
+
+const recursosHumanosIntro = [
+  `Todos os profissionais envolvidos diretamente no projeto terão atribuições específicas necessárias à execução do Projeto. Serão ${contratadosCedeidos} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.`
+];
+
+// Título 3.8
+doc.autoTable({
+  head: [['3.8 RECURSOS HUMANOS']],
+  body: [[recursosHumanosIntro.join('\n')]],
+  startY: currentY,
+  theme: 'grid',
+  styles: applyDarkBlueBackground,
+  margin: { left: 10, right: 10 },
+  columnStyles: { 0: { cellWidth: 182 } }
+});
+currentY = doc.autoTable.previous.finalY + 5;
+
+// Tabela de recursos humanos
+const recursos = Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
+  ? formData.infoProjeto.recursosHumanos.map(row => [
+      row.funcaoRH || 'N/A',
+      row.quantidadeRH || 'N/A',
+      row.atribuicaoRH || 'N/A',
+      row.cargaHorariaRH || 'N/A',
+      row.periodoRH || 'N/A',
+    ])
+  : [['Nenhum recurso humano especificado', '', '', '', '']];
+
+doc.autoTable({
+  head: [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias']],
+  body: recursos,
+  startY: currentY,
+  styles: { 
+    ...applyDarkBlueBackground,
+    fontSize: 8,       // Tamanho de fonte reduzido para tabela
+    cellPadding: 1,    // Menor espaçamento
+    cellWidth: 'wrap'  // Ajuste do tamanho da célula
+  },
+  columnStyles: {
+    0: { cellWidth: 30 },
+    1: { cellWidth: 15 },
+    2: { cellWidth: 40 },
+    3: { cellWidth: 40 },
+    4: { cellWidth: 30 },
+  },
+  margin: { left: 10, right: 10 },
+});
+currentY = doc.autoTable.previous.finalY + 5;
+
+// 3.9 MATERIAIS FORNECIDOS
+const materiaisIntro = [
+  'Serão adquiridos os acessórios específicos para cada modalidade a ser executada, os quais serão distribuídos para cada núcleo de acordo com a modalidade e a quantidade de beneficiados. Aqueles de uso coletivo ficarão sob guarda e responsabilidade da Entidade.'
+];
+
+doc.autoTable({
+  head: [['3.9 MATERIAIS FORNECIDOS']],
+  body: [[materiaisIntro.join('\n')]],
+  startY: currentY,
+  theme: 'grid',
+  styles: applyDarkBlueBackground,
+  margin: { left: 10, right: 10 },
+  columnStyles: { 0: { cellWidth: 182 } }
+});
+currentY = doc.autoTable.previous.finalY + 5;
+
+// Tabela de materiais
+const materiais = Array.isArray(formData.infoProjeto.materiais) && formData.infoProjeto.materiais.length > 0 
+  ? formData.infoProjeto.materiais.map(row => [
+      row.modalidadeMaterial || 'N/A',
+      row.material || 'N/A',
+      row.tipoAquisicao || 'N/A',
+      row.especificacaoMaterial || 'N/A',
+      row.justificativaMaterial || 'N/A'
+    ])
+  : [['Nenhum material especificado', '', '', '', '']];
+
+doc.autoTable({
+  head: [['Modalidade', 'Material', 'Aquisição ou Locação', 'Especificação', 'Justificativa']],
+  body: materiais,
+  startY: currentY,
+  styles: { 
+    ...applyDarkBlueBackground,
+    fontSize: 8,       // Tamanho de fonte reduzido para tabela
+    cellPadding: 1,    // Menor espaçamento
+    cellWidth: 'wrap'  // Ajuste do tamanho da célula
+  },
+  columnStyles: {
+    0: { cellWidth: 25 },
+    1: { cellWidth: 25 },
+    2: { cellWidth: 25 },
+    3: { cellWidth: 50 },
+    4: { cellWidth: 50 },
+  },
+  margin: { left: 10, right: 10 },
+});
+currentY = doc.autoTable.previous.finalY + 5;
+
 
         // 3.10 UNIFORMES
         const uniformesIntro = [
-            `Para garantir um atendimento adequado aos beneficiários, será realizado a aquisição de uniformes para uso individual dos participantes e uniformes para a comissão técnica. Cada aluno receberá ${formData.infoProjeto.quantidadeConjuntosUniforme || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.infoProjeto.quantidadeConjuntosUniforme || 'XX') : 'N/A'}) conjuntos de uniforme, além de haver uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.`
-        ];
-        currentY = createTable(
-            [['3.10 UNIFORMES']],
-            [[uniformesIntro.join('\n')]],
-            currentY,
-            [190]
-        );
-        currentY = createTable(
-            [['Modalidade', 'Item', 'Especificação']],
-            Array.isArray(formData.infoProjeto.uniformes) && formData.infoProjeto.uniformes.length > 0 
-                ? formData.infoProjeto.uniformes.map(row => [
-                    row.modalidadeUniforme || 'N/A',
-                    row.itemUniforme || 'N/A',
-                    row.especificacaoUniforme || 'N/A'
-                ])
-                : [['Nenhum uniforme especificado', '', '']],
-            currentY,
-            [60, 60, 70]
-        );
+                `Para garantir um atendimento adequado aos beneficiários, será realizado a aquisição de uniformes para uso individual dos participantes e uniformes para a comissão técnica. Cada aluno receberá ${formData.infoProjeto.quantidadeConjuntosUniforme || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.infoProjeto.quantidadeConjuntosUniforme || 'XX') : 'N/A'}) conjuntos de uniforme, além de haver uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.`
+            ];
+            currentY = createTable(
+                [['3.10 UNIFORMES']],
+                [[uniformesIntro.join('\n')]],
+                currentY,
+                [190]
+            );
+            currentY = createTable(
+                [['Modalidade', 'Item', 'Especificação']],
+                Array.isArray(formData.infoProjeto.uniformes) && formData.infoProjeto.uniformes.length > 0 
+                    ? formData.infoProjeto.uniformes.map(row => [
+                        row.modalidadeUniforme || 'N/A',
+                        row.itemUniforme || 'N/A',
+                        row.especificacaoUniforme || 'N/A'
+                    ])
+                    : [['Nenhum uniforme especificado', '', '']],
+                currentY,
+                [60, 60, 70]
+            );
 
         // 3.11 IDENTIFICAÇÃO DO PROJETO
         const identificacaoProjeto = [
@@ -1156,44 +1275,44 @@ currentY = doc.lastAutoTable.finalY + 5;
             [190]
         );
 
-// Assinatura, Data e Local - Centered
-checkPageBreak(50);
-currentY += 20;
-doc.setFontSize(12);
+            // Assinatura, Data e Local - Centered
+            checkPageBreak(50);
+            currentY += 20;
+            doc.setFontSize(12);
 
-// Linha de assinatura
-doc.text('__________________________________________', 105, currentY, { align: 'center' });
-currentY += 10;
+            // Linha de assinatura
+            doc.text('__________________________________________', 105, currentY, { align: 'center' });
+            currentY += 10;
 
-// Texto "Assinatura do Responsável"
-doc.text('Assinatura do Responsável', 105, currentY, { align: 'center' });
-currentY += 20;
+            // Texto "Assinatura do Responsável"
+            doc.text('Assinatura do Responsável', 105, currentY, { align: 'center' });
+            currentY += 20;
 
-const city = selectedCity === 'Cidade não encontrada' ? 'N/A' : selectedCity;
-const uf = formData?.proponente?.uf ?? 'N/A';
-const localText = uf === 'DF' ? city : `${city}/${uf}`;
-doc.text(`Local: ${localText}`, 105, currentY, { align: 'center' });
-currentY += 10;
+            const city = selectedCity.includes('Cidade não encontrada') ? 'N/A' : selectedCity;
+            const uf = formData?.proponente?.uf ?? 'N/A';
+            const localText = city === 'N/A' && uf === 'N/A' ? 'N/A' : `${city}/${uf}`;
+            doc.text(`Local: ${localText}`, 105, currentY, { align: 'center' });
+            currentY += 10;
 
-// Data atual
-doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { align: 'center' });
+            // Data atual
+            doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { align: 'center' });
 
-        // Rodapé
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(10);
-            doc.setTextColor(100);
-            doc.text(`Página ${i} de ${pageCount}`, 195, config.pageHeight - 15, { align: 'right' });
-            doc.text('© 2025 Ministério do Esporte', 105, config.pageHeight - 15, { align: 'center' });
-        }
+                    // Rodapé
+                    const pageCount = doc.internal.getNumberOfPages();
+                    for (let i = 1; i <= pageCount; i++) {
+                        doc.setPage(i);
+                        doc.setFontSize(10);
+                        doc.setTextColor(100);
+                        doc.text(`Página ${i} de ${pageCount}`, 195, config.pageHeight - 15, { align: 'right' });
+                        doc.text('© 2025 Ministério do Esporte', 105, config.pageHeight - 15, { align: 'center' });
+                    }
 
-        doc.save('Projeto_Esportivo.pdf');
-    } catch (error) {
-        console.error('Erro ao gerar o PDF:', error);
-        alert(`Ocorreu um erro ao gerar o PDF: ${error.message}`);
-    }
-};
+                    doc.save('Projeto_Esportivo.pdf');
+                } catch (error) {
+                    console.error('Erro ao gerar o PDF:', error);
+                    alert(`Ocorreu um erro ao gerar o PDF: ${error.message}`);
+                }
+            };
 
             return (
                 <div className="min-h-screen flex flex-col">
@@ -1458,12 +1577,12 @@ doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { ali
                                         <label className="block">
                                             <span className="text-red-500">*</span> Cidade:
                                             <select
-                                                className="w-full p-2 border rounded"
                                                 value={formData.proponente.cidade}
                                                 onChange={(e) => handleInputChange('proponente', 'cidade', e.target.value)}
-                                                required
+                                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-900 focus:border-blue-900"
+                                                disabled={!formData.proponente.uf}
                                             >
-                                                <option value="">Selecione um município</option>
+                                                <option value="">Selecione</option>
                                                 {municipios.map(mun => (
                                                     <option key={mun.id} value={mun.id}>{mun.nome}</option>
                                                 ))}
@@ -1475,7 +1594,7 @@ doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { ali
                                                 type="text"
                                                 className="w-full p-2 border rounded bg-gray-100"
                                                 value={formData.proponente.idh}
-                                                readOnly
+                                                
                                             />
                                         </label>
                                         <label className="block">
@@ -1484,7 +1603,7 @@ doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { ali
                                                 type="number"
                                                 className="w-full p-2 border rounded bg-gray-100"
                                                 value={formData.proponente.anoIDH}
-                                                readOnly
+                                            
                                             />
                                         </label>
                                     </div>
@@ -2205,28 +2324,81 @@ doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { ali
 
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.7 Eventos</legend>
-                                    <p className="italic text-gray-600">
-                                        Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica.
-                                    </p>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.7.1 Evento de Abertura</legend>
-                                    <p className="italic text-gray-600">
-                                        Apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania.
-                                    </p>
-                                    <ul className="list-decimal pl-5">
-                                        <li>Divulgação ampla: Informar à comunidade sobre o projeto e como participar.</li>
-                                        <li>Educação e conscientização: Sensibilizar sobre temas relacionados ao esporte.</li>
-                                        <li>Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de sustentar um projeto transformador.</li>
-                                    </ul>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.7.2 Evento de Encerramento</legend>
-                                    <p className="italic text-gray-600">
-                                        Comemorará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades. Todos os participantes receberão medalhas, e os três melhores colocados receberão troféus.
-                                    </p>
+                                    <div className="space-y-4">
+                                        <p className="italic text-gray-600">
+                                            Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica.
+                                        </p>
+                                        <label className="block">
+                                            <span className="text-red-500">*</span> Selecione os eventos a serem realizados:
+                                            <div className="flex flex-wrap gap-4 mt-2">
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        value="Evento de Abertura"
+                                                        checked={(formData.infoProjeto.eventosSelecionados || []).includes('Evento de Abertura')}
+                                                        onChange={(e) => {
+                                                            const updatedEventos = e.target.checked
+                                                                ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
+                                                                : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
+                                                            handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
+                                                        }}
+                                                    />
+                                                    <span className="ml-2">Evento de Abertura</span>
+                                                </label>
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        value="Evento de Encerramento"
+                                                        checked={(formData.infoProjeto.eventosSelecionados || []).includes('Evento de Encerramento')}
+                                                        onChange={(e) => {
+                                                            const updatedEventos = e.target.checked
+                                                                ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
+                                                                : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
+                                                            handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
+                                                        }}
+                                                    />
+                                                    <span className="ml-2">Evento de Encerramento</span>
+                                                </label>
+                                            </div>
+                                        </label>
+                                        <label className="block">
+                                            <span className="text-red-500">*</span> Os eventos serão realizados:
+                                            <div className="flex gap-4 mt-2">
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name="abrangenciaEventos"
+                                                        value="Por Projeto"
+                                                        checked={formData.infoProjeto.abrangenciaEventos === 'Por Projeto'}
+                                                        onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
+                                                        required
+                                                    />
+                                                    <span className="ml-2">Por Projeto (1 ocorrência por evento)</span>
+                                                </label>
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="radio"
+                                                        name="abrangenciaEventos"
+                                                        value="Por Núcleo"
+                                                        checked={formData.infoProjeto.abrangenciaEventos === 'Por Núcleo'}
+                                                        onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
+                                                    />
+                                                    <span className="ml-2">Por Núcleo (multiplicado pelo número de núcleos)</span>
+                                                </label>
+                                            </div>
+                                        </label>
+                                        <p className="italic text-gray-600">
+                                            <strong>Evento de Abertura:</strong> Apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania. Inclui:
+                                        </p>
+                                        <ul className="list-disc pl-5">
+                                            <li>Divulgação ampla: Informar à comunidade sobre o projeto e como participar.</li>
+                                            <li>Educação e conscientização: Sensibilizar sobre temas relacionados ao esporte.</li>
+                                            <li>Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de sustentar um projeto transformador.</li>
+                                        </ul>
+                                        <p className="italic text-gray-600">
+                                            <strong>Evento de Encerramento:</strong> Comemorará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades. Todos os participantes receberão medalhas, e os três melhores colocados receberão troféus.
+                                        </p>
+                                    </div>
                                 </fieldset>
 
                                 <fieldset className="border p-4 rounded">
@@ -2452,6 +2624,18 @@ doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { ali
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.11 Uniformes</legend>
                                     <div className="space-y-4">
+                                        <label className="block">
+                                            <span className="text-red-500">*</span> Cada aluno receberá quantos uniformes?
+                                            <input
+                                                type="number"
+                                                className="w-full p-2 border rounded"
+                                                value={formData.infoProjeto.quantidadeConjuntosUniforme}
+                                                onChange={(e) => handleInputChange('infoProjeto', 'quantidadeConjuntosUniforme', e.target.value)}
+                                                min="1"
+                                                required
+                                            />
+                                        </label>
+                                        {/* Resto do código da seção de uniformes permanece igual */}
                                         {formData.infoProjeto.uniformes.map((row, index) => (
                                             <div key={index} className="flex flex-wrap gap-2 items-center">
                                                 <label className="block flex-1 min-w-[150px]">
@@ -2681,6 +2865,8 @@ doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { ali
                                                         itemUniforme: '',
                                                         especificacaoUniforme: ''
                                                     }],
+                                                    eventosSelecionados: [],
+                                                    abrangenciaEventos: '',
                                                     detalhamentoModalidades: 'Espaço destinado para a Entidade relatar detalhes específicos sobre as modalidades que serão oferecidas neste projeto, visando conectar o projeto à realidade da Instituição e dos objetivos que se pretende alcançar, tais como: desenvolvimento, características, habilidades, materiais, estrutura, vantagens, benefícios, etc.',
                                                     acompanhamento: 'As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.',
                                                     conclusao: 'O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.'
@@ -2704,6 +2890,7 @@ doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { ali
                                 Gerar Projeto Técnico
                             </button>
                         </div>
+                        
                     </main>
 
                     <footer className="bg-blue-900 text-white p-4 text-center">
