@@ -450,7 +450,7 @@
         const { jsPDF } = window.jspdf;
         const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-        // Configuration constants - Adjusted margins to 10mm
+        // Configuration constants
         const config = {
             marginLeft: 10,
             marginRight: 10,
@@ -460,7 +460,13 @@
             footerSpace: 25,
             primaryColor: [0, 39, 102],
             secondaryColor: [255, 255, 255],
-            tablePadding: 3,
+            tablePadding: 2,
+            fontSize: {
+                title: 14,
+                subtitle: 12,
+                body: 10,
+                small: 8,
+            },
         };
         let currentY = config.marginTop;
 
@@ -497,15 +503,22 @@
                     fillColor: config.primaryColor,
                     textColor: config.secondaryColor,
                     fontStyle: 'bold',
+                    fontSize: config.fontSize.subtitle,
                     cellPadding: config.tablePadding,
+                    halign: 'left',
+                    minCellHeight: 6,
                 },
-                bodyStyles: { cellPadding: config.tablePadding },
+                bodyStyles: {
+                    fontSize: config.fontSize.body,
+                    cellPadding: config.tablePadding,
+                    textColor: [0, 0, 0],
+                    fillColor: [255, 255, 255],
+                    halign: 'left',
+                    minCellHeight: 5,
+                    overflow: 'linebreak',
+                },
                 margin: { left: config.marginLeft, right: config.marginRight },
-                didParseCell: (data) => {
-                    if (data.section === 'body' || data.section === 'head') {
-                        data.cell.styles.cellWidth = 'wrap'; // Ensure wrapping for both head and body
-                    }
-                },
+                tableWidth: 190,
                 ...additionalConfig,
             };
             if (colWidths) {
@@ -515,7 +528,7 @@
                 });
             }
             doc.autoTable(tableConfig);
-            return doc.lastAutoTable.finalY + 5;
+            return doc.lastAutoTable.finalY + 3;
         };
 
         // Validate formData and log missing fields
@@ -528,8 +541,6 @@
                 console.warn(`Missing fields in formData.${section}: ${missing.join(', ')}`);
             }
         };
-
-        
 
         // Validate external dependencies
         const validateDependencies = () => {
@@ -549,6 +560,7 @@
         if (!formData || typeof formData !== 'object') {
             throw new Error('formData is undefined or invalid.');
         }
+        validateDependencies();
 
         // Page 1 Header
         doc.setFontSize(16);
@@ -572,181 +584,136 @@
 
         // 1.1 IDENTIFICAÇÃO PROPONENTE
         const identificacaoProponente = [
-            `CNPJ Proponente: ${formData.proponente.cnpj || 'N/A'}`,
-            `Nome Proponente: ${formData.proponente.nomeProponente || 'N/A'}`,
-            `Nome do Dirigente: ${formData.proponente.nomeDirigente || 'N/A'}`,
-            `Telefone(s) de contato com DDD: ${Array.isArray(formData.proponente.telefones) ? formData.proponente.telefones.join(', ') : 'N/A'}`,
-            `E-mail: ${formData.proponente.email || 'N/A'}`,
-            `Número da Proposta: ${formData.proponente.numeroProposta || 'N/A'}`
+            [`CNPJ Proponente: ${formData.proponente.cnpj || 'N/A'}`],
+            [`Nome Proponente: ${formData.proponente.nomeProponente || 'N/A'}`],
+            [`Nome do Dirigente: ${formData.proponente.nomeDirigente || 'N/A'}`],
+            [`Telefone(s) de contato com DDD: ${Array.isArray(formData.proponente.telefones) ? formData.proponente.telefones.join(', ') : 'N/A'}`],
+            [`E-mail: ${formData.proponente.email || 'N/A'}`],
+            [`Número da Proposta: ${formData.proponente.numeroProposta || 'N/A'}`]
         ];
         currentY = createTable(
             [['1.1 IDENTIFICAÇÃO PROPONENTE*']],
-            [[identificacaoProponente.join('\n')]],
+            identificacaoProponente,
             currentY,
             [190]
         );
 
         // 1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO
         const responsavelElaboracao = [
-            `Nome: ${formData.proponente.responsavelNome || 'N/A'}`,
-            `E-mail: ${formData.proponente.responsavelEmail || 'N/A'}`,
-            `Vínculo com a Entidade: ${formData.proponente.responsavelVinculo || 'N/A'}`,
-            `Telefone(s): ${Array.isArray(formData.proponente.responsavelTelefones) ? formData.proponente.responsavelTelefones.join(', ') : 'N/A'}`
+            [`Nome: ${formData.proponente.responsavelNome || 'N/A'}`],
+            [`E-mail: ${formData.proponente.responsavelEmail || 'N/A'}`],
+            [`Vínculo com a Entidade: ${formData.proponente.responsavelVinculo || 'N/A'}`],
+            [`Telefone(s): ${Array.isArray(formData.proponente.responsavelTelefones) ? formData.proponente.responsavelTelefones.join(', ') : 'N/A'}`]
         ];
         currentY = createTable(
             [['1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO*']],
-            [[responsavelElaboracao.join('\n')]],
+            responsavelElaboracao,
             currentY,
             [190]
         );
 
         // 1.3 DIMENSÃO DO PROJETO
+        const dimensaoProjeto = [
+            [formData.proponente.dimensaoProjeto === 'Projeto Educacional' ? '(X) Projeto Educacional' : '( ) Projeto Educacional'],
+            ['Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.'],
+            [formData.proponente.dimensaoProjeto === 'Projeto de Participação' ? '(X) Projeto de Participação' : '( ) Projeto de Participação'],
+            ['Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.']
+        ];
         currentY = createTable(
             [['1.3 DIMENSÃO DO PROJETO* (marque somente uma opção)']],
-            [
-                [formData.proponente.dimensaoProjeto === 'Projeto Educacional' ? '(X) Projeto Educacional' : '( ) Projeto Educacional'],
-                ['Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.'],
-                [formData.proponente.dimensaoProjeto === 'Projeto de Participação' ? '(X) Projeto de Participação' : '( ) Projeto de Participação'],
-                ['Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.'],
-            ],
+            dimensaoProjeto,
             currentY,
             [190]
         );
 
-            // 1.4 LOCALIDADE - Recuperação da cidade com base no nome selecionado
-            const selectedCity = (() => {
-                    const cityId = formData?.proponente?.cidade || '';
-                    const uf = formData?.proponente?.uf || '';
-
-                    console.log('Selecionando cidade com ID:', cityId, 'para UF:', uf);
-
-                    if (cityId && Array.isArray(municipios) && municipios.length > 0) {
-                        const municipio = municipios.find(m => m.id === Number(cityId));
-                        if (municipio) {
-                            console.log('Cidade encontrada:', municipio.nome);
-                            return municipio.nome;
-                        }
-                        console.warn(`Nenhum município encontrado para ID ${cityId} em municipios:`, municipios);
-                    } else {
-                        console.warn('Municípios inválidos ou vazios:', municipios, 'UF:', uf);
-                    }
-
-                    return uf ? `Cidade não encontrada para UF ${uf}` : 'Cidade não encontrada';
-                })();
-
-            const localidadeData = [
-                `Cidade: ${selectedCity}`,
-                `UF: ${formData?.proponente?.uf ?? 'N/A'}`,
-                `IDH: ${formData?.proponente?.idh ?? 'N/A'}`,
-                `Ano de Referência: ${formData?.proponente?.anoIDH ?? 'N/A'}`
-            ];
-
-            currentY = createTable(
-                [['1.4 LOCALIDADE - (onde o projeto será desenvolvido) - Índice de Desenvolvimento Humano* (SITE IBGE)']],
-                [[localidadeData.join('\n')]],
-                currentY,
-                [190]
-            );
+        // 1.4 LOCALIDADE
+        const selectedCity = (() => {
+            const cityId = formData?.proponente?.cidade || '';
+            const uf = formData?.proponente?.uf || '';
+            console.log('Selecionando cidade com ID:', cityId, 'para UF:', uf);
+            if (cityId && Array.isArray(municipios) && municipios.length > 0) {
+                const municipio = municipios.find(m => m.id === Number(cityId));
+                if (municipio) {
+                    console.log('Cidade encontrada:', municipio.nome);
+                    return municipio.nome;
+                }
+                console.warn(`Nenhum município encontrado para ID ${cityId} em municipios:`, municipios);
+            } else {
+                console.warn('Municípios inválidos ou vazios:', municipios, 'UF:', uf);
+            }
+            return uf ? `Cidade não encontrada para UF ${uf}` : 'Cidade não encontrada';
+        })();
+        const localidadeData = [
+            [`Cidade: ${selectedCity}`],
+            [`UF: ${formData?.proponente?.uf ?? 'N/A'}`],
+            [`IDH: ${formData?.proponente?.idh ?? 'N/A'}`],
+            [`Ano de Referência: ${formData?.proponente?.anoIDH ?? 'N/A'}`]
+        ];
+        currentY = createTable(
+            [['1.4 LOCALIDADE - (onde o projeto será desenvolvido) - Índice de Desenvolvimento Humano* (SITE IBGE)']],
+            localidadeData,
+            currentY,
+            [190]
+        );
 
         // 1.5 POPULAÇÃO
         const populacaoData = [
-            `Nº de habitantes: ${formData.proponente.numHabitantes || 'N/A'}`,
-            `Ano de referência: ${formData.proponente.anoHabitantes || 'N/A'}`
+            [`Nº de habitantes: ${formData.proponente.numHabitantes || 'N/A'}`],
+            [`Ano de referência: ${formData.proponente.anoHabitantes || 'N/A'}`]
         ];
         currentY = createTable(
             [['1.5 POPULAÇÃO - Característica demográfica da localidade (SITE IBGE)*']],
-            [[populacaoData.join('\n')]],
+            populacaoData,
             currentY,
             [190]
         );
 
         // 1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE
         const entidadeProponenteData = [
-            `A Entidade já celebrou parcerias com o Ministério do Esporte? ${formData.proponente.temParceria === 'sim' ? '(X) Sim' : '( ) Sim'} | ${formData.proponente.temParceria === 'nao' ? '(X) Não' : '( ) Não'}${formData.proponente.temParceria === 'sim' ? ` | Nº de parcerias: ${formData.proponente.numParcerias || 'N/A'}` : ''}`,
-            `A Entidade já deu publicidade às parcerias celebradas em seu respectivo site? ${formData.proponente.temPublicidade === 'sim' ? '(X) Sim' : '( ) Sim'} | ${formData.proponente.temPublicidade === 'nao' ? '(X) Não' : '( ) Não'}${formData.proponente.temPublicidade === 'sim' ? ` | Site: ${formData.proponente.publicidadeSite || 'N/A'}` : ''}`
+            [`A Entidade já celebrou parcerias com o Ministério do Esporte? ${formData.proponente.temParceria === 'sim' ? '(X) Sim' : '( ) Sim'} | ${formData.proponente.temParceria === 'nao' ? '(X) Não' : '( ) Não'}${formData.proponente.temParceria === 'sim' ? ` | Nº de parcerias: ${formData.proponente.numParcerias || 'N/A'}` : ''}`],
+            [`A Entidade já deu publicidade às parcerias celebradas em seu respectivo site? ${formData.proponente.temPublicidade === 'sim' ? '(X) Sim' : '( ) Sim'} | ${formData.proponente.temPublicidade === 'nao' ? '(X) Não' : '( ) Não'}${formData.proponente.temPublicidade === 'sim' ? ` | Site: ${formData.proponente.publicidadeSite || 'N/A'}` : ''}`]
         ];
         currentY = createTable(
             [['1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE*']],
-            [[entidadeProponenteData.join('\n')]],
+            entidadeProponenteData,
             currentY,
             [190]
         );
 
-// 1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE - Versão com cores consistentes
-checkPageBreak(50);
-doc.setFontSize(14);
-doc.text('1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE*', config.marginLeft, currentY);
-currentY += 10;
+        // 1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE
+        checkPageBreak(50);
+        doc.setFontSize(14);
+        doc.text('1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE*', config.marginLeft, currentY);
+        currentY += 10;
+        const estatutoData = [
+            [
+                'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014: Verificar se a Entidade NÃO distribui entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva.',
+                formData.proponente.artigo2 || 'N/A'
+            ],
+            [
+                'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014: Verificar se a Entidade POSSUI objetivos voltados à promoção de atividades e finalidades de relevância pública e social.',
+                formData.proponente.artigo33I || 'N/A'
+            ],
+            [
+                'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014: Verificar se em caso de dissolução da entidade, o respectivo patrimônio líquido seja transferido a outra pessoa jurídica de igual natureza que preencha os requisitos desta Lei e cujo objeto social seja, preferencialmente, o mesmo da entidade extinta.',
+                formData.proponente.artigo33III || 'N/A'
+            ]
+        ];
+        currentY = createTable(
+            [['Descrição', 'Artigo']],
+            estatutoData,
+            currentY,
+            [140, 40],
+            {
+                bodyStyles: { fontSize: config.fontSize.small, minCellHeight: 10 },
+                columnStyles: {
+                    0: { cellWidth: 140, halign: 'left' },
+                    1: { cellWidth: 40, halign: 'center' }
+                }
+            }
+        );
 
-const table17Config = {
-    startY: currentY,
-    head: [['Descrição', 'Artigo']],
-    body: [
-        [
-            '*Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014:* Verificar se a Entidade NÃO distribui entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva.',
-            formData.proponente.artigo2 || 'N/A'
-        ],
-        [
-            '*Análise Estatutária, art. 33, inciso I, Lei 13.019/2014:* Verificar se a Entidade POSSUI objetivos voltados à promoção de atividades e finalidades de relevância pública e social.',
-            formData.proponente.artigo33I || 'N/A'
-        ],
-        [
-            '*Análise Estatutária, art. 33, inciso III, Lei 13.019/2014:* Verificar se em caso de dissolução da entidade, o respectivo patrimônio líquido seja transferido a outra pessoa jurídica de igual natureza que preencha os requisitos desta Lei e cujo objeto social seja, preferencialmente, o mesmo da entidade extinta.',
-            formData.proponente.artigo33III || 'N/A'
-        ],
-    ],
-    margin: { 
-        left: config.marginLeft, 
-        right: config.marginRight,
-        top: currentY,
-        bottom: 10
-    },
-    tableWidth: 'wrap',
-    styles: {
-        fontSize: 10,
-        cellPadding: 3,
-        minCellHeight: 20,
-        valign: 'middle',
-        overflow: 'linebreak',
-        halign: 'left',
-        textColor: [0, 0, 0], // Texto preto no corpo
-        fillColor: [255, 255, 255] // Fundo branco no corpo
-    },
-    headStyles: {
-        fillColor: config.primaryColor, // Azul escuro do config
-        textColor: config.secondaryColor, // Branco do config
-        fontStyle: 'bold',
-        cellPadding: config.tablePadding
-    },
-    bodyStyles: {
-        cellPadding: config.tablePadding,
-        textColor: [0, 0, 0], // Garante texto preto
-        fillColor: [255, 255, 255] // Garante fundo branco
-    },
-    columnStyles: {
-        0: { 
-            cellWidth: 140,
-            fontStyle: 'normal'
-        },
-        1: { 
-            cellWidth: 40,
-            halign: 'center',
-            valign: 'middle'
-        }
-    },
-    didParseCell: (data) => {
-        if (data.section === 'body') {
-            const lineHeight = 5;
-            const textLines = doc.splitTextToSize(data.cell.text, data.column.index === 0 ? 135 : 35);
-            data.row.height = Math.max(20, textLines.length * lineHeight);
-        }
-    }
-};
-
-doc.autoTable(table17Config);
-currentY = doc.lastAutoTable.finalY + 5;
-
-        // Seção 2 - Start on a new page with section title as header
+        // Seção 2
         checkPageBreak(30);
         doc.setFontSize(14);
         doc.text('2. DADOS GERAIS DO PROJETO TÉCNICO', config.marginLeft, currentY);
@@ -760,22 +727,24 @@ currentY = doc.lastAutoTable.finalY + 5;
         ]);
 
         // 2.1 OBJETO
+        const objetoProjeto = [
+            ['Implementação e desenvolvimento do Projeto:'],
+            [formData.dadosProjeto.objetoProjeto || 'N/A']
+        ];
         currentY = createTable(
             [['2.1 OBJETO']],
-            [
-                ['Implementação e desenvolvimento do Projeto:'],
-                [formData.dadosProjeto.objetoProjeto || 'N/A'],
-            ],
+            objetoProjeto,
             currentY,
             [190]
         );
 
         // 2.2 OBJETIVO GERAL
+        const objetivoGeral = [
+            ['Promover a inclusão social e a melhoria da qualidade de vida por meio das práticas esportivas e de lazer como ferramenta de transformação social, utilizando o esporte como instrumento de formação esportiva, disciplinar e valores fundamentais, através do estímulo do bem-estar físico, psicológico dos beneficiados envolvidos.']
+        ];
         currentY = createTable(
             [['2.2 OBJETIVO GERAL']],
-            [
-                ['Promover a inclusão social e a melhoria da qualidade de vida por meio das práticas esportivas e de lazer como ferramenta de transformação social, utilizando o esporte como instrumento de formação esportiva, disciplinar e valores fundamentais, através do estímulo do bem-estar físico, psicológico dos beneficiados envolvidos.'],
-            ],
+            objetivoGeral,
             currentY,
             [190]
         );
@@ -786,85 +755,86 @@ currentY = doc.lastAutoTable.finalY + 5;
             ? formData.dadosProjeto.publicoAlvo.map(opt => opt.charAt(0).toUpperCase() + opt.slice(1)).join(', ')
             : 'N/A';
         const objetivosEspecificos = [
-            `1. Oportunizar a prática esportiva sistematizada para ${selectedPublicoAlvo} (adequar o núcleo de acordo com a dimensão do projeto).`,
-            `2. Auxiliar na diminuição de situações de risco e vulnerabilidade, através do fomento à prática esportiva.`,
-            `3. Oferecer um ambiente seguro e motivador, incentivando disciplina, trabalho em equipe e respeito.`,
-            `4. Promover hábitos saudáveis e a importância da atividade física regular.`,
-            `5. Desenvolver capacidades motoras, como força, flexibilidade, equilíbrio e coordenação, por meio das modalidades oferecidas.`,
-            `6. Estimular a socialização e o respeito mútuo entre os participantes, promovendo valores como disciplina, cooperação e cidadania.`,
-            `Número de núcleos ajustado com base na dimensão do projeto: ${formData.dadosProjeto.quantidadeNucleos || 'XX'} núcleos`
+            [`1. Oportunizar a prática esportiva sistematizada para ${selectedPublicoAlvo} (adequar o núcleo de acordo com a dimensão do projeto).`],
+            ['2. Auxiliar na diminuição de situações de risco e vulnerabilidade, através do fomento à prática esportiva.'],
+            ['3. Oferecer um ambiente seguro e motivador, incentivando disciplina, trabalho em equipe e respeito.'],
+            ['4. Promover hábitos saudáveis e a importância da atividade física regular.'],
+            ['5. Desenvolver capacidades motoras, como força, flexibilidade, equilíbrio e coordenação, por meio das modalidades oferecidas.'],
+            ['6. Estimular a socialização e o respeito mútuo entre os participantes, promovendo valores como disciplina, cooperação e cidadania.'],
+            [`Número de núcleos ajustado com base na dimensão do projeto: ${formData.dadosProjeto.quantidadeNucleos || 'XX'} núcleos`]
         ];
         currentY = createTable(
             [['2.3 OBJETIVOS ESPECÍFICOS']],
-            [[objetivosEspecificos.join('\n')]],
+            objetivosEspecificos,
             currentY,
             [190]
         );
 
         // 2.4 PÚBLICO-ALVO
+        const publicoAlvoData = [
+            ['Deverá ser comprovado no acompanhamento e relatório de cumprimento do objeto.'],
+            ['Descrever quantitativamente.'],
+            [`Público direto (beneficiários): ${formData.dadosProjeto.publicoDireto || 'XX'} Beneficiários`],
+            [`Faixa etária do público direto: ${formData.dadosProjeto.faixaEtaria || 'XX'} (a partir de 06 anos, obrigatoriamente)`],
+            [`Público indireto: ${formData.dadosProjeto.publicoIndireto || 'XX'} beneficiados indiretos (Famílias das alunas e comunidade local: previsão de 3 (três) beneficiários indiretos a cada 1 (um) beneficiário direto. Exemplo: 1 (um) beneficiário + 2 (dois) membros familiares).`]
+        ];
         currentY = createTable(
             [['2.4 PÚBLICO-ALVO']],
-            [
-                ['Deverá ser comprovado no acompanhamento e relatório de cumprimento do objeto.'],
-                ['Descrever quantitativamente.'],
-                [`Público direto (beneficiários): ${formData.dadosProjeto.publicoDireto || 'XX'} Beneficiários`],
-                [`Faixa etária do público direto: ${formData.dadosProjeto.faixaEtaria || 'XX'} (a partir de 06 anos, obrigatoriamente)`],
-                [`Público indireto: ${formData.dadosProjeto.publicoIndireto || 'XX'} beneficiados indiretos (Famílias das alunas e comunidade local: previsão de 3 (três) beneficiários indiretos a cada 1 (um) beneficiário direto. Exemplo: 1 (um) beneficiário + 2 (dois) membros familiares).`],
-            ],
+            publicoAlvoData,
             currentY,
             [190]
         );
 
         // 2.5 VIGÊNCIA DO PROJETO
         const vigenciaData = [
-            `Período de Estruturação: ${formData.dadosProjeto.periodoEstruturacao || 'N/A'} (Em caso de Termo de Fomento a previsão é de até 2 (dois) meses de pagamento de RH na estruturação – Portaria MEsp nº 102/2024).`,
-            `Período de Execução: ${formData.dadosProjeto.periodoExecucao || 'N/A'} (no mínimo 6 (seis) meses)`,
-            `Vigência Total: ${formData.dadosProjeto.vigenciaTotal || 'N/A'}`
+            [`Período de Estruturação: ${formData.dadosProjeto.periodoEstruturacao || 'N/A'} (Em caso de Termo de Fomento a previsão é de até 2 (dois) meses de pagamento de RH na estruturação – Portaria MEsp nº 102/2024).`],
+            [`Período de Execução: ${formData.dadosProjeto.periodoExecucao || 'N/A'} (no mínimo 6 (seis) meses)`],
+            [`Vigência Total: ${formData.dadosProjeto.vigenciaTotal || 'N/A'}`]
         ];
         currentY = createTable(
             [['2.5 VIGÊNCIA DO PROJETO*']],
-            [[vigenciaData.join('\n')]],
+            vigenciaData,
             currentY,
             [190]
         );
 
         // 2.6 NÚCLEOS
         const nucleosData = [
-            `Quantidade de núcleos: ${formData.dadosProjeto.quantidadeNucleos || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.quantidadeNucleos || 'XX') : 'N/A'})`,
-            `Localidade: ${formData.dadosProjeto.localidadeNucleos || 'N/A'}`
+            [`Quantidade de núcleos: ${formData.dadosProjeto.quantidadeNucleos || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.quantidadeNucleos || 'XX') : 'N/A'})`],
+            [`Localidade: ${formData.dadosProjeto.localidadeNucleos || 'N/A'}`]
         ];
         currentY = createTable(
             [['2.6 NÚCLEOS (onde serão realizadas as atividades)*']],
-            [[nucleosData.join('\n')]],
+            nucleosData,
             currentY,
             [190]
         );
 
         // 2.7 MODALIDADES A SEREM DESENVOLVIDAS
         const modalidadesList = Array.isArray(formData.dadosProjeto.modalidades) && formData.dadosProjeto.modalidades.length > 0
-            ? formData.dadosProjeto.modalidades.map((mod, index) => `${index + 1}. ${mod.modalidade || 'N/A'}`).join('\n')
-            : 'Nenhuma modalidade especificada';
+            ? formData.dadosProjeto.modalidades.map((mod, index) => [`${index + 1}. ${mod.modalidade || 'N/A'}`])
+            : [['Nenhuma modalidade especificada']];
         currentY = createTable(
             [['2.7 MODALIDADES A SEREM DESENVOLVIDAS*']],
-            [[modalidadesList]],
+            modalidadesList,
             currentY,
             [190]
         );
 
         // 2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO-FINANCEIRA
         const cronogramaData = [
-            `Valor do Concedente: R$ ${formData.dadosProjeto.valorConcedente || 'N/A'}`,
-            `Valor do Convenente – Contrapartida: R$ ${formData.dadosProjeto.valorContrapartida || 'N/A'}`,
-            `Valor Global: R$ ${formData.dadosProjeto.valorGlobal || 'N/A'}`
+            [`Valor do Concedente: R$ ${formData.dadosProjeto.valorConcedente || 'N/A'}`],
+            [`Valor do Convenente – Contrapartida: R$ ${formData.dadosProjeto.valorContrapartida || 'N/A'}`],
+            [`Valor Global: R$ ${formData.dadosProjeto.valorGlobal || 'N/A'}`]
         ];
         currentY = createTable(
             [['2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO-FINANCEIRA*']],
-            [[cronogramaData.join('\n')]],
+            cronogramaData,
             currentY,
             [190]
         );
 
-        // Seção 3 - Start on a new page with section title as header
+        // Seção 3
         checkPageBreak(30);
         doc.setFontSize(14);
         doc.text('3. INFORMAÇÕES DO PROJETO', config.marginLeft, currentY);
@@ -873,21 +843,21 @@ currentY = doc.lastAutoTable.finalY + 5;
         // Validate infoProjeto data
         logMissingFields('infoProjeto', [
             'tipoNucleo', 'identificacao', 'divulgacao', 'custeioDivulgacao', 'detalhamentoModalidades',
-            'gradeHoraria', 'recursosHumanos', 'materiais', 'uniformes'
+            'gradeHoraria', 'recursosHumanos', 'materiais', 'uniformes', 'abrangenciaEventos', 'eventosSelecionados'
         ]);
 
         // 3.1 ESTRUTURAÇÃO DO PROJETO
         const estruturacaoProjeto = [
-            'Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:',
-            '• Contratação de recursos humanos',
-            '• Contratação de prestação de serviços',
-            '• Aquisição de materiais esportivos',
-            '• Aquisição de uniformes e acessórios para os beneficiários',
-            '• Aquisição dos materiais de identificação e divulgação'
+            ['Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:'],
+            ['• Contratação de recursos humanos'],
+            ['• Contratação de prestação de serviços'],
+            ['• Aquisição de materiais esportivos'],
+            ['• Aquisição de uniformes e acessórios para os beneficiários'],
+            ['• Aquisição dos materiais de identificação e divulgação']
         ];
         currentY = createTable(
             [['3.1 ESTRUTURAÇÃO DO PROJETO']],
-            [[estruturacaoProjeto.join('\n')]],
+            estruturacaoProjeto,
             currentY,
             [190]
         );
@@ -897,14 +867,14 @@ currentY = doc.lastAutoTable.finalY + 5;
             ? formData.dadosProjeto.modalidades.map(mod => mod.modalidade || 'N/A').join(', ')
             : 'Nenhuma modalidade especificada';
         const implementacaoProjeto = [
-            'Refere-se à execução das aulas e atividades práticas com os beneficiários, promovendo o desenvolvimento técnico, social e inclusivo através do(s) seguintes modalidades:',
-            `• ${modalidadesList32}`,
-            'Quanto a metodologia, a implementação do projeto será conduzida de forma estruturada, garantindo o alcance dos objetivos e a participação efetiva dos beneficiários.',
-            'A metodologia adotada se baseia em atividades teóricas, práticas e dinâmicas, organizadas da seguinte forma:'
+            ['Refere-se à execução das aulas e atividades práticas com os beneficiários, promovendo o desenvolvimento técnico, social e inclusivo através do(s) seguintes modalidades:'],
+            [`• ${modalidadesList32}`],
+            ['Quanto a metodologia, a implementação do projeto será conduzida de forma estruturada, garantindo o alcance dos objetivos e a participação efetiva dos beneficiários.'],
+            ['A metodologia adotada se baseia em atividades teóricas, práticas e dinâmicas, organizadas da seguinte forma:']
         ];
         currentY = createTable(
             [['3.2 IMPLEMENTAÇÃO E DESENVOLVIMENTO DO PROJETO']],
-            [[implementacaoProjeto.join('\n')]],
+            implementacaoProjeto,
             currentY,
             [190]
         );
@@ -912,408 +882,353 @@ currentY = doc.lastAutoTable.finalY + 5;
         // 3.3 NÚCLEOS
         const tipoEspaco = formData.infoProjeto.tipoNucleo === 'públicos' ? 'públicos' : formData.infoProjeto.tipoNucleo === 'privados' ? 'privados' : 'N/A';
         const nucleosInfo = [
-            `O(s) núcleo(s) do projeto será(ão) implementados em espaços comunitários ${tipoEspaco} adequadas às modalidades esportivas propostas, localizado próximo à comunidade beneficiada, que preferencialmente, não demandam transporte para o deslocamento dos beneficiários.`,
-            `Esse(s) espaço(s) conta(m) com disponibilidade de área adequada para a prática esportiva, existência de infraestrutura básica, condições de acessibilidade dos espaços e segurança do local.`,
-            `O(s) núcleo(s) do projeto serão organizados de forma a proporcionar uma experiência positiva e eficiente para os beneficiários.`,
-            `Serão ${formData.dadosProjeto.quantidadeNucleos || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.quantidadeNucleos || 'XX') : 'N/A'}) núcleos, cada um contará com um número médio de ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários, divididos em turmas de acordo com a capacidade e modalidade oferecida.`
+            [`O(s) núcleo(s) do projeto será(ão) implementados em espaços comunitários ${tipoEspaco} adequadas às modalidades esportivas propostas, localizado próximo à comunidade beneficiada, que preferencialmente, não demandam transporte para o deslocamento dos beneficiários.`],
+            [`Esse(s) espaço(s) conta(m) com disponibilidade de área adequada para a prática esportiva, existência de infraestrutura básica, condições de acessibilidade dos espaços e segurança do local.`],
+            [`O(s) núcleo(s) do projeto serão organizados de forma a proporcionar uma experiência positiva e eficiente para os beneficiários.`],
+            [`Serão ${formData.dadosProjeto.quantidadeNucleos || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.quantidadeNucleos || 'XX') : 'N/A'}) núcleos, cada um contará com um número médio de ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários, divididos em turmas de acordo com a capacidade e modalidade oferecida.`]
         ];
         currentY = createTable(
             [['3.3 NÚCLEOS']],
-            [[nucleosInfo.join('\n')]],
+            nucleosInfo,
             currentY,
             [190]
         );
 
         // 3.4 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO
         const metodologiaDesenvolvimento = [
-            'Este Projeto visa combater o sedentarismo e promover um estilo de vida saudável através da prática regular de atividades físicas e fortalecimento da inclusão social. A implementação deste projeto trará benefícios significativos na qualidade de vida dos beneficiados, visando criar uma comunidade mais ativa e integrada.',
-            `O projeto terá duração de ${formData.dadosProjeto.vigenciaTotal || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.vigenciaTotal || 'XX') : 'N/A'}) meses, sendo ${formData.dadosProjeto.periodoEstruturacao || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.periodoEstruturacao || 'XX') : 'N/A'}) para estruturação e ${formData.dadosProjeto.periodoExecucao || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.periodoExecucao || 'XX') : 'N/A'}) para execução.`
+            ['Este Projeto visa combater o sedentarismo e promover um estilo de vida saudável através da prática regular de atividades físicas e fortalecimento da inclusão social. A implementação deste projeto trará benefícios significativos na qualidade de vida dos beneficiados, visando criar uma comunidade mais ativa e integrada.'],
+            [`O projeto terá duração de ${formData.dadosProjeto.vigenciaTotal || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.vigenciaTotal || 'XX') : 'N/A'}) meses, sendo ${formData.dadosProjeto.periodoEstruturacao || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.periodoEstruturacao || 'XX') : 'N/A'}) para estruturação e ${formData.dadosProjeto.periodoExecucao || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.periodoExecucao || 'XX') : 'N/A'}) para execução.`]
         ];
         currentY = createTable(
             [['3.4 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO']],
-            [[metodologiaDesenvolvimento.join('\n')]],
+            metodologiaDesenvolvimento,
             currentY,
             [190]
         );
 
         // 3.4.1 ESTRUTURA DAS AULAS
         const estruturaAulas = [
-            'Cada aula esportiva seguirá uma estrutura padronizada para garantir consistência e qualidade, independentemente da modalidade esportiva. Esta estrutura incluirá:',
-            '• Aquecimento: Atividades lúdicas que preparam o corpo e a mente para o exercício, promovendo a circulação sanguínea e reduzindo o risco de lesões.',
-            '• Instrução Técnica: Foco no desenvolvimento de habilidades técnicas específicas da modalidade, com instruções claras e demonstrações práticas.',
-            '• Prática Guiada: Exercícios práticos onde os participantes aplicam as habilidades aprendidas sob a supervisão ativa dos instrutores, com feedback imediato.',
-            '• Jogos ou Competições: Atividades que incentivam a aplicação das habilidades em um contexto de jogo ou competição, promovendo o espírito esportivo e a colaboração.',
-            '• Intervalo e Socialização: Momento de descanso mais prolongado, permitindo o descanso e interação. Esse intervalo contribui para a recuperação física e fortalece os laços de amizade e pertencimento entre os participantes.',
-            '• Alongamento e Desaceleração: Encerramento das aulas com atividades leves para baixar a intensidade física e uma sessão de reflexão sobre as lições aprendidas e a autoavaliação do desempenho.'
+            ['Cada aula esportiva seguirá uma estrutura padronizada para garantir consistência e qualidade, independentemente da modalidade esportiva. Esta estrutura incluirá:'],
+            ['• Aquecimento: Atividades lúdicas que preparam o corpo e a mente para o exercício, promovendo a circulação sanguínea e reduzindo o risco de lesões.'],
+            ['• Instrução Técnica: Foco no desenvolvimento de habilidades técnicas específicas da modalidade, com instruções claras e demonstrações práticas.'],
+            ['• Prática Guiada: Exercícios práticos onde os participantes aplicam as habilidades aprendidas sob a supervisão ativa dos instrutores, com feedback imediato.'],
+            ['• Jogos ou Competições: Atividades que incentivam a aplicação das habilidades em um contexto de jogo ou competição, promovendo o espírito esportivo e a colaboração.'],
+            ['• Intervalo e Socialização: Momento de descanso mais prolongado, permitindo o descanso e interação. Esse intervalo contribui para a recuperação física e fortalece os laços de amizade e pertencimento entre os participantes.'],
+            ['• Alongamento e Desaceleração: Encerramento das aulas com atividades leves para baixar a intensidade física e uma sessão de reflexão sobre as lições aprendidas e a autoavaliação do desempenho.']
         ];
         currentY = createTable(
             [['3.4.1 ESTRUTURA DAS AULAS']],
-            [[estruturaAulas.join('\n')]],
+            estruturaAulas,
             currentY,
             [190]
         );
 
         // 3.4.2 METODOLOGIA DE ENSINO
         const metodologiaEnsino = [
-            '• Aprendizado Baseado em Competências: Focar no desenvolvimento de competências específicas de cada modalidade, garantindo que os alunos progridam em habilidades técnicas e táticas.',
-            '• Educação Inclusiva: Adaptação das aulas para atender a diversas necessidades, incluindo ajustes para participantes com diferentes níveis de habilidade e capacidades físicas.',
-            '• Ensino Integrado: Integrar lições de vida, como trabalho em equipe, liderança, resiliência e ética esportiva, nas sessões de treinamento.',
-            '• Feedback Construtivo: Fornecer feedback regular e construtivo para encorajar e melhorar o desempenho dos alunos, enquanto se mantém um ambiente positivo e de suporte.'
+            ['• Aprendizado Baseado em Competências: Focar no desenvolvimento de competências específicas de cada modalidade, garantindo que os alunos progridam em habilidades técnicas e táticas.'],
+            ['• Educação Inclusiva: Adaptação das aulas para atender a diversas necessidades, incluindo ajustes para participantes com diferentes níveis de habilidade e capacidades físicas.'],
+            ['• Ensino Integrado: Integrar lições de vida, como trabalho em equipe, liderança, resiliência e ética esportiva, nas sessões de treinamento.'],
+            ['• Feedback Construtivo: Fornecer feedback regular e construtivo para encorajar e melhorar o desempenho dos alunos, enquanto se mantém um ambiente positivo e de suporte.']
         ];
         currentY = createTable(
             [['3.4.2 METODOLOGIA DE ENSINO']],
-            [[metodologiaEnsino.join('\n')]],
+            metodologiaEnsino,
             currentY,
             [190]
         );
 
         // 3.4.3 DETALHAMENTO ESPECÍFICO SOBRE AS MODALIDADES
+        const detalhamentoModalidades = [
+            [formData.infoProjeto.detalhamentoModalidades || 'N/A']
+        ];
         currentY = createTable(
             [['3.4.3 DETALHAMENTO ESPECÍFICO SOBRE AS MODALIDADES OFERECIDAS POR ESTE PROJETO']],
-            [[formData.infoProjeto.detalhamentoModalidades || 'N/A']],
+            detalhamentoModalidades,
             currentY,
             [190]
         );
 
         // 3.4.4 FREQUÊNCIA NAS AULAS
+        const frequenciaAulas = [
+            ['Será requisito a todos os beneficiários, incluindo os menores, manter frequência mínima de 70% (setenta por cento) nas aulas. Esse critério visa assegurar o engajamento dos participantes e garantir que eles aproveitem efetivamente os benefícios oferecidos pelo projeto. A frequência será monitorada durante a execução das atividades, e os beneficiários que não atingirem o percentual mínimo de presença podem ser substituídos ou ter o benefício suspenso, conforme as regras estabelecidas. Isso visa garantir que o projeto seja realizado de maneira eficaz, com a participação ativa de todos os beneficiários. Em casos de faltas frequentes por parte dos beneficiários, a vaga será remanejada para outro participante, que poderá ser selecionado a partir de um cadastro reserva. Se não houver cadastro reserva, uma nova divulgação/chamada será feita para preencher as vagas em aberto, de modo a completar o total de participantes do projeto.']
+        ];
         currentY = createTable(
             [['3.4.4 FREQUÊNCIA NAS AULAS']],
-            [
-                ['Será requisito a todos os beneficiários, incluindo os menores, manter frequência mínima de 70% (setenta por cento) nas aulas. Esse critério visa assegurar o engajamento dos participantes e garantir que eles aproveitem efetivamente os benefícios oferecidos pelo projeto. A frequência será monitorada durante a execução das atividades, e os beneficiários que não atingirem o percentual mínimo de presença podem ser substituídos ou ter o benefício suspenso, conforme as regras estabelecidas. Isso visa garantir que o projeto seja realizado de maneira eficaz, com a participação ativa de todos os beneficiários. Em casos de faltas frequentes por parte dos beneficiários, a vaga será remanejada para outro participante, que poderá ser selecionado a partir de um cadastro reserva. Se não houver cadastro reserva, uma nova divulgação/chamada será feita para preencher as vagas em aberto, de modo a completar o total de participantes do projeto.'],
-            ],
+            frequenciaAulas,
             currentY,
             [190]
         );
 
         // 3.4.5 AVALIAÇÃO E PROGRESSO
         const avaliacaoProgresso = [
-            'Avaliações Regulares: Realizar avaliações periódicas para monitorar o progresso, ajustar os planos de aula conforme necessário e garantir que todos os participantes estejam alcançando seu potencial máximo.',
-            'Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do progresso de cada participante para acompanhar as melhorias e áreas que necessitam de atenção adicional.'
+            ['Avaliações Regulares: Realizar avaliações periódicas para monitorar o progresso, ajustar os planos de aula conforme necessário e garantir que todos os participantes estejam alcançando seu potencial máximo.'],
+            ['Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do progresso de cada participante para acompanhar as melhorias e áreas que necessitam de atenção adicional.']
         ];
         currentY = createTable(
             [['3.4.5 AVALIAÇÃO E PROGRESSO']],
-            [[avaliacaoProgresso.join('\n')]],
+            avaliacaoProgresso,
             currentY,
             [190]
         );
 
         // 3.5 INSCRIÇÕES
+        const inscricoes = [
+            ['As inscrições deverão ser feitas antes do início do Projeto e devem alcançar o número de participantes previstos na meta do projeto. Salientamos que, caso haja um número inferior de inscritos, deverão ser realizadas ações de divulgação com intuito de preencher novas inscrições, a fim de que os recursos disponibilizados sejam bem aproveitados e a ação atenda o máximo de participantes. Poderão ser realizadas em plataformas online e por meio de fichas de inscrição, que deverão estar no local em que será realizado o Projeto ou em local pré-estabelecido durante toda a execução, de forma acessível aos colaboradores para eventuais consultas sobre os participantes. Após o encerramento do Projeto, todas as inscrições deverão ser registradas e preservadas para posterior prestação de contas. No caso de menores de idade, as inscrições para o projeto deverão ser feitas pelos responsáveis legais, que serão os responsáveis pelo preenchimento do cadastro e pela apresentação dos documentos necessários. Em alguns casos, pode ser exigido que o responsável legal assine um termo de compromisso para garantir a participação do menor no projeto, bem como o direito de imagem.']
+        ];
         currentY = createTable(
             [['3.5 INSCRIÇÕES']],
-            [
-                ['As inscrições deverão ser feitas antes do início do Projeto e devem alcançar o número de participantes previstos na meta do projeto. Salientamos que, caso haja um número inferior de inscritos, deverão ser realizadas ações de divulgação com intuito de preencher novas inscrições, a fim de que os recursos disponibilizados sejam bem aproveitados e a ação atenda o máximo de participantes. Poderão ser realizadas em plataformas online e por meio de fichas de inscrição, que deverão estar no local em que será realizado o Projeto ou em local pré-estabelecido durante toda a execução, de forma acessível aos colaboradores para eventuais consultas sobre os participantes. Após o encerramento do Projeto, todas as inscrições deverão ser registradas e preservadas para posterior prestação de contas. No caso de menores de idade, as inscrições para o projeto deverão ser feitas pelos responsáveis legais, que serão os responsáveis pelo preenchimento do cadastro e pela apresentação dos documentos necessários. Em alguns casos, pode be exigido que o responsável legal assine um termo de compromisso para garantir a participação do menor no projeto, bem como o direito de imagem.'],
-            ],
+            inscricoes,
             currentY,
             [190]
         );
 
         // 3.6 GRADE HORÁRIA DAS ATIVIDADES
         const gradeHorariaIntro = [
-            `O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 (vinte) horas semanais de atividades, no mínimo 16 (dezesseis) horas de atendimento mais 4 (quatro) horas de planejamento, distribuídos em turmas separadas por faixa etária e perfil dos participantes, de forma a atender os ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários previstos.`
+            [`O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 (vinte) horas semanais de atividades, no mínimo 16 (dezesseis) horas de atendimento mais 4 (quatro) horas de planejamento, distribuídos em turmas separadas por faixa etária e perfil dos participantes, de forma a atender os ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários previstos.`]
         ];
         const gradeHorariaRows = Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gradeHoraria.length > 0 
             ? formData.infoProjeto.gradeHoraria.map((row, index) => [
                 `${index + 1}.`,
-                `Núcleo (localidade): ${row.nucleoLocalidade || 'N/A'}\nModalidades: ${row.modalidadesNucleo || 'N/A'}\nRH: ${row.rhNucleo || 'N/A'}\nInformações do Núcleo: ${row.infoNucleo || 'N/A'}\nGrade Horária: ${row.gradeHoraria || 'N/A'}`
+                row.nucleoLocalidade || 'N/A',
+                row.modalidadesNucleo || 'N/A',
+                row.gradeHoraria || 'N/A'
             ]) 
-            : [['1.', 'Nenhuma grade horária especificada']];
-        const gradeHorariaContent = [
-            gradeHorariaIntro.join('\n'),
-            '\nDetalhamento:',
-            ...gradeHorariaRows.map(row => `${row[0]} ${row[1]}`)
-        ];
+            : [['1.', 'N/A', 'N/A', 'N/A']];
         currentY = createTable(
             [['3.6 GRADE HORÁRIA DAS ATIVIDADES']],
-            [[gradeHorariaContent.join('\n')]],
+            gradeHorariaIntro,
+            currentY,
+            [190]
+        );
+        currentY = createTable(
+            [['Nº', 'Núcleo (localidade)', 'Modalidades', 'Grade Horária']],
+            gradeHorariaRows,
+            currentY,
+            [15, 60, 60, 55],
+            { bodyStyles: { fontSize: config.fontSize.small } }
+        );
+
+        // 3.7 EVENTOS
+        const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
+        const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Única';
+        const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
+        const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados) ? formData.infoProjeto.eventosSelecionados : [];
+        const eventosData = [
+            ['Os eventos têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica, reforçando a integração e o espírito comunitário.'],
+            [`Os eventos serão realizados: ${abrangencia} ${abrangencia === 'Por Núcleo' ? `(${numNucleos} núcleo(s))` : '(1 ocorrência por evento)'}.`],
+            [eventosSelecionados.length > 0 ? `Eventos selecionados: ${eventosSelecionados.join(' e ')}.` : 'Nenhum evento selecionado.']
+        ];
+        if (eventosSelecionados.includes('Evento de Abertura')) {
+            eventosData.push(
+                ['3.7.1 EVENTO DE ABERTURA'],
+                [`Será(ão) realizado(s) ${multiplicador} evento(s) de abertura, um por núcleo, caso a abrangência seja por núcleo, ou um único evento, caso contrário.`],
+                ['O evento de abertura apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania.'],
+                ['Atividades planejadas incluem:'],
+                ['1. Divulgação ampla: Informar à comunidade sobre o projeto, seus objetivos e como participar.'],
+                ['2. Educação e conscientização: Sensibilizar os presentes sobre a importância do esporte na formação de crianças e jovens.'],
+                ['3. Fortalecimento da autoestima comunitária: Demonstrar que a comunidade é capaz de sustentar um projeto transformador.'],
+                ['Durante o evento, serão distribuídos kits lanches aos beneficiários e à equipe técnica, promovendo um momento de confraternização.']
+            );
+        }
+        if (eventosSelecionados.includes('Evento de Encerramento')) {
+            eventosData.push(
+                ['3.7.2 EVENTO DE ENCERRAMENTO'],
+                [`Será(ão) realizado(s) ${multiplicador} evento(s) de encerramento, um por núcleo, caso a abrangência seja por núcleo, ou um único evento, caso contrário.`],
+                ['O evento de encerramento celebrará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades adquiridas pelos beneficiários.'],
+                ['Atividades planejadas incluem:'],
+                ['1. Competições/torneios: Promover a prática esportiva em um ambiente festivo e competitivo.'],
+                ['2. Cerimônia de premiação: Reconhecer o esforço e a dedicação dos participantes com entrega de medalhas a todos e troféus aos três melhores colocados.'],
+                ['3. Demonstrações de habilidades: Exibir o progresso dos beneficiários nas modalidades oferecidas durante o projeto.'],
+                ['Durante o evento, serão distribuídos kits lanches aos beneficiários e à equipe técnica, celebrando as conquistas alcançadas.']
+            );
+        }
+        currentY = createTable(
+            [['3.7 EVENTOS']],
+            eventosData,
             currentY,
             [190]
         );
 
-    // 3.7 EVENTOS
-    const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
-    const multiplicador = formData.infoProjeto.abrangenciaEventos === 'Por Núcleo' ? numNucleos : 1;
-    const eventosSelecionados = formData.infoProjeto.eventosSelecionados || [];
-    const eventosData = [
-        `Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica.`,
-        `Eventos serão realizados: ${formData.infoProjeto.abrangenciaEventos || 'N/A'} (${formData.infoProjeto.abrangenciaEventos === 'Por Núcleo' ? `${numNucleos} núcleo(s)` : '1 ocorrência por evento'}).`,
-        eventosSelecionados.length > 0 ? `Eventos selecionados: ${eventosSelecionados.join(' e ')}.` : 'Nenhum evento selecionado.'
-    ];
-
-    if (eventosSelecionados.includes('Evento de Abertura')) {
-        eventosData.push(
-            '3.7.1 EVENTO DE ABERTURA',
-            `Será(ão) realizado(s) ${multiplicador} evento(s) de abertura.`,
-            'Apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania.',
-            '1. Divulgação ampla: Informar à comunidade sobre o projeto e como participar.',
-            '2. Educação e conscientização: Sensibilizar sobre temas relacionados ao esporte.',
-            '3. Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de sustentar um projeto transformador.'
+        // 3.8 RECURSOS HUMANOS
+        const contratadosCedeidos = formData.infoProjeto.contratadosCedeidos === 'contratados' ? 'contratados' : formData.infoProjeto.contratadosCedeidos === 'cedidos' ? 'cedidos' : 'N/A';
+        const recursosHumanosIntro = [
+            [`Todos os profissionais envolvidos diretamente no projeto terão atribuições específicas necessárias à execução do Projeto. Serão ${contratadosCedeidos} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.`]
+        ];
+        currentY = createTable(
+            [['3.8 RECURSOS HUMANOS']],
+            recursosHumanosIntro,
+            currentY,
+            [190]
         );
-    }
-
-    if (eventosSelecionados.includes('Evento de Encerramento')) {
-        eventosData.push(
-            '3.7.2 EVENTO DE ENCERRAMENTO',
-            `Será(ão) realizado(s) ${multiplicador} evento(s) de encerramento.`,
-            'Comemorará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades. Todos os participantes receberão medalhas, e os três melhores colocados receberão troféus.'
+        const recursos = Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
+            ? formData.infoProjeto.recursosHumanos.map(row => [
+                row.funcaoRH || 'N/A',
+                row.quantidadeRH || 'N/A',
+                row.atribuicaoRH || 'N/A',
+                row.cargaHorariaRH || 'N/A',
+                row.periodoRH || 'N/A'
+            ])
+            : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
+        currentY = createTable(
+            [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias']],
+            recursos,
+            currentY,
+            [30, 15, 50, 45, 30],
+            { bodyStyles: { fontSize: config.fontSize.small } }
         );
-    }
 
-    currentY = createTable(
-        [['3.7 EVENTOS']],
-        [[eventosData.join('\n')]],
-        currentY,
-        [190]
-    );
- 
-// Função para aplicar o fundo azul escuro
-const applyDarkBlueBackground = {
-  fillColor: '#003366',  // Cor de fundo azul escuro
-  fontSize: 9,           // Tamanho da fonte
-  cellPadding: 2         // Espaçamento das células
-};
-
-// 3.8 RECURSOS HUMANOS
-const contratadosCedeidos = formData.infoProjeto.contratadosCedeidos === 'contratados'
-  ? 'contratados'
-  : formData.infoProjeto.contratadosCedeidos === 'cedidos'
-  ? 'cedidos'
-  : 'N/A';
-
-const recursosHumanosIntro = [
-  `Todos os profissionais envolvidos diretamente no projeto terão atribuições específicas necessárias à execução do Projeto. Serão ${contratadosCedeidos} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.`
-];
-
-// Título 3.8
-doc.autoTable({
-  head: [['3.8 RECURSOS HUMANOS']],
-  body: [[recursosHumanosIntro.join('\n')]],
-  startY: currentY,
-  theme: 'grid',
-  styles: applyDarkBlueBackground,
-  margin: { left: 10, right: 10 },
-  columnStyles: { 0: { cellWidth: 182 } }
-});
-currentY = doc.autoTable.previous.finalY + 5;
-
-// Tabela de recursos humanos
-const recursos = Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
-  ? formData.infoProjeto.recursosHumanos.map(row => [
-      row.funcaoRH || 'N/A',
-      row.quantidadeRH || 'N/A',
-      row.atribuicaoRH || 'N/A',
-      row.cargaHorariaRH || 'N/A',
-      row.periodoRH || 'N/A',
-    ])
-  : [['Nenhum recurso humano especificado', '', '', '', '']];
-
-doc.autoTable({
-  head: [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias']],
-  body: recursos,
-  startY: currentY,
-  styles: { 
-    ...applyDarkBlueBackground,
-    fontSize: 8,       // Tamanho de fonte reduzido para tabela
-    cellPadding: 1,    // Menor espaçamento
-    cellWidth: 'wrap'  // Ajuste do tamanho da célula
-  },
-  columnStyles: {
-    0: { cellWidth: 30 },
-    1: { cellWidth: 15 },
-    2: { cellWidth: 40 },
-    3: { cellWidth: 40 },
-    4: { cellWidth: 30 },
-  },
-  margin: { left: 10, right: 10 },
-});
-currentY = doc.autoTable.previous.finalY + 5;
-
-// 3.9 MATERIAIS FORNECIDOS
-const materiaisIntro = [
-  'Serão adquiridos os acessórios específicos para cada modalidade a ser executada, os quais serão distribuídos para cada núcleo de acordo com a modalidade e a quantidade de beneficiados. Aqueles de uso coletivo ficarão sob guarda e responsabilidade da Entidade.'
-];
-
-doc.autoTable({
-  head: [['3.9 MATERIAIS FORNECIDOS']],
-  body: [[materiaisIntro.join('\n')]],
-  startY: currentY,
-  theme: 'grid',
-  styles: applyDarkBlueBackground,
-  margin: { left: 10, right: 10 },
-  columnStyles: { 0: { cellWidth: 182 } }
-});
-currentY = doc.autoTable.previous.finalY + 5;
-
-// Tabela de materiais
-const materiais = Array.isArray(formData.infoProjeto.materiais) && formData.infoProjeto.materiais.length > 0 
-  ? formData.infoProjeto.materiais.map(row => [
-      row.modalidadeMaterial || 'N/A',
-      row.material || 'N/A',
-      row.tipoAquisicao || 'N/A',
-      row.especificacaoMaterial || 'N/A',
-      row.justificativaMaterial || 'N/A'
-    ])
-  : [['Nenhum material especificado', '', '', '', '']];
-
-doc.autoTable({
-  head: [['Modalidade', 'Material', 'Aquisição ou Locação', 'Especificação', 'Justificativa']],
-  body: materiais,
-  startY: currentY,
-  styles: { 
-    ...applyDarkBlueBackground,
-    fontSize: 8,       // Tamanho de fonte reduzido para tabela
-    cellPadding: 1,    // Menor espaçamento
-    cellWidth: 'wrap'  // Ajuste do tamanho da célula
-  },
-  columnStyles: {
-    0: { cellWidth: 25 },
-    1: { cellWidth: 25 },
-    2: { cellWidth: 25 },
-    3: { cellWidth: 50 },
-    4: { cellWidth: 50 },
-  },
-  margin: { left: 10, right: 10 },
-});
-currentY = doc.autoTable.previous.finalY + 5;
-
+        // 3.9 MATERIAIS FORNECIDOS
+        const materiaisIntro = [
+            ['Serão adquiridos os acessórios específicos para cada modalidade a ser executada, os quais serão distribuídos para cada núcleo de acordo com a modalidade e a quantidade de beneficiados. Aqueles de uso coletivo ficarão sob guarda e responsabilidade da Entidade.']
+        ];
+        currentY = createTable(
+            [['3.9 MATERIAIS FORNECIDOS']],
+            materiaisIntro,
+            currentY,
+            [190]
+        );
+        const materiais = Array.isArray(formData.infoProjeto.materiais) && formData.infoProjeto.materiais.length > 0 
+            ? formData.infoProjeto.materiais.map(row => [
+                row.modalidadeMaterial || 'N/A',
+                row.material || 'N/A',
+                row.tipoAquisicao || 'N/A',
+                row.especificacaoMaterial || 'N/A',
+                row.justificativaMaterial || 'N/A'
+            ])
+            : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
+        currentY = createTable(
+            [['Modalidade', 'Material', 'Aquisição ou Locação', 'Especificação', 'Justificativa']],
+            materiais,
+            currentY,
+            [30, 30, 30, 50, 50],
+            { bodyStyles: { fontSize: config.fontSize.small } }
+        );
 
         // 3.10 UNIFORMES
         const uniformesIntro = [
-                `Para garantir um atendimento adequado aos beneficiários, será realizado a aquisição de uniformes para uso individual dos participantes e uniformes para a comissão técnica. Cada aluno receberá ${formData.infoProjeto.quantidadeConjuntosUniforme || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.infoProjeto.quantidadeConjuntosUniforme || 'XX') : 'N/A'}) conjuntos de uniforme, além de haver uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.`
-            ];
-            currentY = createTable(
-                [['3.10 UNIFORMES']],
-                [[uniformesIntro.join('\n')]],
-                currentY,
-                [190]
-            );
-            currentY = createTable(
-                [['Modalidade', 'Item', 'Especificação']],
-                Array.isArray(formData.infoProjeto.uniformes) && formData.infoProjeto.uniformes.length > 0 
-                    ? formData.infoProjeto.uniformes.map(row => [
-                        row.modalidadeUniforme || 'N/A',
-                        row.itemUniforme || 'N/A',
-                        row.especificacaoUniforme || 'N/A'
-                    ])
-                    : [['Nenhum uniforme especificado', '', '']],
-                currentY,
-                [60, 60, 70]
-            );
+            [`Para garantir um atendimento adequado aos beneficiários, será realizado a aquisição de uniformes para uso individual dos participantes e uniformes para a comissão técnica. Cada aluno receberá ${formData.infoProjeto.quantidadeConjuntosUniforme || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.infoProjeto.quantidadeConjuntosUniforme || 'XX') : 'N/A'}) conjuntos de uniforme, além de haver uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.`]
+        ];
+        currentY = createTable(
+            [['3.10 UNIFORMES']],
+            uniformesIntro,
+            currentY,
+            [190]
+        );
+        const uniformes = Array.isArray(formData.infoProjeto.uniformes) && formData.infoProjeto.uniformes.length > 0 
+            ? formData.infoProjeto.uniformes.map(row => [
+                row.modalidadeUniforme || 'N/A',
+                row.itemUniforme || 'N/A',
+                row.especificacaoUniforme || 'N/A'
+            ])
+            : [['N/A', 'N/A', 'N/A']];
+        currentY = createTable(
+            [['Modalidade', 'Item', 'Especificação']],
+            uniformes,
+            currentY,
+            [60, 60, 70]
+        );
 
         // 3.11 IDENTIFICAÇÃO DO PROJETO
         const identificacaoProjeto = [
-            'Em relação a divulgação do projeto, fundamenta-se como elemento primordial, com vistas ao alcance dos beneficiados junto à comunidade regional. A identificação visual do projeto será aplicada em lugar de visibilidade, no núcleo, observando os padrões estabelecidos no Manual de Identidade Visual, disponível no site do Ministério, para o acompanhamento pela comunidade local e pelos órgãos de controle e fiscalização.',
-            `• Faixas: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Faixas') ? '(X)' : '( )'}`,
-            `• Banners: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Banners') ? '(X)' : '( )'}`,
-            `• Outros: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Outros') ? `(X) ${formData.infoProjeto.outrosIdentificacao || 'N/A'}` : '( )'}`
+            ['Em relação a divulgação do projeto, fundamenta-se como elemento primordial, com vistas ao alcance dos beneficiados junto à comunidade regional. A identificação visual do projeto será aplicada em lugar de visibilidade, no núcleo, observando os padrões estabelecidos no Manual de Identidade Visual, disponível no site do Ministério, para o acompanhamento pela comunidade local e pelos órgãos de controle e fiscalização.'],
+            [`• Faixas: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Faixas') ? '(X)' : '( )'}`],
+            [`• Banners: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Banners') ? '(X)' : '( )'}`],
+            [`• Outros: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Outros') ? `(X) ${formData.infoProjeto.outrosIdentificacao || 'N/A'}` : '( )'}`]
         ];
         currentY = createTable(
             [['3.11 IDENTIFICAÇÃO DO PROJETO']],
-            [[identificacaoProjeto.join('\n')]],
+            identificacaoProjeto,
             currentY,
             [190]
         );
 
         // 3.12 DIVULGAÇÃO DO PROJETO
-        const divulgacaoOpcoes = [
-            `Carros ou bicicletas de som: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Carros ou bicicletas de som') ? '(X)' : '( )'}`,
-            `Cartazes: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Cartazes') ? '(X)' : '( )'}`,
-            `Faixas: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Faixas') ? '(X)' : '( )'}`,
-            `Banners: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Banners') ? '(X)' : '( )'}`,
-            `Jornais: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Jornais') ? '(X)' : '( )'}`,
-            `Panfletos: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Panfletos') ? '(X)' : '( )'}`,
-            `Folder: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Folder') ? '(X)' : '( )'}`,
-            `Mídia (rádio e televisão): ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Mídia') ? '(X)' : '( )'}`,
-            `Internet: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Internet') ? '(X)' : '( )'}`,
-            `Outros: ${formData.infoProjeto.outrosDivulgacao ? `(X) ${formData.infoProjeto.outrosDivulgacao}` : '( )'}`
-        ];
-        const custeioDivulgacao = [
-            `Qual será a forma de custeio da divulgação?`,
-            `• Recursos da Emenda Parlamentar: ${formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar' ? '(X)' : '( )'}`,
-            `• Recursos Próprios da Entidade: ${formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade' ? '(X)' : '( )'}`
-        ];
         const divulgacaoProjeto = [
-            'Será realizada de forma ampla e irrestrita. O objetivo é dar publicidade aos distintos públicos sobre as ações e o retorno dos resultados das intervenções públicas junto à sociedade.',
-            'Além de informações de interesse do público-alvo e de ações de relevância social, a divulgação apresenta resultados que, a partir do desenvolvimento de estratégias de comunicação, são passíveis de aumentar a consciência do cidadão comum sobre o papel e a importância dos projetos sociais no seu cotidiano. Portanto, deve-se fazer uso dos diversos meios de comunicação e mídia.',
-            'Detalhe como ocorrerá a divulgação das ações do Projeto (pode ser assinalada mais de uma alternativa):',
-            ...divulgacaoOpcoes,
-            ...custeioDivulgacao
+            ['Será realizada de forma ampla e irrestrita. O objetivo é dar publicidade aos distintos públicos sobre as ações e o retorno dos resultados das intervenções públicas junto à sociedade.'],
+            ['Além de informações de interesse do público-alvo e de ações de relevância social, a divulgação apresenta resultados que, a partir do desenvolvimento de estratégias de comunicação, são passíveis de aumentar a consciência do cidadão comum sobre o papel e a importância dos projetos sociais no seu cotidiano. Portanto, deve-se fazer uso dos diversos meios de comunicação e mídia.'],
+            ['Detalhe como ocorrerá a divulgação das ações do Projeto (pode ser assinalada mais de uma alternativa):'],
+            [`Carros ou bicicletas de som: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Carros ou bicicletas de som') ? '(X)' : '( )'}`],
+            [`Cartazes: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Cartazes') ? '(X)' : '( )'}`],
+            [`Faixas: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Faixas') ? '(X)' : '( )'}`],
+            [`Banners: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Banners') ? '(X)' : '( )'}`],
+            [`Jornais: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Jornais') ? '(X)' : '( )'}`],
+            [`Panfletos: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Panfletos') ? '(X)' : '( )'}`],
+            [`Folder: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Folder') ? '(X)' : '( )'}`],
+            [`Mídia (rádio e televisão): ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Mídia') ? '(X)' : '( )'}`],
+            [`Internet: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Internet') ? '(X)' : '( )'}`],
+            [`Outros: ${formData.infoProjeto.outrosDivulgacao ? `(X) ${formData.infoProjeto.outrosDivulgacao}` : '( )'}`],
+            ['Qual será a forma de custeio da divulgação?'],
+            [`• Recursos da Emenda Parlamentar: ${formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar' ? '(X)' : '( )'}`],
+            [`• Recursos Próprios da Entidade: ${formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade' ? '(X)' : '( )'}`]
         ];
         currentY = createTable(
             [['3.12 DIVULGAÇÃO DO PROJETO']],
-            [[divulgacaoProjeto.join('\n')]],
+            divulgacaoProjeto,
             currentY,
             [190]
         );
 
-        // Seção 4 - Start on a new page with section title as header
+        // Seção 4
         checkPageBreak(30);
         doc.setFontSize(14);
         doc.text('4. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES', config.marginLeft, currentY);
         currentY += 10;
-
+        const desenvolvimentoAtividades = [
+            ['As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.']
+        ];
         currentY = createTable(
             [['4.1 DESENVOLVIMENTO DAS ATIVIDADES']],
-            [
-                ['As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.'],
-            ],
+            desenvolvimentoAtividades,
             currentY,
             [190]
         );
 
-        // Seção 5 - Start on a new page with section title as header
+        // Seção 5
         checkPageBreak(30);
         doc.setFontSize(14);
         doc.text('5. CONCLUSÃO', config.marginLeft, currentY);
         currentY += 10;
-
+        const conclusao = [
+            ['O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.']
+        ];
         currentY = createTable(
             [['5. CONCLUSÃO']],
-            [
-                ['O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.'],
-            ],
+            conclusao,
             currentY,
             [190]
         );
 
-            // Assinatura, Data e Local - Centered
-            checkPageBreak(50);
-            currentY += 20;
-            doc.setFontSize(12);
+        // Assinatura, Data e Local
+        checkPageBreak(50);
+        currentY += 20;
+        doc.setFontSize(12);
+        doc.text('__________________________________________', 105, currentY, { align: 'center' });
+        currentY += 10;
+        doc.text('Assinatura do Responsável', 105, currentY, { align: 'center' });
+        currentY += 20;
+        const city = selectedCity.includes('Cidade não encontrada') ? 'N/A' : selectedCity;
+        const uf = formData?.proponente?.uf ?? 'N/A';
+        const localText = city === 'N/A' && uf === 'N/A' ? 'N/A' : `${city}/${uf}`;
+        doc.text(`Local: ${localText}`, 105, currentY, { align: 'center' });
+        currentY += 10;
+        doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { align: 'center' });
 
-            // Linha de assinatura
-            doc.text('__________________________________________', 105, currentY, { align: 'center' });
-            currentY += 10;
+        // Rodapé
+        const pageCount = doc.internal.getNumberOfPages();
+        for (let i = 1; i <= pageCount; i++) {
+            doc.setPage(i);
+            doc.setFontSize(10);
+            doc.setTextColor(100);
+            doc.text(`Página ${i} de ${pageCount}`, 195, config.pageHeight - 15, { align: 'right' });
+            doc.text('© 2025 Ministério do Esporte', 105, config.pageHeight - 15, { align: 'center' });
+        }
 
-            // Texto "Assinatura do Responsável"
-            doc.text('Assinatura do Responsável', 105, currentY, { align: 'center' });
-            currentY += 20;
-
-            const city = selectedCity.includes('Cidade não encontrada') ? 'N/A' : selectedCity;
-            const uf = formData?.proponente?.uf ?? 'N/A';
-            const localText = city === 'N/A' && uf === 'N/A' ? 'N/A' : `${city}/${uf}`;
-            doc.text(`Local: ${localText}`, 105, currentY, { align: 'center' });
-            currentY += 10;
-
-            // Data atual
-            doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { align: 'center' });
-
-                    // Rodapé
-                    const pageCount = doc.internal.getNumberOfPages();
-                    for (let i = 1; i <= pageCount; i++) {
-                        doc.setPage(i);
-                        doc.setFontSize(10);
-                        doc.setTextColor(100);
-                        doc.text(`Página ${i} de ${pageCount}`, 195, config.pageHeight - 15, { align: 'right' });
-                        doc.text('© 2025 Ministério do Esporte', 105, config.pageHeight - 15, { align: 'center' });
-                    }
-
-                    doc.save('Projeto_Esportivo.pdf');
-                } catch (error) {
-                    console.error('Erro ao gerar o PDF:', error);
-                    alert(`Ocorreu um erro ao gerar o PDF: ${error.message}`);
-                }
-            };
-
+        doc.save(`Projeto_Esportivo_${formData.proponente.numeroProposta}.pdf`);
+    } catch (error) {
+        console.error('Erro ao gerar o PDF:', error);
+        alert(`Ocorreu um erro ao gerar o PDF: ${error.message}`);
+    }
+};
             return (
                 <div className="min-h-screen flex flex-col">
                     <header className="bg-blue-900 text-white p-4 flex justify-between items-center fixed w-full top-0 z-10 shadow-md">
@@ -1594,16 +1509,33 @@ currentY = doc.autoTable.previous.finalY + 5;
                                                 type="text"
                                                 className="w-full p-2 border rounded bg-gray-100"
                                                 value={formData.proponente.idh}
-                                                
+                                                onChange={(e) =>
+                                                    setFormData({
+                                                        ...formData,
+                                                        proponente: {
+                                                            ...formData.proponente,
+                                                            idh: e.target.value
+                                                        }
+                                                    })
+                                                }
                                             />
                                         </label>
+
                                         <label className="block">
                                             <span className="text-red-500">*</span> Ano de Referência:
                                             <input
                                                 type="number"
                                                 className="w-full p-2 border rounded bg-gray-100"
                                                 value={formData.proponente.anoIDH}
-                                            
+                                                onChange={(e) =>
+                                                    setFormData({
+                                                        ...formData,
+                                                        proponente: {
+                                                            ...formData.proponente,
+                                                            anoIDH: e.target.value
+                                                        }
+                                                    })
+                                                }
                                             />
                                         </label>
                                     </div>
