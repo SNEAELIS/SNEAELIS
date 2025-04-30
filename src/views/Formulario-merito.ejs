@@ -1015,61 +1015,51 @@
             { bodyStyles: { fontSize: config.fontSize.small } }
         );
 
-        // 3.7 EVENTOS
-        const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
-        const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Única';
-        const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
-        const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados) ? formData.infoProjeto.eventosSelecionados : [];
-        const eventosData = [
-            ['Os eventos têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica, reforçando a integração e o espírito comunitário.'],
-            [`Os eventos serão realizados: ${abrangencia === 'Por Núcleo' ? `em cada núcleo (${numNucleos} núcleo(s))` : 'em uma única ocorrência por evento'}.`],
-            [eventosSelecionados.length > 0 ? `Eventos selecionados: ${eventosSelecionados.join(' e ')}.` : 'Nenhum evento selecionado.']
-        ];
+        // Eventos
+        const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados)
+            ? formData.infoProjeto.eventosSelecionados
+            : [];
 
-        if (eventosSelecionados.includes('Evento de Abertura')) {
-            eventosData.push(
-                ['3.7.1 EVENTO DE ABERTURA'],
-                [`Será(ão) realizado(s) ${multiplicador} evento(s) de abertura ${abrangencia === 'Por Núcleo' ? ' (um por núcleo)' : ' (em uma única ocorrência)'}.`],
-                ['O evento de abertura apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania.'],
-                ['Atividades planejadas incluem:'],
-                ['1. Divulgação ampla: Informar à comunidade sobre o projeto, seus objetivos e como participar.'],
-                ['2. Educação e conscientização: Sensibilizar os presentes sobre a importância do esporte na formação de crianças e jovens.'],
-                ['3. Fortalecimento da autoestima comunitária: Demonstrar que a comunidade é capaz de sustentar um projeto transformador.'],
-                ['Durante o evento, serão distribuídos kits lanches aos beneficiários e à equipe técnica, promovendo um momento de confraternização.']
-            );
-        }
+            const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Por Projeto';
+            const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
+            const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
 
-        if (eventosSelecionados.includes('Evento de Encerramento')) {
-            eventosData.push(
-                ['3.7.2 EVENTO DE ENCERRAMENTO'],
-                [`Será(ão) realizado(s) ${multiplicador} evento(s) de encerramento ${abrangencia === 'Por Núcleo' ? ' (um por núcleo)' : ' (em uma única ocorrência)'}.`],
-                ['O evento de encerramento celebrará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades adquiridas pelos beneficiários.'],
-                ['Atividades planejadas incluem:'],
-                ['1. Competições/torneios: Promover a prática esportiva em um ambiente festivo e competitivo.'],
-                ['2. Cerimônia de premiação: Reconhecer o esforço e a dedicação dos participantes com entrega de medalhas a todos e troféus aos três melhores colocados.'],
-                ['3. Demonstrações de habilidades: Exibir o progresso dos beneficiários nas modalidades oferecidas durante o projeto.'],
-                ['Durante o evento, serão distribuídos kits lanches aos beneficiários e à equipe técnica, celebrando as conquistas alcançadas.']
-            );
-        }
+            // Bloco inicial fixo, conforme o texto original
+            let eventosContent = `Têm como objetivo não apenas celebrar o início e o sucesso do projeto, mas também fortalecer o engajamento da comunidade e promover um ambiente seguro e acolhedor para os beneficiários e suas famílias. Essas celebrações destacam o impacto positivo do projeto, incentivando a continuidade da prática esportiva e a inclusão social. Durante cada evento será distribuído kits lanches aos beneficiados e à equipe técnica do projeto.\n`;
 
-        currentY = createTable(
+            // Substituição do &
+            if (eventosSelecionados.length > 0) {
+            eventosContent += `☑ Evento(s) selecionado(s): ${eventosSelecionados.join(' e ')}.\n`;
+            } else {
+            eventosContent += `☐ Nenhum evento selecionado.\n`;
+            }
+
+            // Bloco fixo do Evento de Abertura
+            if (eventosSelecionados.includes('Evento de Abertura')) {
+            eventosContent += `EVENTO DE ABERTURA\n`;
+            eventosContent += `Tem como principal objetivo apresentar o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social, e esportivo, além de promover os valores fundamentais que o esporte oferece, como inclusão social, saúde, cidadania e trabalho em equipe. Dará início ao projeto, com uma saudação e explicação dos objetivos e da programação, tais como:\n`;
+            eventosContent += `• Divulgação ampla: Informar à comunidade local sobre a existência do projeto, seus objetivos e como as pessoas podem participar ou apoiar. Esse momento de apresentação é essencial para atrair beneficiados, entusiastas do esporte, famílias e potenciais parceiros ou patrocinadores.\n`;
+            eventosContent += `• Educação e conscientização: Utilização do evento para sensibilizar a comunidade sobre temas relacionados ao esporte, como saúde, prevenção de doenças, importância da disciplina e trabalho em equipe;\n`;
+            eventosContent += `• Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de organizar e sustentar um projeto transformador, reforçando o orgulho local.\n`;
+            }
+
+            // Bloco fixo do Evento de Encerramento
+            if (eventosSelecionados.includes('Evento de Encerramento')) {
+            eventosContent += `EVENTO DE ENCERRAMENTO\n`;
+            eventosContent += `Será organizado um evento de encerramento para comemorar o término do projeto e reconhecer os esforços e o progresso dos participantes, por meio de realização de competições/torneios entre os beneficiados. Com cerimônia de premiação, demonstrações de habilidades, apresentações, discursos de agradecimento e fotos/vídeos das atividades realizadas com competições/torneios entre os beneficiados. Todos os participantes receberão medalhas personalizadas em reconhecimento ao seu esforço. Os três melhores colocados receberão troféus especiais.\n`;
+            }
+
+            // Informações complementares
+            eventosContent += `☑ Abrangência: ${abrangencia}\n`;
+            eventosContent += `Total de Eventos: ${eventosSelecionados.length * multiplicador}`;
+
+            // Inserção na tabela do PDF
+            currentY = createTable(
             [['3.7 EVENTOS']],
-            eventosData,
+            [[eventosContent]],
             currentY,
             [190]
-        );
-
-        // 3.8 RECURSOS HUMANOS
-        const contratadosCedeidos = formData.infoProjeto.contratadosCedeidos === 'contratados' ? 'contratados' : formData.infoProjeto.contratadosCedeidos === 'cedidos' ? 'cedidos' : 'N/A';
-        const recursosHumanosIntro = [
-            [`Todos os profissionais envolvidos diretamente no projeto terão atribuições específicas necessárias à execução do Projeto. Serão ${contratadosCedeidos} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.`]
-        ];
-        currentY = createTable(
-            [['3.8 RECURSOS HUMANOS']],
-            recursosHumanosIntro,
-            currentY,
-            [190]
-        );
+            );
         const recursos = Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
             ? formData.infoProjeto.recursosHumanos.map(row => [
                 row.funcaoRH || 'N/A',
