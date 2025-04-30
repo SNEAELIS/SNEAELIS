@@ -126,7 +126,8 @@
                         quantidadeRH: '',
                         atribuicaoRH: '',
                         cargaHorariaRH: '',
-                        periodoRH: ''
+                        periodoRH: '',
+                        tipoRH: ''
                     }],
                     materiais: [{
                         modalidadeMaterial: '',
@@ -753,7 +754,7 @@
             [['Descrição', 'Artigo']],
             estatutoData,
             currentY,
-            [140, 40],
+            [160, 40],
             {
                 bodyStyles: { 
                     minCellHeight: 10, 
@@ -770,7 +771,7 @@
             }
         );
         // Seção 2
-        checkPageBreak(30);
+        checkPageBreak(50);
         doc.setFontSize(14);
         doc.text('2. DADOS GERAIS DO PROJETO TÉCNICO', config.marginLeft, currentY);
         currentY += 10;
@@ -1064,7 +1065,7 @@
             { bodyStyles: { fontSize: config.fontSize.small } }
         );
 
-        // Eventos
+        // 3.7 Eventos
         const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados)
             ? formData.infoProjeto.eventosSelecionados
             : [];
@@ -1109,22 +1110,40 @@
             currentY,
             [190]
             );
+        // 3.8 RECURSOS HUMANOS
+        checkPageBreak(50);
+        // Determine the contratados/cedidos status
+        const tipoRHText = formData.infoProjeto.tipoRH?.toLowerCase() || 'contratados ou cedidos';
+
+        const recursosHumanosIntro = [
+        [`Todos os profissionais envolvidos diretamente no projeto, terão atribuições específicas necessárias à execução do Projeto. Serão ${tipoRHText} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.`]
+        ];
+
+        currentY = createTable(
+            [['3.8 RECURSOS HUMANOS']],
+            recursosHumanosIntro,
+            currentY,
+            [190]
+        );
+
         const recursos = Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
             ? formData.infoProjeto.recursosHumanos.map(row => [
                 row.funcaoRH || 'N/A',
                 row.quantidadeRH || 'N/A',
                 row.atribuicaoRH || 'N/A',
                 row.cargaHorariaRH || 'N/A',
-                row.periodoRH || 'N/A'
+                row.periodoRH || 'N/A',
+                row.tipoRH || 'N/A'
             ])
-            : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
+            : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
         currentY = createTable(
-            [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias']],
+            [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias', 'Tipo (Contratados/Cedidos)']],
             recursos,
             currentY,
-            [30, 15, 50, 45, 30],
+            [30, 15, 40, 35, 30, 30],
             { bodyStyles: { fontSize: config.fontSize.small } }
         );
+
 
         // 3.9 MATERIAIS FORNECIDOS
         const materiaisIntro = [
@@ -1218,7 +1237,7 @@
         );
 
         // Seção 4
-        checkPageBreak(30);
+        checkPageBreak(50);
         doc.setFontSize(14);
         doc.text('4. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES', config.marginLeft, currentY);
         currentY += 10;
@@ -1233,7 +1252,7 @@
         );
 
         // Seção 5
-        checkPageBreak(30);
+        checkPageBreak(50);
         doc.setFontSize(14);
         doc.text('5. CONCLUSÃO', config.marginLeft, currentY);
         currentY += 10;
@@ -1244,7 +1263,7 @@
             [['5. CONCLUSÃO']],
             conclusao,
             currentY,
-            [190]
+            [180]
         );
 
         // Assinatura, Data e Local
@@ -2459,75 +2478,102 @@
 
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.9 Recursos Humanos</legend>
+                                    
+                                    {/* Novo campo fora da lista de recursos */}
+                                    <div className="mb-4">
+                                        <label className="block w-32">
+                                        Tipo:
+                                        <select
+                                            className="w-full p-2 border rounded"
+                                            value={formData.infoProjeto.tipoRH}
+                                            onChange={(e) => handleInputChange('infoProjeto', null, e.target.value, null, 'tipoRH')}
+                                        >
+                                            <option value="">Selecione</option>
+                                            <option value="Contratados">Contratados</option>
+                                            <option value="Cedidos">Cedidos</option>
+                                        </select>
+                                        </label>
+                                    </div>
+
                                     <div className="space-y-4">
                                         {formData.infoProjeto.recursosHumanos.map((row, index) => (
-                                            <div key={index} className="flex flex-wrap gap-2 items-center">
-                                                <label className="block flex-1 min-w-[200px]">
-                                                    Função:
-                                                    <input
-                                                        type="text"
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.funcaoRH}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'funcaoRH')}
-                                                    />
-                                                </label>
-                                                <label className="block w-20">
-                                                    Quantidade:
-                                                    <input
-                                                        type="number"
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.quantidadeRH}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'quantidadeRH')}
-                                                        min="1"
-                                                    />
-                                                </label>
-                                                <label className="block flex-1 min-w-[200px]">
-                                                    Atribuição:
-                                                    <input
-                                                        type="text"
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.atribuicaoRH}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'atribuicaoRH')}
-                                                    />
-                                                </label>
-                                                <label className="block w-32">
-                                                    Carga Horária:
-                                                    <input
-                                                        type="text"
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.cargaHorariaRH}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'cargaHorariaRH')}
-                                                    />
-                                                </label>
-                                                <label className="block w-32">
-                                                    Período:
-                                                    <input
-                                                        type="text"
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.periodoRH}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'periodoRH')}
-                                                    />
-                                                </label>
-                                                {formData.infoProjeto.recursosHumanos.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        className="bg-red-500 text-white px-2 py-1 rounded"
-                                                        onClick={() => removeItem('infoProjeto', 'recursosHumanos', index)}
-                                                    >
-                                                        <i className="fas fa-trash"></i>
-                                                    </button>
-                                                )}
-                                            </div>
+                                        <div key={index} className="flex flex-wrap gap-2 items-center">
+                                            <label className="block flex-1 min-w-[200px]">
+                                            Função:
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border rounded"
+                                                value={row.funcaoRH}
+                                                onChange={(e) =>
+                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'funcaoRH')
+                                                }
+                                            />
+                                            </label>
+                                            <label className="block w-20">
+                                            Quantidade:
+                                            <input
+                                                type="number"
+                                                className="w-full p-2 border rounded"
+                                                value={row.quantidadeRH}
+                                                onChange={(e) =>
+                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'quantidadeRH')
+                                                }
+                                                min="1"
+                                            />
+                                            </label>
+                                            <label className="block flex-1 min-w-[200px]">
+                                            Atribuição:
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border rounded"
+                                                value={row.atribuicaoRH}
+                                                onChange={(e) =>
+                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'atribuicaoRH')
+                                                }
+                                            />
+                                            </label>
+                                            <label className="block w-32">
+                                            Carga Horária:
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border rounded"
+                                                value={row.cargaHorariaRH}
+                                                onChange={(e) =>
+                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'cargaHorariaRH')
+                                                }
+                                            />
+                                            </label>
+                                            <label className="block w-32">
+                                            Período:
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border rounded"
+                                                value={row.periodoRH}
+                                                onChange={(e) =>
+                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'periodoRH')
+                                                }
+                                            />
+                                            </label>
+                                            {formData.infoProjeto.recursosHumanos.length > 1 && (
+                                            <button
+                                                type="button"
+                                                className="bg-red-500 text-white px-2 py-1 rounded"
+                                                onClick={() => removeItem('infoProjeto', 'recursosHumanos', index)}
+                                            >
+                                                <i className="fas fa-trash"></i>
+                                            </button>
+                                            )}
+                                        </div>
                                         ))}
                                         <button
-                                            type="button"
-                                            className="bg-green-500 text-white px-4 py-2 rounded"
-                                            onClick={() => addItem('infoProjeto', 'recursosHumanos')}
+                                        type="button"
+                                        className="bg-green-500 text-white px-4 py-2 rounded"
+                                        onClick={() => addItem('infoProjeto', 'recursosHumanos')}
                                         >
-                                            Adicionar Recurso Humano
+                                        Adicionar Recurso Humano
                                         </button>
                                     </div>
-                                </fieldset>
+                                    </fieldset>
 
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.10 Materiais Fornecidos</legend>
