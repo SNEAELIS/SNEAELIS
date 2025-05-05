@@ -508,7 +508,7 @@
             lineHeight: 6,
             pageHeight: 297,
             footerSpace: 25,
-            primaryColor: [0, 39, 102],
+            primaryColor: [0, 38, 102],
             secondaryColor: [255, 255, 255],
             tablePadding: 2,
             fontSize: {
@@ -520,6 +520,7 @@
         };
         let currentY = config.marginTop;
 
+        // Set default font
         doc.setFont("helvetica", "normal");
 
         // Utility functions
@@ -555,7 +556,7 @@
                     fontStyle: 'bold',
                     fontSize: config.fontSize.subtitle,
                     cellPadding: config.tablePadding,
-                    halign: 'left',
+                    halign: 'center',
                     minCellHeight: 6,
                 },
                 bodyStyles: {
@@ -620,8 +621,7 @@
         currentY += 25;
 
         // Seção 1
-        doc.setFontSize(14);
-        doc.text('1. INFORMAÇÕES GERAIS DO PROPONENTE', config.marginLeft, currentY);
+        currentY = addText('1. INFORMAÇÕES GERAIS DO PROPONENTE', config.marginLeft, currentY, 190, config.fontSize.title, true);
         currentY += 10;
 
         // Validate proponente data
@@ -732,10 +732,10 @@
 
         // 1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE
         checkPageBreak(50);
-        doc.setFontSize(14);
-        doc.setTextColor(0, 0, 0); // Título em preto
-        doc.text('1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE*', config.marginLeft, currentY);
-        currentY += 10;
+        const estatutoHead = [
+            [{ content: '1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE*', colSpan: 2, styles: { halign: 'center', fillColor: [0, 38, 102], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 12 } }],
+            ['Descrição', 'Artigo']
+        ];
         const estatutoData = [
             [
                 'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014: Verificar se a Entidade NÃO distribui entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva.',
@@ -751,30 +751,24 @@
             ]
         ];
         currentY = createTable(
-            [['Descrição', 'Artigo']],
+            estatutoHead,
             estatutoData,
             currentY,
-            [160, 40],
+            [150, 40],
             {
-                bodyStyles: { 
-                    minCellHeight: 10, 
-                    textColor: [0, 0, 0] // Corpo da tabela em preto
-                },
-                headStyles: { 
-                    textColor: [255, 255, 255], // Texto do cabeçalho em branco
-                    fillColor: [0, 38, 102] // Fundo do cabeçalho em azul escuro (ajustado para corresponder a "2.1 OBJETO")
-                },
+                bodyStyles: { minCellHeight: 10, textColor: [0, 0, 0] },
+                headStyles: { textColor: [255, 255, 255], fillColor: [0, 38, 102] },
                 columnStyles: {
-                    0: { cellWidth: 140, halign: 'left' },
+                    0: { cellWidth: 150, halign: 'left' },
                     1: { cellWidth: 40, halign: 'center' }
                 }
             }
         );
+
         // Seção 2
-        checkPageBreak(50);
-        doc.setFontSize(14);
-        doc.text('2. DADOS GERAIS DO PROJETO TÉCNICO', config.marginLeft, currentY);
-        currentY += 10;
+        checkPageBreak(70);
+        currentY = addText('2. DADOS GERAIS DO PROJETO TÉCNICO', config.marginLeft, currentY, 190, config.fontSize.title, true);
+        currentY += 8;
 
         // Validate dadosProjeto data
         logMissingFields('dadosProjeto', [
@@ -893,8 +887,7 @@
 
         // Seção 3
         checkPageBreak(30);
-        doc.setFontSize(14);
-        doc.text('3. INFORMAÇÕES DO PROJETO', config.marginLeft, currentY);
+        currentY = addText('3. INFORMAÇÕES DO PROJETO', config.marginLeft, currentY, 190, config.fontSize.title, true);
         currentY += 10;
 
         // Validate infoProjeto data
@@ -1065,67 +1058,57 @@
             { bodyStyles: { fontSize: config.fontSize.small } }
         );
 
-        // 3.7 Eventos
+        // 3.7 EVENTOS
         const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados)
             ? formData.infoProjeto.eventosSelecionados
             : [];
+        const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Por Projeto';
+        const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
+        const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
 
-            const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Por Projeto';
-            const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
-            const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
+        let eventosContent = `Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro e acolhedor para os beneficiários e suas famílias. Essas celebrações destacam o impacto positivo do projeto, incentivando a continuidade da prática esportiva e a inclusão social. Durante cada evento, serão distribuídos kits de lanches aos beneficiados e à equipe técnica do projeto.\n`;
 
-            // Bloco inicial fixo, conforme o texto original
-            let eventosContent = `Têm como objetivo não apenas celebrar o início e o sucesso do projeto, mas também fortalecer o engajamento da comunidade e promover um ambiente seguro e acolhedor para os beneficiários e suas famílias. Essas celebrações destacam o impacto positivo do projeto, incentivando a continuidade da prática esportiva e a inclusão social. Durante cada evento será distribuído kits lanches aos beneficiados e à equipe técnica do projeto.\n`;
+        if (eventosSelecionados.length > 0) {
+            eventosContent += `Eventos selecionados: ${eventosSelecionados.join(' e ')}.\n`;
+        } else {
+            eventosContent += `Nenhum evento selecionado.\n`;
+        }
 
-            // Substituição do &
-            if (eventosSelecionados.length > 0) {
-            eventosContent += `☑ Evento(s) selecionado(s): ${eventosSelecionados.join(' e ')}.\n`;
-            } else {
-            eventosContent += `☐ Nenhum evento selecionado.\n`;
-            }
-
-            // Bloco fixo do Evento de Abertura
-            if (eventosSelecionados.includes('Evento de Abertura')) {
+        if (eventosSelecionados.includes('Evento de Abertura')) {
             eventosContent += `EVENTO DE ABERTURA\n`;
-            eventosContent += `Tem como principal objetivo apresentar o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social, e esportivo, além de promover os valores fundamentais que o esporte oferece, como inclusão social, saúde, cidadania e trabalho em equipe. Dará início ao projeto, com uma saudação e explicação dos objetivos e da programação, tais como:\n`;
-            eventosContent += `• Divulgação ampla: Informar à comunidade local sobre a existência do projeto, seus objetivos e como as pessoas podem participar ou apoiar. Esse momento de apresentação é essencial para atrair beneficiados, entusiastas do esporte, famílias e potenciais parceiros ou patrocinadores.\n`;
-            eventosContent += `• Educação e conscientização: Utilização do evento para sensibilizar a comunidade sobre temas relacionados ao esporte, como saúde, prevenção de doenças, importância da disciplina e trabalho em equipe;\n`;
+            eventosContent += `Tem como principal objetivo apresentar o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, além de promover os valores fundamentais que o esporte oferece, como inclusão social, saúde, cidadania e trabalho em equipe. O evento marcará o início do projeto, com uma saudação e explicação dos objetivos e da programação, incluindo:\n`;
+            eventosContent += `• Divulgação ampla: Informar à comunidade local sobre a existência do projeto, seus objetivos e como as pessoas podem participar ou apoiar. Esse momento é essencial para atrair beneficiados, entusiastas do esporte, famílias e potenciais parceiros.\n`;
+            eventosContent += `• Educação e conscientização: Sensibilizar a comunidade sobre temas relacionados ao esporte, como saúde, prevenção de doenças, disciplina e trabalho em equipe.\n`;
             eventosContent += `• Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de organizar e sustentar um projeto transformador, reforçando o orgulho local.\n`;
-            }
+        }
 
-            // Bloco fixo do Evento de Encerramento
-            if (eventosSelecionados.includes('Evento de Encerramento')) {
+        if (eventosSelecionados.includes('Evento de Encerramento')) {
             eventosContent += `EVENTO DE ENCERRAMENTO\n`;
-            eventosContent += `Será organizado um evento de encerramento para comemorar o término do projeto e reconhecer os esforços e o progresso dos participantes, por meio de realização de competições/torneios entre os beneficiados. Com cerimônia de premiação, demonstrações de habilidades, apresentações, discursos de agradecimento e fotos/vídeos das atividades realizadas com competições/torneios entre os beneficiados. Todos os participantes receberão medalhas personalizadas em reconhecimento ao seu esforço. Os três melhores colocados receberão troféus especiais.\n`;
-            }
+            eventosContent += `Será organizado para comemorar o término do projeto e reconhecer os esforços e o progresso dos participantes, por meio de competições/torneios entre os beneficiados. Incluirá cerimônia de premiação, demonstrações de habilidades, apresentações, discursos de agradecimento e registros fotográficos/vídeos das atividades. Todos os participantes receberão medalhas personalizadas em reconhecimento ao seu esforço, e os três melhores colocados receberão troféus especiais.\n`;
+        }
 
-            // Informações complementares
-            eventosContent += `☑ Abrangência: ${abrangencia}\n`;
-            eventosContent += `Total de Eventos: ${eventosSelecionados.length * multiplicador}`;
+        eventosContent += `Abrangência: ${abrangencia}\n`;
+        eventosContent += `Total de Eventos: ${eventosSelecionados.length * multiplicador}`;
 
-            // Inserção na tabela do PDF
-            currentY = createTable(
+        currentY = createTable(
             [['3.7 EVENTOS']],
             [[eventosContent]],
             currentY,
             [190]
-            );
+        );
+
         // 3.8 RECURSOS HUMANOS
         checkPageBreak(50);
-        // Determine the contratados/cedidos status
-        const tipoRHText = formData.infoProjeto.tipoRH?.toLowerCase() || 'contratados ou cedidos';
-
+        const tipoRH = formData.infoProjeto.tipoRH?.toLowerCase() === 'cedidos' ? 'cedidos' : 'contratados';
         const recursosHumanosIntro = [
-        [`Todos os profissionais envolvidos diretamente no projeto, terão atribuições específicas necessárias à execução do Projeto. Serão ${tipoRHText} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, os quais serão custeados com os recursos da emenda destinada a este Projeto.`]
+            [`Todos os profissionais envolvidos diretamente no projeto terão atribuições específicas necessárias à execução do projeto. Serão ${tipoRH} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, custeados com os recursos da emenda destinada a este projeto.`]
         ];
-
         currentY = createTable(
             [['3.8 RECURSOS HUMANOS']],
             recursosHumanosIntro,
             currentY,
             [190]
         );
-
         const recursos = Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
             ? formData.infoProjeto.recursosHumanos.map(row => [
                 row.funcaoRH || 'N/A',
@@ -1133,17 +1116,15 @@
                 row.atribuicaoRH || 'N/A',
                 row.cargaHorariaRH || 'N/A',
                 row.periodoRH || 'N/A',
-                row.tipoRH || 'N/A'
             ])
             : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
         currentY = createTable(
-            [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias', 'Tipo (Contratados/Cedidos)']],
+            [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias']],
             recursos,
             currentY,
-            [30, 15, 40, 35, 30, 30],
+            [30, 15, 40, 55, 50],
             { bodyStyles: { fontSize: config.fontSize.small } }
         );
-
 
         // 3.9 MATERIAIS FORNECIDOS
         const materiaisIntro = [
@@ -1174,7 +1155,7 @@
 
         // 3.10 UNIFORMES
         const uniformesIntro = [
-            [`Para garantir um atendimento adequado aos beneficiários, será realizado a aquisição de uniformes para uso individual dos participantes e uniformes para a comissão técnica. Cada aluno receberá ${formData.infoProjeto.quantidadeConjuntosUniforme || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.infoProjeto.quantidadeConjuntosUniforme || 'XX') : 'N/A'}) conjuntos de uniforme, além de haver uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.`]
+            [`Para garantir um atendimento adequado aos beneficiários, será realizada a aquisição de uniformes para uso individual dos participantes e da comissão técnica. Cada aluno receberá ${formData.infoProjeto.quantidadeConjuntosUniforme || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.infoProjeto.quantidadeConjuntosUniforme || 'XX') : 'N/A'}) conjuntos de uniforme, além de uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.`]
         ];
         currentY = createTable(
             [['3.10 UNIFORMES']],
@@ -1198,7 +1179,7 @@
 
         // 3.11 IDENTIFICAÇÃO DO PROJETO
         const identificacaoProjeto = [
-            ['Em relação a divulgação do projeto, fundamenta-se como elemento primordial, com vistas ao alcance dos beneficiados junto à comunidade regional. A identificação visual do projeto será aplicada em lugar de visibilidade, no núcleo, observando os padrões estabelecidos no Manual de Identidade Visual, disponível no site do Ministério, para o acompanhamento pela comunidade local e pelos órgãos de controle e fiscalização.'],
+            ['Em relação à divulgação do projeto, fundamenta-se como elemento primordial, com vistas ao alcance dos beneficiados junto à comunidade regional. A identificação visual do projeto será aplicada em lugar de visibilidade, no núcleo, observando os padrões estabelecidos no Manual de Identidade Visual, disponível no site do Ministério, para o acompanhamento pela comunidade local e pelos órgãos de controle e fiscalização.'],
             [`• Faixas: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Faixas') ? '(X)' : '( )'}`],
             [`• Banners: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Banners') ? '(X)' : '( )'}`],
             [`• Outros: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Outros') ? `(X) ${formData.infoProjeto.outrosIdentificacao || 'N/A'}` : '( )'}`]
@@ -1237,12 +1218,11 @@
         );
 
         // Seção 4
-        checkPageBreak(50);
-        doc.setFontSize(14);
-        doc.text('4. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES', config.marginLeft, currentY);
-        currentY += 10;
+        checkPageBreak(70);
+        currentY = addText('4. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES', config.marginLeft, currentY, 190, config.fontSize.title, true);
+        currentY += 8;
         const desenvolvimentoAtividades = [
-            ['As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.']
+            ['As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos e relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico, será emitido, trimestralmente, um parecer dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.']
         ];
         currentY = createTable(
             [['4.1 DESENVOLVIMENTO DAS ATIVIDADES']],
@@ -1252,10 +1232,9 @@
         );
 
         // Seção 5
-        checkPageBreak(50);
-        doc.setFontSize(14);
-        doc.text('5. CONCLUSÃO', config.marginLeft, currentY);
-        currentY += 10;
+        checkPageBreak(70);
+        currentY = addText('5. CONCLUSÃO', config.marginLeft, currentY, 190, config.fontSize.title, true);
+        currentY += 8;
         const conclusao = [
             ['O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.']
         ];
@@ -1263,29 +1242,30 @@
             [['5. CONCLUSÃO']],
             conclusao,
             currentY,
-            [180]
+            [190]
         );
 
         // Assinatura, Data e Local
         checkPageBreak(50);
-        currentY += 20;
-        doc.setFontSize(12);
-        doc.text('__________________________________________', 105, currentY, { align: 'center' });
-        currentY += 10;
+        doc.setFontSize(config.fontSize.body);
+        doc.setLineWidth(0.5);
+        const signatureSpace = 11.29; // 40px converted to mm (1px ≈ 0.282mm)
+        doc.line(60, currentY, 150, currentY); // Signature line
+        currentY += signatureSpace / 2; // Half of 40px for centering
         doc.text('Assinatura do Responsável', 105, currentY, { align: 'center' });
-        currentY += 20;
+        currentY += signatureSpace / 2; // Remaining half of 40px
         const city = selectedCity.includes('Cidade não encontrada') ? 'N/A' : selectedCity;
         const uf = formData?.proponente?.uf ?? 'N/A';
         const localText = city === 'N/A' && uf === 'N/A' ? 'N/A' : `${city}/${uf}`;
         doc.text(`Local: ${localText}`, 105, currentY, { align: 'center' });
-        currentY += 10;
+        currentY += 5;
         doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { align: 'center' });
 
         // Rodapé
         const pageCount = doc.internal.getNumberOfPages();
         for (let i = 1; i <= pageCount; i++) {
             doc.setPage(i);
-            doc.setFontSize(10);
+            doc.setFontSize(config.fontSize.small);
             doc.setTextColor(100);
             doc.text(`Página ${i} de ${pageCount}`, 195, config.pageHeight - 15, { align: 'right' });
             doc.text('© 2025 Ministério do Esporte', 105, config.pageHeight - 15, { align: 'center' });
