@@ -492,792 +492,761 @@
             };
 
             const generatePDF = () => {
-    try {
-        // Verify jsPDF availability
-        if (!window.jspdf || !window.jspdf.jsPDF) {
-            throw new Error('jsPDF library is not loaded.');
-        }
-        const { jsPDF } = window.jspdf;
-        const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-
-        // Configuration constants
-        const config = {
-            marginLeft: 10,
-            marginRight: 10,
-            marginTop: 15,
-            lineHeight: 6,
-            pageHeight: 297,
-            footerSpace: 25,
-            primaryColor: [0, 38, 102],
-            secondaryColor: [255, 255, 255],
-            tablePadding: 2,
-            fontSize: {
-                title: 14,
-                subtitle: 12,
-                body: 10,
-                small: 8,
-            },
-        };
-        let currentY = config.marginTop;
-
-        // Set default font
-        doc.setFont("helvetica", "normal");
-
-        // Utility functions
-        const addText = (text, x, y, maxWidth = 190, fontSize = 12, bold = false) => {
-            doc.setFontSize(fontSize);
-            doc.setFont("helvetica", bold ? "bold" : "normal");
-            const lines = doc.splitTextToSize(text || 'N/A', maxWidth);
-            doc.text(lines, x, y);
-            return y + (lines.length * config.lineHeight);
-        };
-
-        const checkPageBreak = (spaceNeeded = 0) => {
-            if (currentY + spaceNeeded > config.pageHeight - config.footerSpace) {
-                doc.addPage();
-                currentY = config.marginTop;
-                return true;
+        try {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                throw new Error('jsPDF library is not loaded.');
             }
-            return false;
-        };
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
 
-        const createTable = (head, body, startY, colWidths = null, additionalConfig = {}) => {
-            if (!doc.autoTable) {
-                throw new Error('jsPDF autoTable plugin is not loaded.');
-            }
-            const tableConfig = {
-                startY: startY,
-                head: head,
-                body: body,
-                theme: 'grid',
-                headStyles: {
-                    fillColor: config.primaryColor,
-                    textColor: config.secondaryColor,
-                    fontStyle: 'bold',
-                    fontSize: config.fontSize.subtitle,
-                    cellPadding: config.tablePadding,
-                    halign: 'center',
-                    minCellHeight: 6,
+            const config = {
+                marginLeft: 10,
+                marginRight: 10,
+                marginTop: 15,
+                lineHeight: 6,
+                pageHeight: 297,
+                footerSpace: 25,
+                primaryColor: [0, 38, 102],
+                secondaryColor: [255, 255, 255],
+                tablePadding: 2,
+                fontSize: {
+                    title: 14,
+                    subtitle: 12,
+                    body: 10,
+                    small: 8,
                 },
-                bodyStyles: {
-                    fontSize: config.fontSize.body,
-                    cellPadding: config.tablePadding,
-                    textColor: [0, 0, 0],
-                    fillColor: [255, 255, 255],
-                    halign: 'left',
-                    minCellHeight: 5,
-                    overflow: 'linebreak',
-                },
-                margin: { left: config.marginLeft, right: config.marginRight },
-                tableWidth: 190,
-                ...additionalConfig,
+                sectionSpacing: 5,
             };
-            if (colWidths) {
-                tableConfig.columnStyles = {};
-                colWidths.forEach((width, index) => {
-                    tableConfig.columnStyles[index] = { cellWidth: width };
-                });
-            }
-            doc.autoTable(tableConfig);
-            return doc.lastAutoTable.finalY + 3;
-        };
+            let currentY = config.marginTop;
 
-        // Validate formData and log missing fields
-        const logMissingFields = (section, fields) => {
-            const missing = fields.filter(field => {
-                const value = section[field];
-                return value === undefined || value === null || (Array.isArray(value) && value.length === 0);
-            });
-            if (missing.length > 0) {
-                console.warn(`Missing fields in formData.${section}: ${missing.join(', ')}`);
-            }
-        };
+            const addText = (text, x, y, maxWidth = 190, fontSize = 12, bold = false) => {
+                doc.setFontSize(fontSize);
+                doc.setFont("helvetica", bold ? "bold" : "normal");
+                const lines = doc.splitTextToSize(text || 'N/A', maxWidth);
+                doc.text(lines, x, y);
+                return y + (lines.length * config.lineHeight);
+            };
 
-        // Validate external dependencies
-        const validateDependencies = () => {
-            const missing = [];
-            if (typeof municipios === 'undefined' || !Array.isArray(municipios)) {
-                missing.push('municipios');
-            }
-            if (typeof numeroPorExtenso !== 'function') {
-                missing.push('numeroPorExtenso');
-            }
-            if (missing.length > 0) {
-                throw new Error(`Missing dependencies: ${missing.join(', ')}`);
-            }
-        };
-
-        // Validate formData
-        if (!formData || typeof formData !== 'object') {
-            throw new Error('formData is undefined or invalid.');
-        }
-        validateDependencies();
-
-        // Page 1 Header
-        doc.setFontSize(16);
-        doc.setTextColor(...config.primaryColor);
-        doc.text('PROJETO TÉCNICO', 105, currentY, { align: 'center' });
-        doc.text('IMPLEMENTAÇÃO E DESENVOLVIMENTO DE PROJETO', 105, currentY + 10, { align: 'center' });
-        currentY += 25;
-
-        // Seção 1
-        currentY = addText('1. INFORMAÇÕES GERAIS DO PROPONENTE', config.marginLeft, currentY, 190, config.fontSize.title, true);
-        currentY += 10;
-
-        // Validate proponente data
-        logMissingFields('proponente', [
-            'cnpj', 'nomeProponente', 'nomeDirigente', 'telefones', 'email', 'numeroProposta',
-            'responsavelNome', 'responsavelEmail', 'responsavelVinculo', 'responsavelTelefones',
-            'dimensaoProjeto', 'cidade', 'idh', 'anoIDH', 'numHabitantes', 'anoHabitantes',
-            'temParceria', 'temPublicidade', 'artigo2', 'artigo33I', 'artigo33III', 'uf'
-        ]);
-
-        // 1.1 IDENTIFICAÇÃO PROPONENTE
-        const identificacaoProponente = [
-            [`CNPJ Proponente: ${formData.proponente.cnpj || 'N/A'}`],
-            [`Nome Proponente: ${formData.proponente.nomeProponente || 'N/A'}`],
-            [`Nome do Dirigente: ${formData.proponente.nomeDirigente || 'N/A'}`],
-            [`Telefone(s) de contato com DDD: ${Array.isArray(formData.proponente.telefones) ? formData.proponente.telefones.join(', ') : 'N/A'}`],
-            [`E-mail: ${formData.proponente.email || 'N/A'}`],
-            [`Número da Proposta: ${formData.proponente.numeroProposta || 'N/A'}`]
-        ];
-        currentY = createTable(
-            [['1.1 IDENTIFICAÇÃO PROPONENTE*']],
-            identificacaoProponente,
-            currentY,
-            [190]
-        );
-
-        // 1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO
-        const responsavelElaboracao = [
-            [`Nome: ${formData.proponente.responsavelNome || 'N/A'}`],
-            [`E-mail: ${formData.proponente.responsavelEmail || 'N/A'}`],
-            [`Vínculo com a Entidade: ${formData.proponente.responsavelVinculo || 'N/A'}`],
-            [`Telefone(s): ${Array.isArray(formData.proponente.responsavelTelefones) ? formData.proponente.responsavelTelefones.join(', ') : 'N/A'}`]
-        ];
-        currentY = createTable(
-            [['1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO*']],
-            responsavelElaboracao,
-            currentY,
-            [190]
-        );
-
-        // 1.3 DIMENSÃO DO PROJETO
-        const dimensaoProjeto = [
-            [formData.proponente.dimensaoProjeto === 'Projeto Educacional' ? '(X) Projeto Educacional' : '( ) Projeto Educacional'],
-            ['Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.'],
-            [formData.proponente.dimensaoProjeto === 'Projeto de Participação' ? '(X) Projeto de Participação' : '( ) Projeto de Participação'],
-            ['Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.']
-        ];
-        currentY = createTable(
-            [['1.3 DIMENSÃO DO PROJETO* (marque somente uma opção)']],
-            dimensaoProjeto,
-            currentY,
-            [190]
-        );
-
-        // 1.4 LOCALIDADE
-        const selectedCity = (() => {
-            const cityId = formData?.proponente?.cidade || '';
-            const uf = formData?.proponente?.uf || '';
-            console.log('Selecionando cidade com ID:', cityId, 'para UF:', uf);
-            if (cityId && Array.isArray(municipios) && municipios.length > 0) {
-                const municipio = municipios.find(m => m.id === Number(cityId));
-                if (municipio) {
-                    console.log('Cidade encontrada:', municipio.nome);
-                    return municipio.nome;
+            const checkPageBreak = (spaceNeeded = 0) => {
+                if (currentY + spaceNeeded > config.pageHeight - config.footerSpace) {
+                    doc.addPage();
+                    currentY = config.marginTop;
+                    return true;
                 }
-                console.warn(`Nenhum município encontrado para ID ${cityId} em municipios:`, municipios);
+                return false;
+            };
+
+            const createTable = (title, head, body, startY, colWidths = null, additionalConfig = {}) => {
+                if (!doc.autoTable) {
+                    throw new Error('jsPDF autoTable plugin is not loaded.');
+                }
+
+                // Adiciona o título da seção antes da tabela
+                if (title) {
+                    checkPageBreak(config.lineHeight);
+                    currentY = addText(title, config.marginLeft, currentY, 190, config.fontSize.title, true);
+                    currentY += 2; // Pequeno espaço entre o título e a tabela
+                }
+
+                const tableConfig = {
+                    startY: currentY,
+                    head: head,
+                    body: body,
+                    theme: 'grid',
+                    headStyles: {
+                        fillColor: config.primaryColor,
+                        textColor: config.secondaryColor,
+                        fontStyle: 'bold',
+                        fontSize: config.fontSize.subtitle,
+                        cellPadding: config.tablePadding,
+                        halign: 'center',
+                        minCellHeight: 6,
+                    },
+                    bodyStyles: {
+                        fontSize: config.fontSize.body,
+                        cellPadding: config.tablePadding,
+                        textColor: [0, 0, 0],
+                        fillColor: [255, 255, 255],
+                        halign: 'left',
+                        minCellHeight: 5,
+                        overflow: 'linebreak',
+                    },
+                    margin: { left: config.marginLeft, right: config.marginRight },
+                    tableWidth: 190,
+                    // Impede a repetição do cabeçalho em páginas subsequentes
+                    didDrawPage: (data) => {
+                        if (data.pageNumber > data.table.startPage) {
+                            data.table.head = [];
+                        }
+                    },
+                    ...additionalConfig,
+                };
+                if (colWidths) {
+                    tableConfig.columnStyles = {};
+                    colWidths.forEach((width, index) => {
+                        tableConfig.columnStyles[index] = { cellWidth: width };
+                    });
+                }
+                doc.autoTable(tableConfig);
+                currentY = doc.lastAutoTable.finalY + config.sectionSpacing;
+                return currentY;
+            };
+
+            // Page 1 Header
+            doc.setFontSize(16);
+            doc.setTextColor(...config.primaryColor);
+            doc.text('PROJETO TÉCNICO', 105, currentY, { align: 'center' });
+            doc.text('IMPLEMENTAÇÃO E DESENVOLVIMENTO DE PROJETO', 105, currentY + 10, { align: 'center' });
+            currentY += 25;
+
+            // Seção 1 - INFORMAÇÕES GERAIS DO PROPONENTE
+            // 1.1 IDENTIFICAÇÃO PROPONENTE
+            const identificacaoProponente = [
+                [`CNPJ Proponente: ${formData.proponente.cnpj || 'N/A'}`],
+                [`Nome Proponente: ${formData.proponente.nomeProponente || 'N/A'}`],
+                [`Nome do Dirigente: ${formData.proponente.nomeDirigente || 'N/A'}`],
+                [`Telefone(s) de contato com DDD: ${Array.isArray(formData.proponente.telefones) ? formData.proponente.telefones.join(', ') : 'N/A'}`],
+                [`E-mail: ${formData.proponente.email || 'N/A'}`],
+                [`Número da Proposta: ${formData.proponente.numeroProposta || 'N/A'}`]
+            ];
+            currentY = createTable(
+                '1. INFORMAÇÕES GERAIS DO PROPONENTE\n1.1 IDENTIFICAÇÃO PROPONENTE*',
+                [['']],
+                identificacaoProponente,
+                currentY,
+                [190]
+            );
+
+            // 1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO
+            const responsavelElaboracao = [
+                [`Nome: ${formData.proponente.responsavelNome || 'N/A'}`],
+                [`E-mail: ${formData.proponente.responsavelEmail || 'N/A'}`],
+                [`Vínculo com a Entidade: ${formData.proponente.responsavelVinculo || 'N/A'}`],
+                [`Telefone(s): ${Array.isArray(formData.proponente.responsavelTelefones) ? formData.proponente.responsavelTelefones.join(', ') : 'N/A'}`]
+            ];
+            currentY = createTable(
+                '1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO*',
+                [['']],
+                responsavelElaboracao,
+                currentY,
+                [190]
+            );
+
+            // 1.3 DIMENSÃO DO PROJETO
+            const dimensaoProjeto = [
+                [formData.proponente.dimensaoProjeto === 'Projeto Educacional' ? '(X) Projeto Educacional' : '( ) Projeto Educacional'],
+                ['Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes. Este nível de atendimento comporta os serviços de vivência, fundamentação, aprendizagem esportiva e fomento e difusão do conhecimento científico, tecnológico e de inovação.'],
+                [formData.proponente.dimensaoProjeto === 'Projeto de Participação' ? '(X) Projeto de Participação' : '( ) Projeto de Participação'],
+                ['Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido, pela transmissão pedagógica crítica e assumida dentre os hábitos culturais saudáveis ao longo da vida. Este nível abrange os serviços de esporte e lazer, atividade física, aprendizagem esportiva para crianças, jovens, adultos, idosos (esporte ao longo da vida), além do fomento e difusão do conhecimento científico, tecnológico e de inovação.']
+            ];
+            currentY = createTable(
+                '1.3 DIMENSÃO DO PROJETO* (marque somente uma opção)',
+                [['']],
+                dimensaoProjeto,
+                currentY,
+                [190]
+            );
+
+            // 1.4 LOCALIDADE
+            const selectedCity = (() => {
+                const cityId = formData?.proponente?.cidade || '';
+                const uf = formData?.proponente?.uf || '';
+                if (cityId && Array.isArray(municipios) && municipios.length > 0) {
+                    const municipio = municipios.find(m => m.id === Number(cityId));
+                    return municipio ? municipio.nome : uf ? `Cidade não encontrada para UF ${uf}` : 'Cidade não encontrada';
+                }
+                return 'N/A';
+            })();
+            const localidadeData = [
+                [`Cidade: ${selectedCity}`],
+                [`UF: ${formData?.proponente?.uf ?? 'N/A'}`],
+                [`IDH: ${formData?.proponente?.idh ?? 'N/A'}`],
+                [`Ano de Referência: ${formData?.proponente?.anoIDH ?? 'N/A'}`]
+            ];
+            currentY = createTable(
+                '1.4 LOCALIDADE - (onde o projeto será desenvolvido) - Índice de Desenvolvimento Humano* (SITE IBGE)',
+                [['']],
+                localidadeData,
+                currentY,
+                [190]
+            );
+
+            // 1.5 POPULAÇÃO
+            const populacaoData = [
+                [`Nº de habitantes: ${formData.proponente.numHabitantes || 'N/A'}`],
+                [`Ano de referência: ${formData.proponente.anoHabitantes || 'N/A'}`]
+            ];
+            currentY = createTable(
+                '1.5 POPULAÇÃO - Característica demográfica da localidade (SITE IBGE)*',
+                [['']],
+                populacaoData,
+                currentY,
+                [190]
+            );
+
+            // 1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE
+            const entidadeProponenteData = [
+                [`A Entidade já celebrou parcerias com o Ministério do Esporte? ${formData.proponente.temParceria === 'sim' ? '(X) Sim' : '( ) Sim'} | ${formData.proponente.temParceria === 'nao' ? '(X) Não' : '( ) Não'}${formData.proponente.temParceria === 'sim' ? ` | Nº de parcerias: ${formData.proponente.numParcerias || 'N/A'}` : ''}`],
+                [`A Entidade já deu publicidade às parcerias celebradas em seu respectivo site? ${formData.proponente.temPublicidade === 'sim' ? '(X) Sim' : '( ) Sim'} | ${formData.proponente.temPublicidade === 'nao' ? '(X) Não' : '( ) Não'}${formData.proponente.temPublicidade === 'sim' ? ` | Site: ${formData.proponente.publicidadeSite || 'N/A'}` : ''}`]
+            ];
+            currentY = createTable(
+                '1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE*',
+                [['']],
+                entidadeProponenteData,
+                currentY,
+                [190]
+            );
+
+            // 1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE
+            const estatutoHead = [['Descrição', 'Artigo']];
+            const estatutoData = [
+                [
+                    'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014: Verificar se a Entidade NÃO distribui entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva.',
+                    formData.proponente.artigo2 || 'N/A'
+                ],
+                [
+                    'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014: Verificar se a Entidade POSSUI objetivos voltados à promoção de atividades e finalidades de relevância pública e social.',
+                    formData.proponente.artigo33I || 'N/A'
+                ],
+                [
+                    'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014: Verificar se em caso de dissolução da entidade, o respectivo patrimônio líquido seja transferido a outra pessoa jurídica de igual natureza que preencha os requisitos desta Lei e cujo objeto social seja, preferencialmente, o mesmo da entidade extinta.',
+                    formData.proponente.artigo33III || 'N/A'
+                ]
+            ];
+            currentY = createTable(
+                '1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE*',
+                estatutoHead,
+                estatutoData,
+                currentY,
+                [150, 40],
+                {
+                    bodyStyles: { minCellHeight: 10, textColor: [0, 0, 0] },
+                    headStyles: { textColor: [255, 255, 255], fillColor: [0, 38, 102] },
+                    columnStyles: {
+                        0: { cellWidth: 150, halign: 'left' },
+                        1: { cellWidth: 40, halign: 'center' }
+                    }
+                }
+            );
+
+            // Seção 2 - DADOS GERAIS DO PROJETO TÉCNICO
+            // 2.1 OBJETO
+            const objetoProjeto = [
+                ['Implementação e desenvolvimento do Projeto:'],
+                [formData.dadosProjeto.objetoProjeto || 'N/A']
+            ];
+            currentY = createTable(
+                '2. DADOS GERAIS DO PROJETO TÉCNICO\n2.1 OBJETO',
+                [['']],
+                objetoProjeto,
+                currentY,
+                [190]
+            );
+
+            // 2.2 OBJETIVO GERAL
+            const objetivoGeral = [
+                ['Promover a inclusão social e a melhoria da qualidade de vida por meio das práticas esportivas e de lazer como ferramenta de transformação social, utilizando o esporte como instrumento de formação esportiva, disciplinar e valores fundamentais, através do estímulo do bem-estar físico, psicológico dos beneficiados envolvidos.']
+            ];
+            currentY = createTable(
+                '2.2 OBJETIVO GERAL',
+                [['']],
+                objetivoGeral,
+                currentY,
+                [190]
+            );
+
+            // 2.3 OBJETIVOS ESPECÍFICOS
+            const publicoAlvoOptions = ['crianças', 'adolescentes', 'jovens', 'adultos', 'idosos'];
+            const selectedPublicoAlvo = Array.isArray(formData.dadosProjeto.publicoAlvo) && formData.dadosProjeto.publicoAlvo.length > 0
+                ? formData.dadosProjeto.publicoAlvo.map(opt => opt.charAt(0).toUpperCase() + opt.slice(1)).join(', ')
+                : 'N/A';
+            const objetivosEspecificos = [
+                [`1. Oportunizar a prática esportiva sistematizada para ${selectedPublicoAlvo} (adequar o núcleo de acordo com a dimensão do projeto).`],
+                ['2. Auxiliar na diminuição de situações de risco e vulnerabilidade, através do fomento à prática esportiva.'],
+                ['3. Oferecer um ambiente seguro e motivador, incentivando disciplina, trabalho em equipe e respeito.'],
+                ['4. Promover hábitos saudáveis e a importância da atividade física regular.'],
+                ['5. Desenvolver capacidades motoras, como força, flexibilidade, equilíbrio e coordenação, por meio das modalidades oferecidas.'],
+                ['6. Estimular a socialização e o respeito mútuo entre os participantes, promovendo valores como disciplina, cooperação e cidadania.'],
+                [`Número de núcleos ajustado com base na dimensão do projeto: ${formData.dadosProjeto.quantidadeNucleos || 'XX'} núcleos`]
+            ];
+            currentY = createTable(
+                '2.3 OBJETIVOS ESPECÍFICOS',
+                [['']],
+                objetivosEspecificos,
+                currentY,
+                [190]
+            );
+
+            // 2.4 PÚBLICO-ALVO
+            const publicoAlvoData = [
+                ['Deverá ser comprovado no acompanhamento e relatório de cumprimento do objeto.'],
+                ['Descrever quantitativamente.'],
+                [`Público direto (beneficiários): ${formData.dadosProjeto.publicoDireto || 'XX'} Beneficiários`],
+                [`Faixa etária do público direto: ${formData.dadosProjeto.faixaEtaria || 'XX'} (a partir de 06 anos, obrigatoriamente)`],
+                [`Público indireto: ${formData.dadosProjeto.publicoIndireto || 'XX'} beneficiados indiretos (Famílias das alunas e comunidade local: previsão de 3 (três) beneficiários indiretos a cada 1 (um) beneficiário direto. Exemplo: 1 (um) beneficiário + 2 (dois) membros familiares).`]
+            ];
+            currentY = createTable(
+                '2.4 PÚBLICO-ALVO',
+                [['']],
+                publicoAlvoData,
+                currentY,
+                [190]
+            );
+
+            // 2.5 VIGÊNCIA DO PROJETO
+            const vigenciaData = [
+                [`Período de Estruturação: ${formData.dadosProjeto.periodoEstruturacao || 'N/A'} (Em caso de Termo de Fomento a previsão é de até 2 (dois) meses de pagamento de RH na estruturação – Portaria MEsp nº 102/2024).`],
+                [`Período de Execução: ${formData.dadosProjeto.periodoExecucao || 'N/A'} (no mínimo 6 (seis) meses)`],
+                [`Vigência Total: ${formData.dadosProjeto.vigenciaTotal || 'N/A'}`]
+            ];
+            currentY = createTable(
+                '2.5 VIGÊNCIA DO PROJETO*',
+                [['']],
+                vigenciaData,
+                currentY,
+                [190]
+            );
+
+            // 2.6 NÚCLEOS
+            const nucleosData = [
+                [`Quantidade de núcleos: ${formData.dadosProjeto.quantidadeNucleos || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.quantidadeNucleos || 'XX') : 'N/A'})`],
+                [`Localidade: ${formData.dadosProjeto.localidadeNucleos || 'N/A'}`]
+            ];
+            currentY = createTable(
+                '2.6 NÚCLEOS (onde serão realizadas as atividades)*',
+                [['']],
+                nucleosData,
+                currentY,
+                [190]
+            );
+
+            // 2.7 MODALIDADES A SEREM DESENVOLVIDAS
+            const modalidadesList = Array.isArray(formData.dadosProjeto.modalidades) && formData.dadosProjeto.modalidades.length > 0
+                ? formData.dadosProjeto.modalidades.map((mod, index) => [`${index + 1}. ${mod.modalidade || 'N/A'}`])
+                : [['Nenhuma modalidade especificada']];
+            currentY = createTable(
+                '2.7 MODALIDADES A SEREM DESENVOLVIDAS*',
+                [['']],
+                modalidadesList,
+                currentY,
+                [190]
+            );
+
+            // 2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO-FINANCEIRA
+            const cronogramaData = [
+                [`Valor do Concedente: R$ ${formData.dadosProjeto.valorConcedente || 'N/A'}`],
+                [`Valor do Convenente – Contrapartida: R$ ${formData.dadosProjeto.valorContrapartida || 'N/A'}`],
+                [`Valor Global: R$ ${formData.dadosProjeto.valorGlobal || 'N/A'}`]
+            ];
+            currentY = createTable(
+                '2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO-FINANCEIRA*',
+                [['']],
+                cronogramaData,
+                currentY,
+                [190]
+            );
+
+            // Seção 3 - INFORMAÇÕES DO PROJETO TÉCNICO
+            // 3.1 ESTRUTURAÇÃO DO PROJETO
+            const estruturacaoProjeto = [
+                ['Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:'],
+                ['• Contratação de recursos humanos'],
+                ['• Contratação de prestação de serviços'],
+                ['• Aquisição de materiais esportivos'],
+                ['• Aquisição de uniformes e acessórios para os beneficiários'],
+                ['• Aquisição dos materiais de identificação e divulgação']
+            ];
+            currentY = createTable(
+                '3. INFORMAÇÕES DO PROJETO TÉCNICO\n3.1 ESTRUTURAÇÃO DO PROJETO',
+                [['']],
+                estruturacaoProjeto,
+                currentY,
+                [190]
+            );
+
+            // 3.2 IMPLEMENTAÇÃO E DESENVOLVIMENTO DO PROJETO
+            const modalidadesList32 = Array.isArray(formData.dadosProjeto.modalidades) && formData.dadosProjeto.modalidades.length > 0
+                ? formData.dadosProjeto.modalidades.map(mod => mod.modalidade || 'N/A').join(', ')
+                : 'Nenhuma modalidade especificada';
+            const implementacaoProjeto = [
+                ['Refere-se à execução das aulas e atividades práticas com os beneficiários, promovendo o desenvolvimento técnico, social e inclusivo através do(s) seguintes modalidades:'],
+                [`• ${modalidadesList32}`],
+                ['Quanto a metodologia, a implementação do projeto será conduzida de forma estruturada, garantindo o alcance dos objetivos e a participação efetiva dos beneficiários.'],
+                ['A metodologia adotada se baseia em atividades teóricas, práticas e dinâmicas, organizadas da seguinte forma:']
+            ];
+            currentY = createTable(
+                '3.2 IMPLEMENTAÇÃO E DESENVOLVIMENTO DO PROJETO',
+                [['']],
+                implementacaoProjeto,
+                currentY,
+                [190]
+            );
+
+            // 3.3 NÚCLEOS
+            const tipoEspaco = formData.infoProjeto.tipoNucleo === 'públicos' ? 'públicos' : formData.infoProjeto.tipoNucleo === 'privados' ? 'privados' : 'N/A';
+            const nucleosInfo = [
+                [`O(s) núcleo(s) do projeto será(ão) implementados em espaços comunitários ${tipoEspaco} adequadas às modalidades esportivas propostas, localizado próximo à comunidade beneficiada, que preferencialmente, não demandam transporte para o deslocamento dos beneficiários.`],
+                [`Esse(s) espaço(s) conta(m) com disponibilidade de área adequada para a prática esportiva, existência de infraestrutura básica, condições de acessibilidade dos espaços e segurança do local.`],
+                [`O(s) núcleo(s) do projeto serão organizados de forma a proporcionar uma experiência positiva e eficiente para os beneficiários.`],
+                [`Serão ${formData.dadosProjeto.quantidadeNucleos || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.quantidadeNucleos || 'XX') : 'N/A'}) núcleos, cada um contará com um número médio de ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários, divididos em turmas de acordo com a capacidade e modalidade oferecida.`]
+            ];
+            currentY = createTable(
+                '3.3 NÚCLEOS',
+                [['']],
+                nucleosInfo,
+                currentY,
+                [190]
+            );
+
+            // 3.4 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO
+            const metodologiaDesenvolvimento = [
+                ['Este Projeto visa combater o sedentarismo e promover um estilo de vida saudável através da prática regular de atividades físicas e fortalecimento da inclusão social. A implementação deste projeto trará benefícios significativos na qualidade de vida dos beneficiados, visando criar uma comunidade mais ativa e integrada.'],
+                [`O projeto terá duração de ${formData.dadosProjeto.vigenciaTotal || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.vigenciaTotal || 'XX') : 'N/A'}) meses, sendo ${formData.dadosProjeto.periodoEstruturacao || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.periodoEstruturacao || 'XX') : 'N/A'}) para estruturação e ${formData.dadosProjeto.periodoExecucao || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.periodoExecucao || 'XX') : 'N/A'}) para execução.`]
+            ];
+            currentY = createTable(
+                '3.4 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO',
+                [['']],
+                metodologiaDesenvolvimento,
+                currentY,
+                [190]
+            );
+
+            // 3.4.1 ESTRUTURA DAS AULAS
+            const estruturaAulas = [
+                ['Cada aula esportiva seguirá uma estrutura padronizada para garantir consistência e qualidade, independentemente da modalidade esportiva. Esta estrutura incluirá:'],
+                ['• Aquecimento: Atividades lúdicas que preparam o corpo e a mente para o exercício, promovendo a circulação sanguínea e reduzindo o risco de lesões.'],
+                ['• Instrução Técnica: Foco no desenvolvimento de habilidades técnicas específicas da modalidade, com instruções claras e demonstrações práticas.'],
+                ['• Prática Guiada: Exercícios práticos onde os participantes aplicam as habilidades aprendidas sob a supervisão ativa dos instrutores, com feedback imediato.'],
+                ['• Jogos ou Competições: Atividades que incentivam a aplicação das habilidades em um contexto de jogo ou competição, promovendo o espírito esportivo e a colaboração.'],
+                ['• Intervalo e Socialização: Momento de descanso mais prolongado, permitindo o descanso e interação. Esse intervalo contribui para a recuperação física e fortalece os laços de amizade e pertencimento entre os participantes.'],
+                ['• Alongamento e Desaceleração: Encerramento das aulas com atividades leves para baixar a intensidade física e uma sessão de reflexão sobre as lições aprendidas e a autoavaliação do desempenho.']
+            ];
+            currentY = createTable(
+                '3.4.1 ESTRUTURA DAS AULAS',
+                [['']],
+                estruturaAulas,
+                currentY,
+                [190]
+            );
+
+            // 3.4.2 METODOLOGIA DE ENSINO
+            const metodologiaEnsino = [
+                ['• Aprendizado Baseado em Competências: Focar no desenvolvimento de competências específicas de cada modalidade, garantindo que os alunos progridam em habilidades técnicas e táticas.'],
+                ['• Educação Inclusiva: Adaptação das aulas para atender a diversas necessidades, incluindo ajustes para participantes com diferentes níveis de habilidade e capacidades físicas.'],
+                ['• Ensino Integrado: Integrar lições de vida, como trabalho em equipe, liderança, resiliência e ética esportiva, nas sessões de treinamento.'],
+                ['• Feedback Construtivo: Fornecer feedback regular e construtivo para encorajar e melhorar o desempenho dos alunos, enquanto se mantém um ambiente positivo e de suporte.']
+            ];
+            currentY = createTable(
+                '3.4.2 METODOLOGIA DE ENSINO',
+                [['']],
+                metodologiaEnsino,
+                currentY,
+                [190]
+            );
+
+            // 3.4.3 DETALHAMENTO ESPECÍFICO SOBRE AS MODALIDADES
+            const detalhamentoModalidades = [
+                [formData.infoProjeto.detalhamentoModalidades || 'N/A']
+            ];
+            currentY = createTable(
+                '3.4.3 DETALHAMENTO ESPECÍFICO SOBRE AS MODALIDADES OFERECIDAS POR ESTE PROJETO',
+                [['']],
+                detalhamentoModalidades,
+                currentY,
+                [190]
+            );
+
+            // 3.4.4 FREQUÊNCIA NAS AULAS
+            const frequenciaAulas = [
+                ['Será requisito a todos os beneficiários, incluindo os menores, manter frequência mínima de 70% (setenta por cento) nas aulas. Esse critério visa assegurar o engajamento dos participantes e garantir que eles aproveitem efetivamente os benefícios oferecidos pelo projeto. A frequência será monitorada durante a execução das atividades, e os beneficiários que não atingirem o percentual mínimo de presença podem ser substituídos ou ter o benefício suspenso, conforme as regras estabelecidas. Isso visa garantir que o projeto seja realizado de maneira eficaz, com a participação ativa de todos os beneficiários. Em casos de faltas frequentes por parte dos beneficiários, a vaga será remanejada para outro participante, que poderá ser selecionado a partir de um cadastro reserva. Se não houver cadastro reserva, uma nova divulgação/chamada será feita para preencher as vagas em aberto, de modo a completar o total de participantes do projeto.']
+            ];
+            currentY = createTable(
+                '3.4.4 FREQUÊNCIA NAS AULAS',
+                [['']],
+                frequenciaAulas,
+                currentY,
+                [190]
+            );
+
+            // 3.4.5 AVALIAÇÃO E PROGRESSO
+            const avaliacaoProgresso = [
+                ['Avaliações Regulares: Realizar avaliações periódicas para monitorar o progresso, ajustar os planos de aula conforme necessário e garantir que todos os participantes estejam alcançando seu potencial máximo.'],
+                ['Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do progresso de cada participante para acompanhar as melhorias e áreas que necessitam de atenção adicional.']
+            ];
+            currentY = createTable(
+                '3.4.5 AVALIAÇÃO E PROGRESSO',
+                [['']],
+                avaliacaoProgresso,
+                currentY,
+                [190]
+            );
+
+            // 3.5 INSCRIÇÕES
+            const inscricoes = [
+                ['As inscrições deverão ser feitas antes do início do Projeto e devem alcançar o número de participantes previstos na meta do projeto. Salientamos que, caso haja um número inferior de inscritos, deverão ser realizadas ações de divulgação com intuito de preencher novas inscrições, a fim de que os recursos disponibilizados sejam bem aproveitados e a ação atenda o máximo de participantes. Poderão ser realizadas em plataformas online e por meio de fichas de inscrição, que deverão estar no local em que será realizado o Projeto ou em local pré-estabelecido durante toda a execução, de forma acessível aos colaboradores para eventuais consultas sobre os participantes. Após o encerramento do Projeto, todas as inscrições deverão ser registradas e preservadas para posterior prestação de contas. No caso de menores de idade, as inscrições para o projeto deverão ser feitas pelos responsáveis legais, que serão os responsáveis pelo preenchimento do cadastro e pela apresentação dos documentos necessários. Em alguns casos, pode ser exigido que o responsável legal assine um termo de compromisso para garantir a participação do menor no projeto, bem como o direito de imagem.']
+            ];
+            currentY = createTable(
+                '3.5 INSCRIÇÕES',
+                [['']],
+                inscricoes,
+                currentY,
+                [190]
+            );
+
+            // 3.6 GRADE HORÁRIA DAS ATIVIDADES
+            const gradeHorariaIntro = [
+                [`O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 (vinte) horas semanais de atividades, no mínimo 16 (dezesseis) horas de atendimento mais 4 (quatro) horas de planejamento, distribuídos em turmas separadas por faixa etária e perfil dos participantes, de forma a atender os ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários previstos.`]
+            ];
+            currentY = createTable(
+                '3.6 GRADE HORÁRIA DAS ATIVIDADES',
+                [['']],
+                gradeHorariaIntro,
+                currentY,
+                [190]
+            );
+            const gradeHorariaRows = Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gradeHoraria.length > 0 
+                ? formData.infoProjeto.gradeHoraria.map((row, index) => [
+                    `${index + 1}.`,
+                    row.nucleoLocalidade || 'N/A',
+                    row.modalidadesNucleo || 'N/A',
+                    row.diasSelecionados && row.horarioInicio && row.horarioFim
+                        ? `${row.diasSelecionados.join(', ')} - ${row.horarioInicio} a ${row.horarioFim}`
+                        : 'N/A'
+                    ]) 
+                : [['1.', 'N/A', 'N/A', 'N/A']];
+            currentY = createTable(
+                null, // Sem título, pois já foi adicionado acima
+                [['Nº', 'Núcleo (localidade)', 'Modalidades', 'Grade Horária']],
+                gradeHorariaRows,
+                currentY,
+                [15, 60, 60, 55],
+                { bodyStyles: { fontSize: config.fontSize.small } }
+            );
+
+            // 3.7 EVENTOS
+            const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados)
+                ? formData.infoProjeto.eventosSelecionados
+                : [];
+            const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Por Projeto';
+            const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
+            const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
+
+            let eventosContent = `Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro e acolhedor para os beneficiários e suas famílias. Essas celebrações destacam o impacto positivo do projeto, incentivando a continuidade da prática esportiva e a inclusão social. Durante cada evento, serão distribuídos kits de lanches aos beneficiados e à equipe técnica do projeto.\n`;
+
+            if (eventosSelecionados.length > 0) {
+                eventosContent += `Eventos selecionados: ${eventosSelecionados.join(' e ')}.\n`;
             } else {
-                console.warn('Municípios inválidos ou vazios:', municipios, 'UF:', uf);
+                eventosContent += `Nenhum evento selecionado.\n`;
             }
-            return uf ? `Cidade não encontrada para UF ${uf}` : 'Cidade não encontrada';
-        })();
-        const localidadeData = [
-            [`Cidade: ${selectedCity}`],
-            [`UF: ${formData?.proponente?.uf ?? 'N/A'}`],
-            [`IDH: ${formData?.proponente?.idh ?? 'N/A'}`],
-            [`Ano de Referência: ${formData?.proponente?.anoIDH ?? 'N/A'}`]
-        ];
-        currentY = createTable(
-            [['1.4 LOCALIDADE - (onde o projeto será desenvolvido) - Índice de Desenvolvimento Humano* (SITE IBGE)']],
-            localidadeData,
-            currentY,
-            [190]
-        );
 
-        // 1.5 POPULAÇÃO
-        const populacaoData = [
-            [`Nº de habitantes: ${formData.proponente.numHabitantes || 'N/A'}`],
-            [`Ano de referência: ${formData.proponente.anoHabitantes || 'N/A'}`]
-        ];
-        currentY = createTable(
-            [['1.5 POPULAÇÃO - Característica demográfica da localidade (SITE IBGE)*']],
-            populacaoData,
-            currentY,
-            [190]
-        );
-
-        // 1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE
-        const entidadeProponenteData = [
-            [`A Entidade já celebrou parcerias com o Ministério do Esporte? ${formData.proponente.temParceria === 'sim' ? '(X) Sim' : '( ) Sim'} | ${formData.proponente.temParceria === 'nao' ? '(X) Não' : '( ) Não'}${formData.proponente.temParceria === 'sim' ? ` | Nº de parcerias: ${formData.proponente.numParcerias || 'N/A'}` : ''}`],
-            [`A Entidade já deu publicidade às parcerias celebradas em seu respectivo site? ${formData.proponente.temPublicidade === 'sim' ? '(X) Sim' : '( ) Sim'} | ${formData.proponente.temPublicidade === 'nao' ? '(X) Não' : '( ) Não'}${formData.proponente.temPublicidade === 'sim' ? ` | Site: ${formData.proponente.publicidadeSite || 'N/A'}` : ''}`]
-        ];
-        currentY = createTable(
-            [['1.6 INFORMAÇÕES SOBRE A ENTIDADE PROPONENTE*']],
-            entidadeProponenteData,
-            currentY,
-            [190]
-        );
-
-        // 1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE
-        checkPageBreak(50);
-        const estatutoHead = [
-            [{ content: '1.7 INFORMAÇÕES SOBRE O ESTATUTO DA ENTIDADE*', colSpan: 2, styles: { halign: 'center', fillColor: [0, 38, 102], textColor: [255, 255, 255], fontStyle: 'bold', fontSize: 12 } }],
-            ['Descrição', 'Artigo']
-        ];
-        const estatutoData = [
-            [
-                'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014: Verificar se a Entidade NÃO distribui entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva.',
-                formData.proponente.artigo2 || 'N/A'
-            ],
-            [
-                'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014: Verificar se a Entidade POSSUI objetivos voltados à promoção de atividades e finalidades de relevância pública e social.',
-                formData.proponente.artigo33I || 'N/A'
-            ],
-            [
-                'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014: Verificar se em caso de dissolução da entidade, o respectivo patrimônio líquido seja transferido a outra pessoa jurídica de igual natureza que preencha os requisitos desta Lei e cujo objeto social seja, preferencialmente, o mesmo da entidade extinta.',
-                formData.proponente.artigo33III || 'N/A'
-            ]
-        ];
-        currentY = createTable(
-            estatutoHead,
-            estatutoData,
-            currentY,
-            [150, 40],
-            {
-                bodyStyles: { minCellHeight: 10, textColor: [0, 0, 0] },
-                headStyles: { textColor: [255, 255, 255], fillColor: [0, 38, 102] },
-                columnStyles: {
-                    0: { cellWidth: 150, halign: 'left' },
-                    1: { cellWidth: 40, halign: 'center' }
-                }
+            if (eventosSelecionados.includes('Evento de Abertura')) {
+                eventosContent += `EVENTO DE ABERTURA\n`;
+                eventosContent += `Tem como principal objetivo apresentar o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, além de promover os valores fundamentais que o esporte oferece, como inclusão social, saúde, cidadania e trabalho em equipe. O evento marcará o início do projeto, com uma saudação e explicação dos objetivos e da programação, incluindo:\n`;
+                eventosContent += `• Divulgação ampla: Informar à comunidade local sobre a existência do projeto, seus objetivos e como as pessoas podem participar ou apoiar. Esse momento é essencial para atrair beneficiados, entusiastas do esporte, famílias e potenciais parceiros.\n`;
+                eventosContent += `• Educação e conscientização: Sensibilizar a comunidade sobre temas relacionados ao esporte, como saúde, prevenção de doenças, disciplina e trabalho em equipe.\n`;
+                eventosContent += `• Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de organizar e sustentar um projeto transformador, reforçando o orgulho local.\n`;
             }
-        );
 
-        // Seção 2
-        checkPageBreak(70);
-        currentY = addText('2. DADOS GERAIS DO PROJETO TÉCNICO', config.marginLeft, currentY, 190, config.fontSize.title, true);
-        currentY += 8;
+            if (eventosSelecionados.includes('Evento de Encerramento')) {
+                eventosContent += `EVENTO DE ENCERRAMENTO\n`;
+                eventosContent += `Será organizado para comemorar o término do projeto e reconhecer os esforços e o progresso dos participantes, por meio de competições/torneios entre os beneficiados. Incluirá cerimônia de premiação, demonstrações de habilidades, apresentações, discursos de agradecimento e registros fotográficos/vídeos das atividades. Todos os participantes receberão medalhas personalizadas em reconhecimento ao seu esforço, e os três melhores colocados receberão troféus especiais.\n`;
+            }
 
-        // Validate dadosProjeto data
-        logMissingFields('dadosProjeto', [
-            'objetoProjeto', 'publicoAlvo', 'quantidadeNucleos', 'publicoDireto', 'faixaEtaria',
-            'publicoIndireto', 'periodoEstruturacao', 'periodoExecucao', 'vigenciaTotal',
-            'localidadeNucleos', 'modalidades', 'valorConcedente', 'valorContrapartida', 'valorGlobal'
-        ]);
+            eventosContent += `Abrangência: ${abrangencia}\n`;
+            eventosContent += `Total de Eventos: ${eventosSelecionados.length * multiplicador}`;
 
-        // 2.1 OBJETO
-        const objetoProjeto = [
-            ['Implementação e desenvolvimento do Projeto:'],
-            [formData.dadosProjeto.objetoProjeto || 'N/A']
-        ];
-        currentY = createTable(
-            [['2.1 OBJETO']],
-            objetoProjeto,
-            currentY,
-            [190]
-        );
+            currentY = createTable(
+                '3.7 EVENTOS',
+                [['']],
+                [[eventosContent]],
+                currentY,
+                [190]
+            );
 
-        // 2.2 OBJETIVO GERAL
-        const objetivoGeral = [
-            ['Promover a inclusão social e a melhoria da qualidade de vida por meio das práticas esportivas e de lazer como ferramenta de transformação social, utilizando o esporte como instrumento de formação esportiva, disciplinar e valores fundamentais, através do estímulo do bem-estar físico, psicológico dos beneficiados envolvidos.']
-        ];
-        currentY = createTable(
-            [['2.2 OBJETIVO GERAL']],
-            objetivoGeral,
-            currentY,
-            [190]
-        );
+            // 3.8 RECURSOS HUMANOS
+            const tipoRH = formData.infoProjeto.tipoRH?.toLowerCase() === 'cedidos' ? 'cedidos' : 'contratados';
+            const recursosHumanosIntro = [
+                [`Todos os profissionais envolvidos diretamente no projeto terão atribuições específicas necessárias à execução do projeto. Serão ${tipoRH} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, custeados com os recursos da emenda destinada a este projeto.`]
+            ];
+            currentY = createTable(
+                '3.8 RECURSOS HUMANOS',
+                [['']],
+                recursosHumanosIntro,
+                currentY,
+                [190]
+            );
+            const recursos = Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
+                ? formData.infoProjeto.recursosHumanos.map(row => [
+                    row.funcaoRH || 'N/A',
+                    row.quantidadeRH || 'N/A',
+                    row.atribuicaoRH || 'N/A',
+                    row.cargaHorariaRH || 'N/A',
+                    row.periodoRH || 'N/A',
+                ])
+                : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
+            currentY = createTable(
+                null,
+                [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias']],
+                recursos,
+                currentY,
+                [30, 15, 40, 55, 50],
+                { bodyStyles: { fontSize: config.fontSize.small } }
+            );
 
-        // 2.3 OBJETIVOS ESPECÍFICOS
-        const publicoAlvoOptions = ['crianças', 'adolescentes', 'jovens', 'adultos', 'idosos'];
-        const selectedPublicoAlvo = Array.isArray(formData.dadosProjeto.publicoAlvo) && formData.dadosProjeto.publicoAlvo.length > 0
-            ? formData.dadosProjeto.publicoAlvo.map(opt => opt.charAt(0).toUpperCase() + opt.slice(1)).join(', ')
-            : 'N/A';
-        const objetivosEspecificos = [
-            [`1. Oportunizar a prática esportiva sistematizada para ${selectedPublicoAlvo} (adequar o núcleo de acordo com a dimensão do projeto).`],
-            ['2. Auxiliar na diminuição de situações de risco e vulnerabilidade, através do fomento à prática esportiva.'],
-            ['3. Oferecer um ambiente seguro e motivador, incentivando disciplina, trabalho em equipe e respeito.'],
-            ['4. Promover hábitos saudáveis e a importância da atividade física regular.'],
-            ['5. Desenvolver capacidades motoras, como força, flexibilidade, equilíbrio e coordenação, por meio das modalidades oferecidas.'],
-            ['6. Estimular a socialização e o respeito mútuo entre os participantes, promovendo valores como disciplina, cooperação e cidadania.'],
-            [`Número de núcleos ajustado com base na dimensão do projeto: ${formData.dadosProjeto.quantidadeNucleos || 'XX'} núcleos`]
-        ];
-        currentY = createTable(
-            [['2.3 OBJETIVOS ESPECÍFICOS']],
-            objetivosEspecificos,
-            currentY,
-            [190]
-        );
+            // 3.9 MATERIAIS FORNECIDOS
+            const materiaisIntro = [
+                ['Serão adquiridos os acessórios específicos para cada modalidade a ser executada, os quais serão distribuídos para cada núcleo de acordo com a modalidade e a quantidade de beneficiados. Aqueles de uso coletivo ficarão sob guarda e responsabilidade da Entidade.']
+            ];
+            currentY = createTable(
+                '3.9 MATERIAIS FORNECIDOS',
+                [['']],
+                materiaisIntro,
+                currentY,
+                [190]
+            );
+            const materiais = Array.isArray(formData.infoProjeto.materiais) && formData.infoProjeto.materiais.length > 0 
+                ? formData.infoProjeto.materiais.map(row => [
+                    row.modalidadeMaterial || 'N/A',
+                    row.material || 'N/A',
+                    row.tipoAquisicao || 'N/A',
+                    row.especificacaoMaterial || 'N/A',
+                    row.justificativaMaterial || 'N/A'
+                ])
+                : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
+            currentY = createTable(
+                null,
+                [['Modalidade', 'Material', 'Aquisição ou Locação', 'Especificação', 'Justificativa']],
+                materiais,
+                currentY,
+                [30, 30, 30, 50, 50],
+                { bodyStyles: { fontSize: config.fontSize.small } }
+            );
 
-        // 2.4 PÚBLICO-ALVO
-        const publicoAlvoData = [
-            ['Deverá ser comprovado no acompanhamento e relatório de cumprimento do objeto.'],
-            ['Descrever quantitativamente.'],
-            [`Público direto (beneficiários): ${formData.dadosProjeto.publicoDireto || 'XX'} Beneficiários`],
-            [`Faixa etária do público direto: ${formData.dadosProjeto.faixaEtaria || 'XX'} (a partir de 06 anos, obrigatoriamente)`],
-            [`Público indireto: ${formData.dadosProjeto.publicoIndireto || 'XX'} beneficiados indiretos (Famílias das alunas e comunidade local: previsão de 3 (três) beneficiários indiretos a cada 1 (um) beneficiário direto. Exemplo: 1 (um) beneficiário + 2 (dois) membros familiares).`]
-        ];
-        currentY = createTable(
-            [['2.4 PÚBLICO-ALVO']],
-            publicoAlvoData,
-            currentY,
-            [190]
-        );
+            // 3.10 UNIFORMES
+            const uniformesIntro = [
+                [`Para garantir um atendimento adequado aos beneficiários, será realizada a aquisição de uniformes para uso individual dos participantes e da comissão técnica. Cada aluno receberá ${formData.infoProjeto.quantidadeConjuntosUniforme || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.infoProjeto.quantidadeConjuntosUniforme || 'XX') : 'N/A'}) conjuntos de uniforme, além de uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.`]
+            ];
+            currentY = createTable(
+                '3.10 UNIFORMES',
+                [['']],
+                uniformesIntro,
+                currentY,
+                [190]
+            );
+            const uniformes = Array.isArray(formData.infoProjeto.uniformes) && formData.infoProjeto.uniformes.length > 0 
+                ? formData.infoProjeto.uniformes.map(row => [
+                    row.modalidadeUniforme || 'N/A',
+                    row.itemUniforme || 'N/A',
+                    row.especificacaoUniforme || 'N/A'
+                ])
+                : [['N/A', 'N/A', 'N/A']];
+            currentY = createTable(
+                null,
+                [['Modalidade', 'Item', 'Especificação']],
+                uniformes,
+                currentY,
+                [60, 60, 70]
+            );
 
-        // 2.5 VIGÊNCIA DO PROJETO
-        const vigenciaData = [
-            [`Período de Estruturação: ${formData.dadosProjeto.periodoEstruturacao || 'N/A'} (Em caso de Termo de Fomento a previsão é de até 2 (dois) meses de pagamento de RH na estruturação – Portaria MEsp nº 102/2024).`],
-            [`Período de Execução: ${formData.dadosProjeto.periodoExecucao || 'N/A'} (no mínimo 6 (seis) meses)`],
-            [`Vigência Total: ${formData.dadosProjeto.vigenciaTotal || 'N/A'}`]
-        ];
-        currentY = createTable(
-            [['2.5 VIGÊNCIA DO PROJETO*']],
-            vigenciaData,
-            currentY,
-            [190]
-        );
+            // 3.11 IDENTIFICAÇÃO DO PROJETO
+            const identificacaoProjeto = [
+                ['Em relação à divulgação do projeto, fundamenta-se como elemento primordial, com vistas ao alcance dos beneficiados junto à comunidade regional. A identificação visual do projeto será aplicada em lugar de visibilidade, no núcleo, observando os padrões estabelecidos no Manual de Identidade Visual, disponível no site do Ministério, para o acompanhamento pela comunidade local e pelos órgãos de controle e fiscalização.'],
+                [`• Faixas: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Faixas') ? '(X)' : '( )'}`],
+                [`• Banners: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Banners') ? '(X)' : '( )'}`],
+                [`• Outros: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Outros') ? `(X) ${formData.infoProjeto.outrosIdentificacao || 'N/A'}` : '( )'}`]
+            ];
+            currentY = createTable(
+                '3.11 IDENTIFICAÇÃO DO PROJETO',
+                [['']],
+                identificacaoProjeto,
+                currentY,
+                [190]
+            );
 
-        // 2.6 NÚCLEOS
-        const nucleosData = [
-            [`Quantidade de núcleos: ${formData.dadosProjeto.quantidadeNucleos || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.quantidadeNucleos || 'XX') : 'N/A'})`],
-            [`Localidade: ${formData.dadosProjeto.localidadeNucleos || 'N/A'}`]
-        ];
-        currentY = createTable(
-            [['2.6 NÚCLEOS (onde serão realizadas as atividades)*']],
-            nucleosData,
-            currentY,
-            [190]
-        );
+            // 3.12 DIVULGAÇÃO DO PROJETO
+            const divulgacaoProjeto = [
+                ['Será realizada de forma ampla e irrestrita. O objetivo é dar publicidade aos distintos públicos sobre as ações e o retorno dos resultados das intervenções públicas junto à sociedade.'],
+                ['Além de informações de interesse do público-alvo e de ações de relevância social, a divulgação apresenta resultados que, a partir do desenvolvimento de estratégias de comunicação, são passíveis de aumentar a consciência do cidadão comum sobre o papel e a importância dos projetos sociais no seu cotidiano. Portanto, deve-se fazer uso dos diversos meios de comunicação e mídia.'],
+                ['Detalhe como ocorrerá a divulgação das ações do Projeto (pode ser assinalada mais de uma alternativa):'],
+                [`Carros ou bicicletas de som: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Carros ou bicicletas de som') ? '(X)' : '( )'}`],
+                [`Cartazes: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Cartazes') ? '(X)' : '( )'}`],
+                [`Faixas: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Faixas') ? '(X)' : '( )'}`],
+                [`Banners: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Banners') ? '(X)' : '( )'}`],
+                [`Jornais: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Jornais') ? '(X)' : '( )'}`],
+                [`Panfletos: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Panfletos') ? '(X)' : '( )'}`],
+                [`Folder: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Folder') ? '(X)' : '( )'}`],
+                [`Mídia (rádio e televisão): ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Mídia') ? '(X)' : '( )'}`],
+                [`Internet: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Internet') ? '(X)' : '( )'}`],
+                [`Outros: ${formData.infoProjeto.outrosDivulgacao ? `(X) ${formData.infoProjeto.outrosDivulgacao}` : '( )'}`],
+                ['Qual será a forma de custeio da divulgação?'],
+                [`• Recursos da Emenda Parlamentar: ${formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar' ? '(X)' : '( )'}`],
+                [`• Recursos Próprios da Entidade: ${formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade' ? '(X)' : '( )'}`]
+            ];
+            currentY = createTable(
+                '3.12 DIVULGAÇÃO DO PROJETO',
+                [['']],
+                divulgacaoProjeto,
+                currentY,
+                [190]
+            );
 
-        // 2.7 MODALIDADES A SEREM DESENVOLVIDAS
-        const modalidadesList = Array.isArray(formData.dadosProjeto.modalidades) && formData.dadosProjeto.modalidades.length > 0
-            ? formData.dadosProjeto.modalidades.map((mod, index) => [`${index + 1}. ${mod.modalidade || 'N/A'}`])
-            : [['Nenhuma modalidade especificada']];
-        currentY = createTable(
-            [['2.7 MODALIDADES A SEREM DESENVOLVIDAS*']],
-            modalidadesList,
-            currentY,
-            [190]
-        );
+            // Seção 4 - ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES
+            const desenvolvimentoAtividades = [
+                ['As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos e relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico, será emitido, trimestralmente, um parecer dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.']
+            ];
+            currentY = createTable(
+                '4. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES\n4.1 DESENVOLVIMENTO DAS ATIVIDADES',
+                [['']],
+                desenvolvimentoAtividades,
+                currentY,
+                [190]
+            );
 
-        // 2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO-FINANCEIRA
-        const cronogramaData = [
-            [`Valor do Concedente: R$ ${formData.dadosProjeto.valorConcedente || 'N/A'}`],
-            [`Valor do Convenente – Contrapartida: R$ ${formData.dadosProjeto.valorContrapartida || 'N/A'}`],
-            [`Valor Global: R$ ${formData.dadosProjeto.valorGlobal || 'N/A'}`]
-        ];
-        currentY = createTable(
-            [['2.8 CRONOGRAMA DE EXECUÇÃO FÍSICO-FINANCEIRA*']],
-            cronogramaData,
-            currentY,
-            [190]
-        );
+            // Seção 5 - CONCLUSÃO
+            const conclusao = [
+                ['O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.']
+            ];
+            currentY = createTable(
+                '5. CONCLUSÃO',
+                [['']],
+                conclusao,
+                currentY,
+                [190]
+            );
 
-        // Seção 3
-        checkPageBreak(30);
-        currentY = addText('3. INFORMAÇÕES DO PROJETO', config.marginLeft, currentY, 190, config.fontSize.title, true);
-        currentY += 10;
+            // Assinatura, Data e Local
+            checkPageBreak(50);
+            doc.setFontSize(config.fontSize.body);
+            doc.setLineWidth(0.5);
+            const signatureSpace = 11.29;
+            doc.line(60, currentY, 150, currentY);
+            currentY += signatureSpace / 2;
+            doc.text('Assinatura do Responsável', 105, currentY, { align: 'center' });
+            currentY += signatureSpace / 2;
+            const city = selectedCity.includes('Cidade não encontrada') ? 'N/A' : selectedCity;
+            const uf = formData?.proponente?.uf ?? 'N/A';
+            const localText = city === 'N/A' && uf === 'N/A' ? 'N/A' : `${city}/${uf}`;
+            doc.text(`Local: ${localText}`, 105, currentY, { align: 'center' });
+            currentY += 5;
+            doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { align: 'center' });
 
-        // Validate infoProjeto data
-        logMissingFields('infoProjeto', [
-            'tipoNucleo', 'identificacao', 'divulgacao', 'custeioDivulgacao', 'detalhamentoModalidades',
-            'gradeHoraria', 'recursosHumanos', 'materiais', 'uniformes', 'abrangenciaEventos', 'eventosSelecionados'
-        ]);
+            // Rodapé
+            const pageCount = doc.internal.getNumberOfPages();
+            for (let i = 1; i <= pageCount; i++) {
+                doc.setPage(i);
+                doc.setFontSize(config.fontSize.small);
+                doc.setTextColor(100);
+                doc.text(`Página ${i} de ${pageCount}`, 195, config.pageHeight - 10, { align: 'right' });
+                doc.text('© 2025 Ministério do Esporte', 105, config.pageHeight - 10, { align: 'center' });
+            }
 
-        // 3.1 ESTRUTURAÇÃO DO PROJETO
-        const estruturacaoProjeto = [
-            ['Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:'],
-            ['• Contratação de recursos humanos'],
-            ['• Contratação de prestação de serviços'],
-            ['• Aquisição de materiais esportivos'],
-            ['• Aquisição de uniformes e acessórios para os beneficiários'],
-            ['• Aquisição dos materiais de identificação e divulgação']
-        ];
-        currentY = createTable(
-            [['3.1 ESTRUTURAÇÃO DO PROJETO']],
-            estruturacaoProjeto,
-            currentY,
-            [190]
-        );
-
-        // 3.2 IMPLEMENTAÇÃO E DESENVOLVIMENTO DO PROJETO
-        const modalidadesList32 = Array.isArray(formData.dadosProjeto.modalidades) && formData.dadosProjeto.modalidades.length > 0
-            ? formData.dadosProjeto.modalidades.map(mod => mod.modalidade || 'N/A').join(', ')
-            : 'Nenhuma modalidade especificada';
-        const implementacaoProjeto = [
-            ['Refere-se à execução das aulas e atividades práticas com os beneficiários, promovendo o desenvolvimento técnico, social e inclusivo através do(s) seguintes modalidades:'],
-            [`• ${modalidadesList32}`],
-            ['Quanto a metodologia, a implementação do projeto será conduzida de forma estruturada, garantindo o alcance dos objetivos e a participação efetiva dos beneficiários.'],
-            ['A metodologia adotada se baseia em atividades teóricas, práticas e dinâmicas, organizadas da seguinte forma:']
-        ];
-        currentY = createTable(
-            [['3.2 IMPLEMENTAÇÃO E DESENVOLVIMENTO DO PROJETO']],
-            implementacaoProjeto,
-            currentY,
-            [190]
-        );
-
-        // 3.3 NÚCLEOS
-        const tipoEspaco = formData.infoProjeto.tipoNucleo === 'públicos' ? 'públicos' : formData.infoProjeto.tipoNucleo === 'privados' ? 'privados' : 'N/A';
-        const nucleosInfo = [
-            [`O(s) núcleo(s) do projeto será(ão) implementados em espaços comunitários ${tipoEspaco} adequadas às modalidades esportivas propostas, localizado próximo à comunidade beneficiada, que preferencialmente, não demandam transporte para o deslocamento dos beneficiários.`],
-            [`Esse(s) espaço(s) conta(m) com disponibilidade de área adequada para a prática esportiva, existência de infraestrutura básica, condições de acessibilidade dos espaços e segurança do local.`],
-            [`O(s) núcleo(s) do projeto serão organizados de forma a proporcionar uma experiência positiva e eficiente para os beneficiários.`],
-            [`Serão ${formData.dadosProjeto.quantidadeNucleos || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.quantidadeNucleos || 'XX') : 'N/A'}) núcleos, cada um contará com um número médio de ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários, divididos em turmas de acordo com a capacidade e modalidade oferecida.`]
-        ];
-        currentY = createTable(
-            [['3.3 NÚCLEOS']],
-            nucleosInfo,
-            currentY,
-            [190]
-        );
-
-        // 3.4 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO
-        const metodologiaDesenvolvimento = [
-            ['Este Projeto visa combater o sedentarismo e promover um estilo de vida saudável através da prática regular de atividades físicas e fortalecimento da inclusão social. A implementação deste projeto trará benefícios significativos na qualidade de vida dos beneficiados, visando criar uma comunidade mais ativa e integrada.'],
-            [`O projeto terá duração de ${formData.dadosProjeto.vigenciaTotal || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.vigenciaTotal || 'XX') : 'N/A'}) meses, sendo ${formData.dadosProjeto.periodoEstruturacao || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.periodoEstruturacao || 'XX') : 'N/A'}) para estruturação e ${formData.dadosProjeto.periodoExecucao || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.periodoExecucao || 'XX') : 'N/A'}) para execução.`]
-        ];
-        currentY = createTable(
-            [['3.4 METODOLOGIA DE DESENVOLVIMENTO DO PROJETO']],
-            metodologiaDesenvolvimento,
-            currentY,
-            [190]
-        );
-
-        // 3.4.1 ESTRUTURA DAS AULAS
-        const estruturaAulas = [
-            ['Cada aula esportiva seguirá uma estrutura padronizada para garantir consistência e qualidade, independentemente da modalidade esportiva. Esta estrutura incluirá:'],
-            ['• Aquecimento: Atividades lúdicas que preparam o corpo e a mente para o exercício, promovendo a circulação sanguínea e reduzindo o risco de lesões.'],
-            ['• Instrução Técnica: Foco no desenvolvimento de habilidades técnicas específicas da modalidade, com instruções claras e demonstrações práticas.'],
-            ['• Prática Guiada: Exercícios práticos onde os participantes aplicam as habilidades aprendidas sob a supervisão ativa dos instrutores, com feedback imediato.'],
-            ['• Jogos ou Competições: Atividades que incentivam a aplicação das habilidades em um contexto de jogo ou competição, promovendo o espírito esportivo e a colaboração.'],
-            ['• Intervalo e Socialização: Momento de descanso mais prolongado, permitindo o descanso e interação. Esse intervalo contribui para a recuperação física e fortalece os laços de amizade e pertencimento entre os participantes.'],
-            ['• Alongamento e Desaceleração: Encerramento das aulas com atividades leves para baixar a intensidade física e uma sessão de reflexão sobre as lições aprendidas e a autoavaliação do desempenho.']
-        ];
-        currentY = createTable(
-            [['3.4.1 ESTRUTURA DAS AULAS']],
-            estruturaAulas,
-            currentY,
-            [190]
-        );
-
-        // 3.4.2 METODOLOGIA DE ENSINO
-        const metodologiaEnsino = [
-            ['• Aprendizado Baseado em Competências: Focar no desenvolvimento de competências específicas de cada modalidade, garantindo que os alunos progridam em habilidades técnicas e táticas.'],
-            ['• Educação Inclusiva: Adaptação das aulas para atender a diversas necessidades, incluindo ajustes para participantes com diferentes níveis de habilidade e capacidades físicas.'],
-            ['• Ensino Integrado: Integrar lições de vida, como trabalho em equipe, liderança, resiliência e ética esportiva, nas sessões de treinamento.'],
-            ['• Feedback Construtivo: Fornecer feedback regular e construtivo para encorajar e melhorar o desempenho dos alunos, enquanto se mantém um ambiente positivo e de suporte.']
-        ];
-        currentY = createTable(
-            [['3.4.2 METODOLOGIA DE ENSINO']],
-            metodologiaEnsino,
-            currentY,
-            [190]
-        );
-
-        // 3.4.3 DETALHAMENTO ESPECÍFICO SOBRE AS MODALIDADES
-        const detalhamentoModalidades = [
-            [formData.infoProjeto.detalhamentoModalidades || 'N/A']
-        ];
-        currentY = createTable(
-            [['3.4.3 DETALHAMENTO ESPECÍFICO SOBRE AS MODALIDADES OFERECIDAS POR ESTE PROJETO']],
-            detalhamentoModalidades,
-            currentY,
-            [190]
-        );
-
-        // 3.4.4 FREQUÊNCIA NAS AULAS
-        const frequenciaAulas = [
-            ['Será requisito a todos os beneficiários, incluindo os menores, manter frequência mínima de 70% (setenta por cento) nas aulas. Esse critério visa assegurar o engajamento dos participantes e garantir que eles aproveitem efetivamente os benefícios oferecidos pelo projeto. A frequência será monitorada durante a execução das atividades, e os beneficiários que não atingirem o percentual mínimo de presença podem ser substituídos ou ter o benefício suspenso, conforme as regras estabelecidas. Isso visa garantir que o projeto seja realizado de maneira eficaz, com a participação ativa de todos os beneficiários. Em casos de faltas frequentes por parte dos beneficiários, a vaga será remanejada para outro participante, que poderá ser selecionado a partir de um cadastro reserva. Se não houver cadastro reserva, uma nova divulgação/chamada será feita para preencher as vagas em aberto, de modo a completar o total de participantes do projeto.']
-        ];
-        currentY = createTable(
-            [['3.4.4 FREQUÊNCIA NAS AULAS']],
-            frequenciaAulas,
-            currentY,
-            [190]
-        );
-
-        // 3.4.5 AVALIAÇÃO E PROGRESSO
-        const avaliacaoProgresso = [
-            ['Avaliações Regulares: Realizar avaliações periódicas para monitorar o progresso, ajustar os planos de aula conforme necessário e garantir que todos os participantes estejam alcançando seu potencial máximo.'],
-            ['Portfólios de Desenvolvimento do Estudante: Manter registros detalhados do progresso de cada participante para acompanhar as melhorias e áreas que necessitam de atenção adicional.']
-        ];
-        currentY = createTable(
-            [['3.4.5 AVALIAÇÃO E PROGRESSO']],
-            avaliacaoProgresso,
-            currentY,
-            [190]
-        );
-
-        // 3.5 INSCRIÇÕES
-        const inscricoes = [
-            ['As inscrições deverão ser feitas antes do início do Projeto e devem alcançar o número de participantes previstos na meta do projeto. Salientamos que, caso haja um número inferior de inscritos, deverão ser realizadas ações de divulgação com intuito de preencher novas inscrições, a fim de que os recursos disponibilizados sejam bem aproveitados e a ação atenda o máximo de participantes. Poderão ser realizadas em plataformas online e por meio de fichas de inscrição, que deverão estar no local em que será realizado o Projeto ou em local pré-estabelecido durante toda a execução, de forma acessível aos colaboradores para eventuais consultas sobre os participantes. Após o encerramento do Projeto, todas as inscrições deverão ser registradas e preservadas para posterior prestação de contas. No caso de menores de idade, as inscrições para o projeto deverão ser feitas pelos responsáveis legais, que serão os responsáveis pelo preenchimento do cadastro e pela apresentação dos documentos necessários. Em alguns casos, pode ser exigido que o responsável legal assine um termo de compromisso para garantir a participação do menor no projeto, bem como o direito de imagem.']
-        ];
-        currentY = createTable(
-            [['3.5 INSCRIÇÕES']],
-            inscricoes,
-            currentY,
-            [190]
-        );
-
-        // 3.6 GRADE HORÁRIA DAS ATIVIDADES
-        const gradeHorariaIntro = [
-            [`O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 (vinte) horas semanais de atividades, no mínimo 16 (dezesseis) horas de atendimento mais 4 (quatro) horas de planejamento, distribuídos em turmas separadas por faixa etária e perfil dos participantes, de forma a atender os ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários previstos.`]
-        ];
-        const gradeHorariaRows = Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gradeHoraria.length > 0 
-            ? formData.infoProjeto.gradeHoraria.map((row, index) => [
-                `${index + 1}.`,
-                row.nucleoLocalidade || 'N/A',
-                row.modalidadesNucleo || 'N/A',
-                row.gradeHoraria || 'N/A'
-            ]) 
-            : [['1.', 'N/A', 'N/A', 'N/A']];
-        currentY = createTable(
-            [['3.6 GRADE HORÁRIA DAS ATIVIDADES']],
-            gradeHorariaIntro,
-            currentY,
-            [190]
-        );
-        currentY = createTable(
-            [['Nº', 'Núcleo (localidade)', 'Modalidades', 'Grade Horária']],
-            gradeHorariaRows,
-            currentY,
-            [15, 60, 60, 55],
-            { bodyStyles: { fontSize: config.fontSize.small } }
-        );
-
-        // 3.7 EVENTOS
-        const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados)
-            ? formData.infoProjeto.eventosSelecionados
-            : [];
-        const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Por Projeto';
-        const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
-        const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
-
-        let eventosContent = `Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro e acolhedor para os beneficiários e suas famílias. Essas celebrações destacam o impacto positivo do projeto, incentivando a continuidade da prática esportiva e a inclusão social. Durante cada evento, serão distribuídos kits de lanches aos beneficiados e à equipe técnica do projeto.\n`;
-
-        if (eventosSelecionados.length > 0) {
-            eventosContent += `Eventos selecionados: ${eventosSelecionados.join(' e ')}.\n`;
-        } else {
-            eventosContent += `Nenhum evento selecionado.\n`;
+            doc.save(`Projeto_Esportivo_${formData.proponente.numeroProposta}.pdf`);
+        } catch (error) {
+            console.error('Erro ao gerar o PDF:', error);
+            alert(`Ocorreu um erro ao gerar o PDF: ${error.message}`);
         }
-
-        if (eventosSelecionados.includes('Evento de Abertura')) {
-            eventosContent += `EVENTO DE ABERTURA\n`;
-            eventosContent += `Tem como principal objetivo apresentar o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, além de promover os valores fundamentais que o esporte oferece, como inclusão social, saúde, cidadania e trabalho em equipe. O evento marcará o início do projeto, com uma saudação e explicação dos objetivos e da programação, incluindo:\n`;
-            eventosContent += `• Divulgação ampla: Informar à comunidade local sobre a existência do projeto, seus objetivos e como as pessoas podem participar ou apoiar. Esse momento é essencial para atrair beneficiados, entusiastas do esporte, famílias e potenciais parceiros.\n`;
-            eventosContent += `• Educação e conscientização: Sensibilizar a comunidade sobre temas relacionados ao esporte, como saúde, prevenção de doenças, disciplina e trabalho em equipe.\n`;
-            eventosContent += `• Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de organizar e sustentar um projeto transformador, reforçando o orgulho local.\n`;
-        }
-
-        if (eventosSelecionados.includes('Evento de Encerramento')) {
-            eventosContent += `EVENTO DE ENCERRAMENTO\n`;
-            eventosContent += `Será organizado para comemorar o término do projeto e reconhecer os esforços e o progresso dos participantes, por meio de competições/torneios entre os beneficiados. Incluirá cerimônia de premiação, demonstrações de habilidades, apresentações, discursos de agradecimento e registros fotográficos/vídeos das atividades. Todos os participantes receberão medalhas personalizadas em reconhecimento ao seu esforço, e os três melhores colocados receberão troféus especiais.\n`;
-        }
-
-        eventosContent += `Abrangência: ${abrangencia}\n`;
-        eventosContent += `Total de Eventos: ${eventosSelecionados.length * multiplicador}`;
-
-        currentY = createTable(
-            [['3.7 EVENTOS']],
-            [[eventosContent]],
-            currentY,
-            [190]
-        );
-
-        // 3.8 RECURSOS HUMANOS
-        checkPageBreak(50);
-        const tipoRH = formData.infoProjeto.tipoRH?.toLowerCase() === 'cedidos' ? 'cedidos' : 'contratados';
-        const recursosHumanosIntro = [
-            [`Todos os profissionais envolvidos diretamente no projeto terão atribuições específicas necessárias à execução do projeto. Serão ${tipoRH} professores de educação física devidamente qualificados para as modalidades que assim exigem, bem como profissionais específicos de cada modalidade, custeados com os recursos da emenda destinada a este projeto.`]
-        ];
-        currentY = createTable(
-            [['3.8 RECURSOS HUMANOS']],
-            recursosHumanosIntro,
-            currentY,
-            [190]
-        );
-        const recursos = Array.isArray(formData.infoProjeto.recursosHumanos) && formData.infoProjeto.recursosHumanos.length > 0 
-            ? formData.infoProjeto.recursosHumanos.map(row => [
-                row.funcaoRH || 'N/A',
-                row.quantidadeRH || 'N/A',
-                row.atribuicaoRH || 'N/A',
-                row.cargaHorariaRH || 'N/A',
-                row.periodoRH || 'N/A',
-            ])
-            : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
-        currentY = createTable(
-            [['Função', 'Qtd.', 'Atribuição', 'Carga Horária Semanal / Diária', 'Qtd Meses/Diárias']],
-            recursos,
-            currentY,
-            [30, 15, 40, 55, 50],
-            { bodyStyles: { fontSize: config.fontSize.small } }
-        );
-
-        // 3.9 MATERIAIS FORNECIDOS
-        const materiaisIntro = [
-            ['Serão adquiridos os acessórios específicos para cada modalidade a ser executada, os quais serão distribuídos para cada núcleo de acordo com a modalidade e a quantidade de beneficiados. Aqueles de uso coletivo ficarão sob guarda e responsabilidade da Entidade.']
-        ];
-        currentY = createTable(
-            [['3.9 MATERIAIS FORNECIDOS']],
-            materiaisIntro,
-            currentY,
-            [190]
-        );
-        const materiais = Array.isArray(formData.infoProjeto.materiais) && formData.infoProjeto.materiais.length > 0 
-            ? formData.infoProjeto.materiais.map(row => [
-                row.modalidadeMaterial || 'N/A',
-                row.material || 'N/A',
-                row.tipoAquisicao || 'N/A',
-                row.especificacaoMaterial || 'N/A',
-                row.justificativaMaterial || 'N/A'
-            ])
-            : [['N/A', 'N/A', 'N/A', 'N/A', 'N/A']];
-        currentY = createTable(
-            [['Modalidade', 'Material', 'Aquisição ou Locação', 'Especificação', 'Justificativa']],
-            materiais,
-            currentY,
-            [30, 30, 30, 50, 50],
-            { bodyStyles: { fontSize: config.fontSize.small } }
-        );
-
-        // 3.10 UNIFORMES
-        const uniformesIntro = [
-            [`Para garantir um atendimento adequado aos beneficiários, será realizada a aquisição de uniformes para uso individual dos participantes e da comissão técnica. Cada aluno receberá ${formData.infoProjeto.quantidadeConjuntosUniforme || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.infoProjeto.quantidadeConjuntosUniforme || 'XX') : 'N/A'}) conjuntos de uniforme, além de uma reserva técnica para reposição em casos de desgaste, perda ou substituição de alunos ao longo do projeto.`]
-        ];
-        currentY = createTable(
-            [['3.10 UNIFORMES']],
-            uniformesIntro,
-            currentY,
-            [190]
-        );
-        const uniformes = Array.isArray(formData.infoProjeto.uniformes) && formData.infoProjeto.uniformes.length > 0 
-            ? formData.infoProjeto.uniformes.map(row => [
-                row.modalidadeUniforme || 'N/A',
-                row.itemUniforme || 'N/A',
-                row.especificacaoUniforme || 'N/A'
-            ])
-            : [['N/A', 'N/A', 'N/A']];
-        currentY = createTable(
-            [['Modalidade', 'Item', 'Especificação']],
-            uniformes,
-            currentY,
-            [60, 60, 70]
-        );
-
-        // 3.11 IDENTIFICAÇÃO DO PROJETO
-        const identificacaoProjeto = [
-            ['Em relação à divulgação do projeto, fundamenta-se como elemento primordial, com vistas ao alcance dos beneficiados junto à comunidade regional. A identificação visual do projeto será aplicada em lugar de visibilidade, no núcleo, observando os padrões estabelecidos no Manual de Identidade Visual, disponível no site do Ministério, para o acompanhamento pela comunidade local e pelos órgãos de controle e fiscalização.'],
-            [`• Faixas: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Faixas') ? '(X)' : '( )'}`],
-            [`• Banners: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Banners') ? '(X)' : '( )'}`],
-            [`• Outros: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Outros') ? `(X) ${formData.infoProjeto.outrosIdentificacao || 'N/A'}` : '( )'}`]
-        ];
-        currentY = createTable(
-            [['3.11 IDENTIFICAÇÃO DO PROJETO']],
-            identificacaoProjeto,
-            currentY,
-            [190]
-        );
-
-        // 3.12 DIVULGAÇÃO DO PROJETO
-        const divulgacaoProjeto = [
-            ['Será realizada de forma ampla e irrestrita. O objetivo é dar publicidade aos distintos públicos sobre as ações e o retorno dos resultados das intervenções públicas junto à sociedade.'],
-            ['Além de informações de interesse do público-alvo e de ações de relevância social, a divulgação apresenta resultados que, a partir do desenvolvimento de estratégias de comunicação, são passíveis de aumentar a consciência do cidadão comum sobre o papel e a importância dos projetos sociais no seu cotidiano. Portanto, deve-se fazer uso dos diversos meios de comunicação e mídia.'],
-            ['Detalhe como ocorrerá a divulgação das ações do Projeto (pode ser assinalada mais de uma alternativa):'],
-            [`Carros ou bicicletas de som: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Carros ou bicicletas de som') ? '(X)' : '( )'}`],
-            [`Cartazes: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Cartazes') ? '(X)' : '( )'}`],
-            [`Faixas: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Faixas') ? '(X)' : '( )'}`],
-            [`Banners: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Banners') ? '(X)' : '( )'}`],
-            [`Jornais: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Jornais') ? '(X)' : '( )'}`],
-            [`Panfletos: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Panfletos') ? '(X)' : '( )'}`],
-            [`Folder: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Folder') ? '(X)' : '( )'}`],
-            [`Mídia (rádio e televisão): ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Mídia') ? '(X)' : '( )'}`],
-            [`Internet: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Internet') ? '(X)' : '( )'}`],
-            [`Outros: ${formData.infoProjeto.outrosDivulgacao ? `(X) ${formData.infoProjeto.outrosDivulgacao}` : '( )'}`],
-            ['Qual será a forma de custeio da divulgação?'],
-            [`• Recursos da Emenda Parlamentar: ${formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar' ? '(X)' : '( )'}`],
-            [`• Recursos Próprios da Entidade: ${formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade' ? '(X)' : '( )'}`]
-        ];
-        currentY = createTable(
-            [['3.12 DIVULGAÇÃO DO PROJETO']],
-            divulgacaoProjeto,
-            currentY,
-            [190]
-        );
-
-        // Seção 4
-        checkPageBreak(70);
-        currentY = addText('4. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES', config.marginLeft, currentY, 190, config.fontSize.title, true);
-        currentY += 8;
-        const desenvolvimentoAtividades = [
-            ['As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos e relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico, será emitido, trimestralmente, um parecer dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.']
-        ];
-        currentY = createTable(
-            [['4.1 DESENVOLVIMENTO DAS ATIVIDADES']],
-            desenvolvimentoAtividades,
-            currentY,
-            [190]
-        );
-
-        // Seção 5
-        checkPageBreak(70);
-        currentY = addText('5. CONCLUSÃO', config.marginLeft, currentY, 190, config.fontSize.title, true);
-        currentY += 8;
-        const conclusao = [
-            ['O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.']
-        ];
-        currentY = createTable(
-            [['5. CONCLUSÃO']],
-            conclusao,
-            currentY,
-            [190]
-        );
-
-        // Assinatura, Data e Local
-        checkPageBreak(50);
-        doc.setFontSize(config.fontSize.body);
-        doc.setLineWidth(0.5);
-        const signatureSpace = 11.29; // 40px converted to mm (1px ≈ 0.282mm)
-        doc.line(60, currentY, 150, currentY); // Signature line
-        currentY += signatureSpace / 2; // Half of 40px for centering
-        doc.text('Assinatura do Responsável', 105, currentY, { align: 'center' });
-        currentY += signatureSpace / 2; // Remaining half of 40px
-        const city = selectedCity.includes('Cidade não encontrada') ? 'N/A' : selectedCity;
-        const uf = formData?.proponente?.uf ?? 'N/A';
-        const localText = city === 'N/A' && uf === 'N/A' ? 'N/A' : `${city}/${uf}`;
-        doc.text(`Local: ${localText}`, 105, currentY, { align: 'center' });
-        currentY += 5;
-        doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { align: 'center' });
-
-        // Rodapé
-        const pageCount = doc.internal.getNumberOfPages();
-        for (let i = 1; i <= pageCount; i++) {
-            doc.setPage(i);
-            doc.setFontSize(config.fontSize.small);
-            doc.setTextColor(100);
-            doc.text(`Página ${i} de ${pageCount}`, 195, config.pageHeight - 15, { align: 'right' });
-            doc.text('© 2025 Ministério do Esporte', 105, config.pageHeight - 15, { align: 'center' });
-        }
-
-        doc.save(`Projeto_Esportivo_${formData.proponente.numeroProposta}.pdf`);
-    } catch (error) {
-        console.error('Erro ao gerar o PDF:', error);
-        alert(`Ocorreu um erro ao gerar o PDF: ${error.message}`);
-    }
-};
-            return (
+    };
+    return (
                 <div className="min-h-screen flex flex-col">
                     <header className="bg-blue-900 text-white p-4 flex justify-between items-center fixed w-full top-0 z-10 shadow-md">
                         <h1 className="text-lg font-bold">Formulário Técnico - Projeto Esportivo</h1>
@@ -1307,482 +1276,524 @@
                         </div>
 
                         {activeTab === 'info-proponente' && (
-                            <div className="space-y-6">
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">1.1 Identificação do Proponente</legend>
-                                    <div className="space-y-4">
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> CNPJ Proponente:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.cnpj}
-                                                onChange={(e) => handleInputChange('proponente', 'cnpj', formatarCNPJ(e.target.value))}
-                                                placeholder="00.000.000/0000-00"
-                                                maxLength="18"
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Nome Proponente:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.nomeProponente}
-                                                onChange={(e) => handleInputChange('proponente', 'nomeProponente', e.target.value)}
-                                                readOnly={!isCNPJEditable}
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Nome do Dirigente (Presidente):
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.nomeDirigente}
-                                                onChange={(e) => handleInputChange('proponente', 'nomeDirigente', e.target.value)}
-                                                readOnly={!isCNPJEditable}
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Telefone(s) de contato com DDD:
-                                            <div className="flex flex-wrap gap-2">
-                                                {formData.proponente.telefones.map((tel, index) => (
-                                                    <div key={index} className="flex items-center gap-2">
-                                                        <input
-                                                            type="text"
-                                                            className="p-2 border rounded flex-1 min-w-[200px]"
-                                                            value={tel}
-                                                            onChange={(e) => {
-                                                                const newTelefones = [...formData.proponente.telefones];
-                                                                newTelefones[index] = formatarTelefone(e.target.value);
-                                                                handleInputChange('proponente', 'telefones', newTelefones);
-                                                            }}
-                                                            placeholder="(00) 00000-0000"
-                                                            maxLength="15"
-                                                            required
-                                                        />
-                                                        {index > 0 && (
-                                                            <button
-                                                                type="button"
-                                                                className="bg-red-500 text-white px-2 py-1 rounded"
-                                                                onClick={() => {
-                                                                    const newTelefones = formData.proponente.telefones.filter((_, i) => i !== index);
-                                                                    handleInputChange('proponente', 'telefones', newTelefones);
-                                                                }}
-                                                            >
-                                                                <i className="fas fa-trash"></i>
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                <button
-                                                    type="button"
-                                                    className="bg-green-500 text-white px-4 py-2 rounded"
-                                                    onClick={() => handleInputChange('proponente', 'telefones', [...formData.proponente.telefones, ''])}
-                                                >
-                                                    Adicionar Telefone
-                                                </button>
-                                            </div>
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> E-mail:
-                                            <input
-                                                type="email"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.email}
-                                                onChange={(e) => handleInputChange('proponente', 'email', e.target.value)}
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Número da Proposta (Plataforma Transferegov):
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.numeroProposta}
-                                                onChange={(e) => handleInputChange('proponente', 'numeroProposta', e.target.value)}
-                                                required
-                                            />
-                                        </label>
-                                    </div>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">1.2 Responsável pela Elaboração do Projeto Técnico</legend>
-                                    <div className="space-y-4">
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Nome:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.responsavelNome}
-                                                onChange={(e) => handleInputChange('proponente', 'responsavelNome', e.target.value)}
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> E-mail:
-                                            <input
-                                                type="email"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.responsavelEmail}
-                                                onChange={(e) => handleInputChange('proponente', 'responsavelEmail', e.target.value)}
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Vínculo com a Entidade (Cargo/Função):
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.responsavelVinculo}
-                                                onChange={(e) => handleInputChange('proponente', 'responsavelVinculo', e.target.value)}
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Telefone(s) de contato com DDD:
-                                            <div className="flex flex-wrap gap-2">
-                                                {formData.proponente.responsavelTelefones.map((tel, index) => (
-                                                    <div key={index} className="flex items-center gap-2">
-                                                        <input
-                                                            type="text"
-                                                            className="p-2 border rounded flex-1 min-w-[200px]"
-                                                            value={tel}
-                                                            onChange={(e) => {
-                                                                const newTelefones = [...formData.proponente.responsavelTelefones];
-                                                                newTelefones[index] = formatarTelefone(e.target.value);
-                                                                handleInputChange('proponente', 'responsavelTelefones', newTelefones);
-                                                            }}
-                                                            placeholder="(00) 00000-0000"
-                                                            maxLength="15"
-                                                            required
-                                                        />
-                                                        {index > 0 && (
-                                                            <button
-                                                                type="button"
-                                                                className="bg-red-500 text-white px-2 py-1 rounded"
-                                                                onClick={() => {
-                                                                    const newTelefones = formData.proponente.responsavelTelefones.filter((_, i) => i !== index);
-                                                                    handleInputChange('proponente', 'responsavelTelefones', newTelefones);
-                                                                }}
-                                                            >
-                                                                <i className="fas fa-trash"></i>
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                ))}
-                                                <button
-                                                    type="button"
-                                                    className="bg-green-500 text-white px-4 py-2 rounded"
-                                                    onClick={() => handleInputChange('proponente', 'responsavelTelefones', [...formData.proponente.responsavelTelefones, ''])}
-                                                >
-                                                    Adicionar Telefone
-                                                </button>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">1.3 Dimensão do Projeto</legend>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                name="dimensaoProjeto"
-                                                value="Projeto Educacional"
-                                                checked={formData.proponente.dimensaoProjeto === 'Projeto Educacional'}
-                                                onChange={(e) => handleInputChange('proponente', 'dimensaoProjeto', e.target.value)}
-                                                required
-                                            />
-                                            <span className="ml-2">Projeto Educacional</span>
-                                        </label>
-                                        <label className="flex items-center">
-                                            <input
-                                                type="radio"
-                                                name="dimensaoProjeto"
-                                                value="Projeto de Participação"
-                                                checked={formData.proponente.dimensaoProjeto === 'Projeto de Participação'}
-                                                onChange={(e) => handleInputChange('proponente', 'dimensaoProjeto', e.target.value)}
-                                            />
-                                            <span className="ml-2">Projeto de Participação</span>
-                                        </label>
-                                    </div>
-                                    <p className="italic text-gray-600 mt-2">
-                                        {formData.proponente.dimensaoProjeto === 'Projeto Educacional'
-                                            ? 'Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes.'
-                                            : formData.proponente.dimensaoProjeto === 'Projeto de Participação'
-                                            ? 'Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido.'
-                                            : 'Selecione uma opção para ver a descrição.'}
-                                    </p>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">1.4 Localidade – Índice de Desenvolvimento Humano</legend>
-                                    <div className="space-y-4">
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> UF:
-                                            <select
-                                                className="w-32 p-2 border rounded"
-                                                value={formData.proponente.uf}
-                                                onChange={(e) => handleInputChange('proponente', 'uf', e.target.value)}
-                                                required
-                                            >
-                                                <option value="">Selecione</option>
-                                                {['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'].map(uf => (
-                                                    <option key={uf} value={uf}>{uf}</option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Cidade:
-                                            <select
-                                                value={formData.proponente.cidade}
-                                                onChange={(e) => handleInputChange('proponente', 'cidade', e.target.value)}
-                                                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-900 focus:border-blue-900"
-                                                disabled={!formData.proponente.uf}
-                                            >
-                                                <option value="">Selecione</option>
-                                                {municipios.map(mun => (
-                                                    <option key={mun.id} value={mun.id}>{mun.nome}</option>
-                                                ))}
-                                            </select>
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> IDH:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded bg-gray-100"
-                                                value={formData.proponente.idh}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        proponente: {
-                                                            ...formData.proponente,
-                                                            idh: e.target.value
-                                                        }
-                                                    })
-                                                }
-                                            />
-                                        </label>
-
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Ano de Referência:
-                                            <input
-                                                type="number"
-                                                className="w-full p-2 border rounded bg-gray-100"
-                                                value={formData.proponente.anoIDH}
-                                                onChange={(e) =>
-                                                    setFormData({
-                                                        ...formData,
-                                                        proponente: {
-                                                            ...formData.proponente,
-                                                            anoIDH: e.target.value
-                                                        }
-                                                    })
-                                                }
-                                            />
-                                        </label>
-                                    </div>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">1.5 População - Característica Demográfica</legend>
-                                    <div className="space-y-4">
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Nº de habitantes:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded bg-gray-100"
-                                                value={formData.proponente.numHabitantes}
-                                                
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Ano de referência:
-                                            <input
-                                                type="number"
-                                                className="w-full p-2 border rounded bg-gray-100"
-                                                value={formData.proponente.anoHabitantes}
-                                                
-                                            />
-                                        </label>
-                                    </div>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">1.6 Informações sobre a Entidade Proponente</legend>
-                                    <div className="space-y-4">
-                                        <div>
-                                            <label>A Entidade já celebrou parcerias com o Ministério do Esporte?</label>
-                                            <div className="flex gap-4">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="temParceria"
-                                                        value="sim"
-                                                        checked={formData.proponente.temParceria === 'sim'}
-                                                        onChange={(e) => handleInputChange('proponente', 'temParceria', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Sim</span>
-                                                </label>
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="temParceria"
-                                                        value="nao"
-                                                        checked={formData.proponente.temParceria === 'nao'}
-                                                        onChange={(e) => handleInputChange('proponente', 'temParceria', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Não</span>
-                                                </label>
-                                            </div>
-                                            {formData.proponente.temParceria === 'sim' && (
-                                                <label className="block mt-2">
-                                                    Nº de parcerias:
-                                                    <input
-                                                        type="number"
-                                                        className="w-full p-2 border rounded"
-                                                        value={formData.proponente.numParcerias}
-                                                        onChange={(e) => handleInputChange('proponente', 'numParcerias', e.target.value)}
-                                                        min="0"
-                                                    />
-                                                </label>
-                                            )}
-                                        </div>
-                                        <div>
-                                            <label>A Entidade já deu publicidade às parcerias celebradas em seu respectivo site?</label>
-                                            <div className="flex gap-4">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="temPublicidade"
-                                                        value="sim"
-                                                        checked={formData.proponente.temPublicidade === 'sim'}
-                                                        onChange={(e) => handleInputChange('proponente', 'temPublicidade', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Sim</span>
-                                                </label>
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="temPublicidade"
-                                                        value="nao"
-                                                        checked={formData.proponente.temPublicidade === 'nao'}
-                                                        onChange={(e) => handleInputChange('proponente', 'temPublicidade', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Não</span>
-                                                </label>
-                                            </div>
-                                            {formData.proponente.temPublicidade === 'sim' && (
-                                                <label className="block mt-2">
-                                                    Site onde foi publicada a publicidade:
-                                                    <input
-                                                        type="url"
-                                                        className="w-full p-2 border rounded"
-                                                        value={formData.proponente.publicidadeSite}
-                                                        onChange={(e) => handleInputChange('proponente', 'publicidadeSite', e.target.value)}
-                                                        placeholder="https://exemplo.com"
-                                                    />
-                                                </label>
-                                            )}
-                                        </div>
-                                    </div>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">1.7 Informações sobre o Estatuto da Entidade</legend>
-                                    <div className="space-y-4">
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.artigo2}
-                                                onChange={(e) => handleInputChange('proponente', 'artigo2', e.target.value)}
-                                                placeholder="Número do artigo"
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Análise Estatutária, art. 33, inciso I, Lei 13.019/2014:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.artigo33I}
-                                                onChange={(e) => handleInputChange('proponente', 'artigo33I', e.target.value)}
-                                                placeholder="Número do artigo"
-                                                required
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Análise Estatutária, art. 33, inciso III, Lei 13.019/2014:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.proponente.artigo33III}
-                                                onChange={(e) => handleInputChange('proponente', 'artigo33III', e.target.value)}
-                                                placeholder="Número do artigo"
-                                                required
-                                            />
-                                        </label>
-                                    </div>
-                                </fieldset>
-
-                                <div className="flex gap-4">
-                                    <button
-                                        className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800"
-                                        onClick={() => saveForm('proponente')}
-                                    >
-                                        Salvar
-                                    </button>
-                                    <button
-                                        className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-                                        onClick={() => {
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                proponente: {
-                                                    cnpj: '',
-                                                    nomeProponente: '',
-                                                    nomeDirigente: '',
-                                                    telefones: [''],
-                                                    email: '',
-                                                    numeroProposta: '',
-                                                    responsavelNome: '',
-                                                    responsavelEmail: '',
-                                                    responsavelVinculo: '',
-                                                    responsavelTelefones: [''],
-                                                    dimensaoProjeto: '',
-                                                    uf: '',
-                                                    cidade: '',
-                                                    idh: '',
-                                                    anoIDH: '',
-                                                    numHabitantes: '',
-                                                    anoHabitantes: '',
-                                                    temParceria: '',
-                                                    numParcerias: '',
-                                                    temPublicidade: '',
-                                                    publicidadeSite: '',
-                                                    artigo2: '',
-                                                    artigo33I: '',
-                                                    artigo33III: ''
-                                                }
+                        <div className="space-y-6">
+                            <fieldset className="border p-4 rounded">
+                            <legend className="text-blue-900 font-bold">1.1 Identificação do Proponente</legend>
+                            <div className="space-y-4">
+                                {/* Novo campo para escolher Convênio ou Termo de Fomento */}
+                                <label className="block">
+                                <span className="text-red-screensize: sm max-w-full flex flex-col min-h-screen" class="text-red-500">*</span> Tipo de Parceria:
+                                <div className="flex gap-4 mt-2">
+                                    <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="tipoParceria"
+                                        value="Convênio"
+                                        checked={formData.proponente.tipoParceria === 'Convênio'}
+                                        onChange={(e) => {
+                                        handleInputChange('proponente', 'tipoParceria', e.target.value);
+                                        if (e.target.value === 'Convênio') {
+                                            setFormData((prev) => ({
+                                            ...prev,
+                                            proponente: {
+                                                ...prev.proponente,
+                                                artigo2: 'Não se Aplica',
+                                                artigo33I: 'Não se Aplica',
+                                                artigo33III: 'Não se Aplica',
+                                            },
                                             }));
-                                            setIsCNPJEditable(true);
-                                            setMunicipios([]);
-                                            localStorage.removeItem('formData');
-                                            alert('Formulário limpo com sucesso!');
+                                        } else {
+                                            setFormData((prev) => ({
+                                            ...prev,
+                                            proponente: {
+                                                ...prev.proponente,
+                                                artigo2: '',
+                                                artigo33I: '',
+                                                artigo33III: '',
+                                            },
+                                            }));
+                                        }
                                         }}
+                                        required
+                                    />
+                                    <span className="ml-2">Convênio</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="tipoParceria"
+                                        value="Termo de Fomento"
+                                        checked={formData.proponente.tipoParceria === 'Termo de Fomento'}
+                                        onChange={(e) => handleInputChange('proponente', 'tipoParceria', e.target.value)}
+                                        required
+                                    />
+                                    <span className="ml-2">Termo de Fomento</span>
+                                    </label>
+                                </div>
+                                </label>
+
+                                <label className="block">
+                                <span className="text-red-500">*</span> CNPJ Proponente:
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.cnpj}
+                                    onChange={(e) => handleInputChange('proponente', 'cnpj', formatarCNPJ(e.target.value))}
+                                    placeholder="00.000.000/0000-00"
+                                    maxLength="18"
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Nome Proponente:
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.nomeProponente}
+                                    onChange={(e) => handleInputChange('proponente', 'nomeProponente', e.target.value)}
+                                    readOnly={!isCNPJEditable}
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Nome do Dirigente (Presidente):
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.nomeDirigente}
+                                    onChange={(e) => handleInputChange('proponente', 'nomeDirigente', e.target.value)}
+                                    readOnly={!isCNPJEditable}
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Telefone(s) de contato com DDD:
+                                <div className="flex flex-wrap gap-2">
+                                    {formData.proponente.telefones.map((tel, index) => (
+                                    <div key={index} className="flex items-center gap-2">
+                                        <input
+                                        type="text"
+                                        className="p-2 border rounded flex-1 min-w-[200px]"
+                                        value={tel}
+                                        onChange={(e) => {
+                                            const newTelefones = [...formData.proponente.telefones];
+                                            newTelefones[index] = formatarTelefone(e.target.value);
+                                            handleInputChange('proponente', 'telefones', newTelefones);
+                                        }}
+                                        placeholder="(00) 00000-0000"
+                                        maxLength="15"
+                                        required
+                                        />
+                                        {index > 0 && (
+                                        <button
+                                            type="button"
+                                            className="bg-red-500 text-white px-2 py-1 rounded"
+                                            onClick={() => {
+                                            const newTelefones = formData.proponente.telefones.filter((_, i) => i !== index);
+                                            handleInputChange('proponente', 'telefones', newTelefones);
+                                            }}
+                                        >
+                                            <i className="fas fa-trash"></i>
+                                        </button>
+                                        )}
+                                    </div>
+                                    ))}
+                                    <button
+                                    type="button"
+                                    className="bg-green-500 text-white px-4 py-2 rounded"
+                                    onClick={() => handleInputChange('proponente', 'telefones', [...formData.proponente.telefones, ''])}
                                     >
-                                        Limpar
+                                    Adicionar Telefone
                                     </button>
                                 </div>
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> E-mail:
+                                <input
+                                    type="email"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.email}
+                                    onChange={(e) => handleInputChange('proponente', 'email', e.target.value)}
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Número da Proposta (Plataforma Transferegov):
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.numeroProposta}
+                                    onChange={(e) => handleInputChange('proponente', 'numeroProposta', e.target.value)}
+                                    required
+                                />
+                                </label>
                             </div>
-                        )}
+                            </fieldset>
 
+                            <fieldset className="border p-4 rounded">
+                            <legend className="text-blue-900 font-bold">1.2 Responsável pela Elaboração do Projeto Técnico</legend>
+                            <div className="space-y-4">
+                                <label className="block">
+                                <span className="text-red-500">*</span> Nome:
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.responsavelNome}
+                                    onChange={(e) => handleInputChange('proponente', 'responsavelNome', e.target.value)}
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> E-mail:
+                                <input
+                                    type="email"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.responsavelEmail}
+                                    onChange={(e) => handleInputChange('proponente', 'responsavelEmail', e.target.value)}
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Vínculo com a Entidade (Cargo/Função):
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.responsavelVinculo}
+                                    onChange={(e) => handleInputChange('proponente', 'responsavelVinculo', e.target.value)}
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Telefone(s) de contato com DDD:
+                                <div className="flex flex-wrap gap-2">
+                                    {formData.proponente.responsavelTelefones.map((tel, index) => (
+                                    <div key={index} className="flex items-center gap-2">
+                                        <input
+                                        type="text"
+                                        className="p-2 border rounded flex-1 min-w-[200px]"
+                                        value={tel}
+                                        onChange={(e) => {
+                                            const newTelefones = [...formData.proponente.responsavelTelefones];
+                                            newTelefones[index] = formatarTelefone(e.target.value);
+                                            handleInputChange('proponente', 'responsavelTelefones', newTelefones);
+                                        }}
+                                        placeholder="(00) 00000-0000"
+                                        maxLength="15"
+                                        required
+                                        />
+                                        {index > 0 && (
+                                        <button
+                                            type="button"
+                                            className="bg-red-500 text-white px-2 py-1 rounded"
+                                            onClick={() => {
+                                            const newTelefones = formData.proponente.responsavelTelefones.filter((_, i) => i !== index);
+                                            handleInputChange('proponente', 'responsavelTelefones', newTelefones);
+                                            }}
+                                        >
+                                            <i className="fas fa-trash"></i>
+                                        </button>
+                                        )}
+                                    </div>
+                                    ))}
+                                    <button
+                                    type="button"
+                                    className="bg-green-500 text-white px-4 py-2 rounded"
+                                    onClick={() => handleInputChange('proponente', 'responsavelTelefones', [...formData.proponente.responsavelTelefones, ''])}
+                                    >
+                                    Adicionar Telefone
+                                    </button>
+                                </div>
+                                </label>
+                            </div>
+                            </fieldset>
+
+                            <fieldset className="border p-4 rounded">
+                        <legend className="text-blue-900 font-bold">1.3 Dimensão do Projeto</legend>
+                        <div className="space-y-2">
+                            <label className="flex items-center">
+                            <input
+                                type="radio"
+                                name="dimensaoProjeto"
+                                value="Projeto Educacional"
+                                checked={formData.proponente.dimensaoProjeto === 'Projeto Educacional'}
+                                onChange={(e) => handleInputChange('proponente', 'dimensaoProjeto', e.target.value)}
+                                required
+                            />
+                            <span className="ml-2">Projeto Educacional</span>
+                            </label>
+                            <label className="flex items-center">
+                            <input
+                                type="radio"
+                                name="dimensaoProjeto"
+                                value="Projeto de Participação"
+                                checked={formData.proponente.dimensaoProjeto === 'Projeto de Participação'}
+                                onChange={(e) => handleInputChange('proponente', 'dimensaoProjeto', e.target.value)}
+                            />
+                            <span className="ml-2">Projeto de Participação</span>
+                            </label>
+                        </div>
+                        <p className="italic text-gray-600 mt-2">
+                            {formData.proponente.dimensaoProjeto === 'Projeto Educacional'
+                            ? 'Oferta oportunidades de acesso à prática esportiva em suas diversas manifestações por meio de ações planejadas, inclusivas e lúdicas para crianças e adolescentes.'
+                            : formData.proponente.dimensaoProjeto === 'Projeto de Participação'
+                            ? 'Caracteriza-se pela vivência do esporte com autodeterminação a partir do conhecimento esportivo adquirido.'
+                            : 'Selecione uma opção para ver a descrição.'}
+                        </p>
+                        </fieldset>
+
+                            <fieldset className="border p-4 rounded">
+                            <legend className="text-blue-900 font-bold">1.4 Localidade – Índice de Desenvolvimento Humano</legend>
+                            <div className="space-y-4">
+                                <label className="block">
+                                <span className="text-red-500">*</span> UF:
+                                <select
+                                    className="w-32 p-2 border rounded"
+                                    value={formData.proponente.uf}
+                                    onChange={(e) => handleInputChange('proponente', 'uf', e.target.value)}
+                                    required
+                                >
+                                    <option value="">Selecione</option>
+                                    {['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'].map(uf => (
+                                    <option key={uf} value={uf}>{uf}</option>
+                                    ))}
+                                </select>
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Cidade:
+                                <select
+                                    value={formData.proponente.cidade}
+                                    onChange={(e) => handleInputChange('proponente', 'cidade', e.target.value)}
+                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-900 focus:border-blue-900"
+                                    disabled={!formData.proponente.uf}
+                                >
+                                    <option value="">Selecione</option>
+                                    {municipios.map(mun => (
+                                    <option key={mun.id} value={mun.id}>{mun.nome}</option>
+                                    ))}
+                                </select>
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> IDH:
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded bg-gray-100"
+                                    value={formData.proponente.idh}
+                                    onChange={(e) => handleInputChange('proponente', 'idh', e.target.value)}
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Ano de Referência:
+                                <input
+                                    type="number"
+                                    className="w-full p-2 border rounded bg-gray-100"
+                                    value={formData.proponente.anoIDH}
+                                    onChange={(e) => handleInputChange('proponente', 'anoIDH', e.target.value)}
+                                    required
+                                />
+                                </label>
+                            </div>
+                            </fieldset>
+
+                            <fieldset className="border p-4 rounded">
+                            <legend className="text-blue-900 font-bold">1.5 População - Característica Demográfica</legend>
+                            <div className="space-y-4">
+                                <label className="block">
+                                <span className="text-red-500">*</span> Nº de habitantes:
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded bg-gray-100"
+                                    value={formData.proponente.numHabitantes}
+                                    onChange={(e) => handleInputChange('proponente', 'numHabitantes', e.target.value)}
+                                    required
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Ano de referência:
+                                <input
+                                    type="number"
+                                    className="w-full p-2 border rounded bg-gray-100"
+                                    value={formData.proponente.anoHabitantes}
+                                    onChange={(e) => handleInputChange('proponente', 'anoHabitantes', e.target.value)}
+                                    required
+                                />
+                                </label>
+                            </div>
+                            </fieldset>
+
+                            <fieldset className="border p-4 rounded">
+                            <legend className="text-blue-900 font-bold">1.6 Informações sobre a Entidade Proponente</legend>
+                            <div className="space-y-4">
+                                <div>
+                                <label>A Entidade já celebrou parcerias com o Ministério do Esporte?</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="temParceria"
+                                        value="sim"
+                                        checked={formData.proponente.temParceria === 'sim'}
+                                        onChange={(e) => handleInputChange('proponente', 'temParceria', e.target.value)}
+                                    />
+                                    <span className="ml-2">Sim</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="temParceria"
+                                        value="nao"
+                                        checked={formData.proponente.temParceria === 'nao'}
+                                        onChange={(e) => handleInputChange('proponente', 'temParceria', e.target.value)}
+                                    />
+                                    <span className="ml-2">Não</span>
+                                    </label>
+                                </div>
+                                {formData.proponente.temParceria === 'sim' && (
+                                    <label className="block mt-2">
+                                    Nº de parcerias:
+                                    <input
+                                        type="number"
+                                        className="w-full p-2 border rounded"
+                                        value={formData.proponente.numParcerias}
+                                        onChange={(e) => handleInputChange('proponente', 'numParcerias', e.target.value)}
+                                        min="0"
+                                    />
+                                    </label>
+                                )}
+                                </div>
+                                <div>
+                                <label>A Entidade já deu publicidade às parcerias celebradas em seu respectivo site?</label>
+                                <div className="flex gap-4">
+                                    <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="temPublicidade"
+                                        value="sim"
+                                        checked={formData.proponente.temPublicidade === 'sim'}
+                                        onChange={(e) => handleInputChange('proponente', 'temPublicidade', e.target.value)}
+                                    />
+                                    <span className="ml-2">Sim</span>
+                                    </label>
+                                    <label className="flex items-center">
+                                    <input
+                                        type="radio"
+                                        name="temPublicidade"
+                                        value="nao"
+                                        checked={formData.proponente.temPublicidade === 'nao'}
+                                        onChange={(e) => handleInputChange('proponente', 'temPublicidade', e.target.value)}
+                                    />
+                                    <span className="ml-2">Não</span>
+                                    </label>
+                                </div>
+                                {formData.proponente.temPublicidade === 'sim' && (
+                                    <label className="block mt-2">
+                                    Site onde foi publicada a publicidade:
+                                    <input
+                                        type="url"
+                                        className="w-full p-2 border rounded"
+                                        value={formData.proponente.publicidadeSite}
+                                        onChange={(e) => handleInputChange('proponente', 'publicidadeSite', e.target.value)}
+                                        placeholder="https://exemplo.com"
+                                    />
+                                    </label>
+                                )}
+                                </div>
+                            </div>
+                            </fieldset>
+
+                            <fieldset className="border p-4 rounded">
+                            <legend className="text-blue-900 font-bold">1.7 Informações sobre o Estatuto da Entidade</legend>
+                            <div className="space-y-4">
+                                <label className="block">
+                                <span className="text-red-500">*</span> Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014:
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.artigo2}
+                                    onChange={(e) => handleInputChange('proponente', 'artigo2', e.target.value)}
+                                    placeholder="Número do artigo"
+                                    required
+                                    disabled={formData.proponente.tipoParceria === 'Convênio'}
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Análise Estatutária, art. 33, inciso I, Lei 13.019/2014:
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.artigo33I}
+                                    onChange={(e) => handleInputChange('proponente', 'artigo33I', e.target.value)}
+                                    placeholder="Número do artigo"
+                                    required
+                                    disabled={formData.proponente.tipoParceria === 'Convênio'}
+                                />
+                                </label>
+                                <label className="block">
+                                <span className="text-red-500">*</span> Análise Estatutária, art. 33, inciso III, Lei 13.019/2014:
+                                <input
+                                    type="text"
+                                    className="w-full p-2 border rounded"
+                                    value={formData.proponente.artigo33III}
+                                    onChange={(e) => handleInputChange('proponente', 'artigo33III', e.target.value)}
+                                    placeholder="Número do artigo"
+                                    required
+                                    disabled={formData.proponente.tipoParceria === 'Convênio'}
+                                />
+                                </label>
+                            </div>
+                            </fieldset>
+
+                            <div className="flex gap-4">
+                            <button
+                                className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800"
+                                onClick={() => saveForm('proponente')}
+                            >
+                                Salvar
+                            </button>
+                            <button
+                                className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
+                                onClick={() => {
+                                setFormData((prev) => ({
+                                    ...prev,
+                                    proponente: {
+                                    tipoParceria: '',
+                                    cnpj: '',
+                                    nomeProponente: '',
+                                    nomeDirigente: '',
+                                    telefones: [''],
+                                    email: '',
+                                    numeroProposta: '',
+                                    responsavelNome: '',
+                                    responsavelEmail: '',
+                                    responsavelVinculo: '',
+                                    responsavelTelefones: [''],
+                                    dimensaoProjeto: '',
+                                    uf: '',
+                                    cidade: '',
+                                    idh: '',
+                                    anoIDH: '',
+                                    numHabitantes: '',
+                                    anoHabitantes: '',
+                                    temParceria: '',
+                                    numParcerias: '',
+                                    temPublicidade: '',
+                                    publicidadeSite: '',
+                                    artigo2: '',
+                                    artigo33I: '',
+                                    artigo33III: '',
+                                    },
+                                }));
+                                setIsCNPJEditable(true);
+                                setMunicipios([]);
+                                localStorage.removeItem('formData');
+                                alert('Formulário limpo com sucesso!');
+                                }}
+                            >
+                                Limpar
+                            </button>
+                            </div>
+                        </div>
+                        )}
                         {activeTab === 'dados-projeto' && (
                             <div className="space-y-6">
                                 <fieldset className="border p-4 rounded">
@@ -2382,78 +2393,139 @@
                                 </fieldset>
 
                                 <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.8 Grade Horária das Atividades</legend>
-                                    <p className="italic text-gray-600">
-                                        O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 horas semanais de atividades, com 16 horas de atendimento e 4 horas de planejamento, para atender os {formData.dadosProjeto.publicoDireto || 'XX'} beneficiários.
-                                    </p>
-                                    <div className="space-y-4">
-                                        {formData.infoProjeto.gradeHoraria.map((row, index) => (
-                                            <div key={index} className="border p-4 rounded">
-                                                <h4 className="font-bold">Núcleo {index + 1}</h4>
-                                                <label className="block">
-                                                    Localidade:
-                                                    <input
-                                                        type="text"
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.nucleoLocalidade}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'nucleoLocalidade')}
-                                                    />
+                                <legend className="text-blue-900 font-bold">3.8 Grade Horária das Atividades</legend>
+                                <p className="italic text-gray-600">
+                                    O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 horas semanais de atividades, com 16 horas de atendimento e 4 horas de planejamento, para atender os {formData.dadosProjeto.publicoDireto || 'XX'} beneficiários.
+                                </p>
+                                <div className="space-y-4">
+                                    {formData.infoProjeto.gradeHoraria.map((row, index) => (
+                                    <div key={index} className="border p-4 rounded">
+                                        <h4 className="font-bold">Núcleo {index + 1}</h4>
+                                        <label className="block">
+                                        Localidade:
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 border rounded"
+                                            value={row.nucleoLocalidade}
+                                            onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'nucleoLocalidade')}
+                                        />
+                                        </label>
+                                        <label className="block">
+                                        Modalidades:
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 border rounded"
+                                            value={row.modalidadesNucleo}
+                                            onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'modalidadesNucleo')}
+                                        />
+                                        </label>
+                                        <label className="block">
+                                        Recursos Humanos:
+                                        <input
+                                            type="text"
+                                            className="w-full p-2 border rounded"
+                                            value={row.rhNucleo}
+                                            onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'rhNucleo')}
+                                        />
+                                        </label>
+                                        <label className="block">
+                                        Informações do Núcleo:
+                                        <textarea
+                                            className="w-full p-2 border rounded"
+                                            value={row.infoNucleo}
+                                            onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'infoNucleo')}
+                                            rows="3"
+                                        />
+                                        </label>
+                                        <label className="block">
+                                        Grade Horária:
+                                        <div className="space-y-2">
+                                            <div className="flex flex-wrap gap-4">
+                                            {['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira'].map((day) => (
+                                                <label key={day} className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    checked={row.diasSelecionados?.includes(day) || false}
+                                                    onChange={(e) => {
+                                                    const updatedDias = e.target.checked
+                                                        ? [...(row.diasSelecionados || []), day]
+                                                        : (row.diasSelecionados || []).filter((d) => d !== day);
+                                                    handleInputChange('infoProjeto', 'gradeHoraria', updatedDias, index, 'diasSelecionados');
+                                                    }}
+                                                    className="mr-2"
+                                                />
+                                                {day}
                                                 </label>
-                                                <label className="block">
-                                                    Modalidades:
-                                                    <input
-                                                        type="text"
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.modalidadesNucleo}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'modalidadesNucleo')}
-                                                    />
-                                                </label>
-                                                <label className="block">
-                                                    Recursos Humanos:
-                                                    <input
-                                                        type="text"
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.rhNucleo}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'rhNucleo')}
-                                                    />
-                                                </label>
-                                                <label className="block">
-                                                    Informações do Núcleo:
-                                                    <textarea
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.infoNucleo}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'infoNucleo')}
-                                                        rows="3"
-                                                    />
-                                                </label>
-                                                <label className="block">
-                                                    Grade Horária:
-                                                    <textarea
-                                                        className="w-full p-2 border rounded"
-                                                        value={row.gradeHoraria}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'gradeHoraria')}
-                                                        rows="3"
-                                                    />
-                                                </label>
-                                                {formData.infoProjeto.gradeHoraria.length > 1 && (
-                                                    <button
-                                                        type="button"
-                                                        className="bg-red-500 text-white px-2 py-1 rounded mt-2"
-                                                        onClick={() => removeItem('infoProjeto', 'gradeHoraria', index)}
-                                                    >
-                                                        Remover Núcleo
-                                                    </button>
-                                                )}
+                                            ))}
                                             </div>
-                                        ))}
+                                            <div className="flex space-x-4">
+                                            <label className="block">
+                                                De:
+                                                <select
+                                                className="w-full p-2 border rounded"
+                                                value={row.horarioInicio || ''}
+                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'horarioInicio')}
+                                                >
+                                                <option value="">Selecione</option>
+                                                    <option value="07:00">07:00</option>
+                                                    <option value="08:00">08:00</option>
+                                                    <option value="09:00">09:00</option>
+                                                    <option value="10:00">10:00</option>
+                                                    <option value="11:00">11:00</option>
+                                                    <option value="12:00">12:00</option>
+                                                    <option value="13:00">13:00</option>
+                                                    <option value="14:00">14:00</option>
+                                                    <option value="15:00">15:00</option>
+                                                    <option value="16:00">16:00</option>
+                                                    <option value="17:00">17:00</option>
+                                                    <option value="18:00">18:00</option>
+                                                </select>
+                                            </label>
+                                            <label className="block">
+                                                Até:
+                                                <select
+                                                className="w-full p-2 border rounded"
+                                                value={row.horarioFim || ''}
+                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'horarioFim')}
+                                                >
+                                                <option value="">Selecione</option>
+                                                    <option value="08:00">08:00</option>
+                                                    <option value="09:00">09:00</option>
+                                                    <option value="10:00">10:00</option>
+                                                    <option value="11:00">11:00</option>
+                                                    <option value="12:00">12:00</option>
+                                                    <option value="13:00">13:00</option>
+                                                    <option value="14:00">14:00</option>
+                                                    <option value="15:00">15:00</option>
+                                                    <option value="16:00">16:00</option>
+                                                    <option value="17:00">17:00</option>
+                                                    <option value="18:00">18:00</option>
+                                                    <option value="19:00">19:00</option>
+                                                    <option value="20:00">20:00</option>
+                                                </select>
+                                            </label>
+                                            </div>
+                                        </div>
+                                        </label>
+                                        {formData.infoProjeto.gradeHoraria.length > 1 && (
                                         <button
                                             type="button"
-                                            className="bg-green-500 text-white px-4 py-2 rounded"
-                                            onClick={() => addItem('infoProjeto', 'gradeHoraria')}
+                                            className="bg-red-500 text-white px-2 py-1 rounded mt-2"
+                                            onClick={() => removeItem('infoProjeto', 'gradeHoraria', index)}
                                         >
-                                            Adicionar Núcleo
+                                            Remover Núcleo
                                         </button>
+                                        )}
                                     </div>
+                                    ))}
+                                    <button
+                                    type="button"
+                                    className="bg-green-500 text-white px-4 py-2 rounded"
+                                    onClick={() => addItem('infoProjeto', 'gradeHoraria')}
+                                    >
+                                    Adicionar Núcleo
+                                    </button>
+                                </div>
                                 </fieldset>
 
                                 <fieldset className="border p-4 rounded">
@@ -2733,67 +2805,71 @@
                                 </fieldset>
 
                                 <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.13 Divulgação do Projeto (Repetido para Consistência no PDF)</legend>
-                                    <div className="space-y-4">
+                                <legend className="text-blue-900 font-bold">3.13 Divulgação do Projeto (Repetido para Consistência no PDF)</legend>
+                                <div className="space-y-4">
+                                    <label className="block">
+                                        Marque as opções aplicáveis:
+                                        <div className="flex flex-wrap gap-4">
+                                            {['Carros ou bicicletas de som', 'Cartazes', 'Faixas', 'Banners', 'Jornais', 'Panfletos', 'Folder', 'Mídia (rádio e televisão)', 'Internet', 'Outros'].map(opt => (
+                                                <label key={opt} className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        value={opt}
+                                                        checked={formData.infoProjeto.divulgacao.includes(opt)}
+                                                        onChange={(e) => {
+                                                            const updatedDivulgacao = e.target.checked
+                                                                ? [...formData.infoProjeto.divulgacao, e.target.value]
+                                                                : formData.infoProjeto.divulgacao.filter(item => item !== e.target.value);
+                                                            // Clear outrosDivulgacao if unchecking "Outros"
+                                                            if (e.target.value === 'Outros' && !e.target.checked) {
+                                                                handleInputChange('infoProjeto', 'outrosDivulgacao', '');
+                                                            }
+                                                            handleInputChange('infoProjeto', 'divulgacao', updatedDivulgacao);
+                                                        }}
+                                                    />
+                                                    <span className="ml-2">{opt}</span>
+                                                </label>
+                                            ))}
+                                        </div>
+                                    </label>
+                                    {formData.infoProjeto.divulgacao.includes('Outros') && (
                                         <label className="block">
-                                            Marque as opções aplicáveis:
-                                            <div className="flex flex-wrap gap-4">
-                                                {['Rádio', 'TV', 'Jornal', 'Redes Sociais', 'Outros'].map(opt => (
-                                                    <label key={opt} className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={opt}
-                                                            checked={formData.infoProjeto.divulgacao.includes(opt)}
-                                                            onChange={(e) => {
-                                                                const updatedDivulgacao = e.target.checked
-                                                                    ? [...formData.infoProjeto.divulgacao, e.target.value]
-                                                                    : formData.infoProjeto.divulgacao.filter(item => item !== e.target.value);
-                                                                handleInputChange('infoProjeto', 'divulgacao', updatedDivulgacao);
-                                                            }}
-                                                        />
-                                                        <span className="ml-2">{opt}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
+                                            Especifique:
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border rounded"
+                                                value={formData.infoProjeto.outrosDivulgacao || ''}
+                                                onChange={(e) => handleInputChange('infoProjeto', 'outrosDivulgacao', e.target.value)}
+                                            />
                                         </label>
-                                        {formData.infoProjeto.divulgacao.includes('Outros') && (
-                                            <label className="block">
-                                                Especifique:
+                                    )}
+                                    <label className="block">
+                                        Forma de custeio da divulgação:
+                                        <div className="flex gap-4">
+                                            <label className="flex items-center">
                                                 <input
-                                                    type="text"
-                                                    className="w-full p-2 border rounded"
-                                                    value={formData.infoProjeto.outrosDivulgacao}
-                                                    onChange={(e) => handleInputChange('infoProjeto', 'outrosDivulgacao', e.target.value)}
+                                                    type="radio"
+                                                    name="custeioDivulgacaoRepetido"
+                                                    value="Recursos da Emenda Parlamentar"
+                                                    checked={formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar'}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'custeioDivulgacao', e.target.value)}
                                                 />
+                                                <span className="ml-2">Recursos da Emenda Parlamentar</span>
                                             </label>
-                                        )}
-                                        <label className="block">
-                                            Forma de custeio da divulgação:
-                                            <div className="flex gap-4">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="custeioDivulgacaoRepetido"
-                                                        value="Recursos da Emenda Parlamentar"
-                                                        checked={formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'custeioDivulgacao', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Recursos da Emenda Parlamentar</span>
-                                                </label>
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="custeioDivulgacaoRepetido"
-                                                        value="Recursos Próprios da Entidade"
-                                                        checked={formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'custeioDivulgacao', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Recursos Próprios da Entidade</span>
-                                                </label>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </fieldset>
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="radio"
+                                                    name="custeioDivulgacaoRepetido"
+                                                    value="Recursos Próprios da Entidade"
+                                                    checked={formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade'}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'custeioDivulgacao', e.target.value)}
+                                                />
+                                                <span className="ml-2">Recursos Próprios da Entidade</span>
+                                            </label>
+                                        </div>
+                                    </label>
+                                </div>
+                            </fieldset>
 
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">4. Acompanhamento e Monitoramento das Atividades</legend>
