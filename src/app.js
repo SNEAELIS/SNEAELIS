@@ -2,75 +2,44 @@ const express = require('express');
 const path = require('path');
 const session = require('express-session');
 const cors = require('cors');
-const initializePool = require('../config/db');
+const fs = require('fs').promises;
 
 // Configurações básicas
 const PORT = process.env.PORT || 3000;
 const isProduction = process.env.NODE_ENV === 'production';
+const dataFile = path.join(__dirname, '../data.json');
 
-async function configurarBancoDeDados() {
+async function loadData() {
   try {
-    console.log('🔄 Iniciando configuração do banco de dados...');
-    const pool = await initializePool();
-    console.log('✅ Pool de conexão com o banco inicializado');
-
-    // Verifica se está no Render e mostra informações úteis
-    if (process.env.RENDER) {
-      console.log('🌐 Ambiente Render detectado');
-      console.log('🔗 URL do serviço:', process.env.RENDER_EXTERNAL_URL);
-    }
-
-    await criarExtensoesETabelas(pool);
-    return pool;
+    const data = await fs.readFile(dataFile, 'utf-8');
+    return JSON.parse(data);
   } catch (err) {
-    console.error('❌ Falha crítica na configuração do banco:');
-    console.error(err);
-    process.exit(1); // Encerra o processo com erro
+    console.log('🔄 Inicializando arquivo de dados...');
+    const initialData = { users: [] };
+    await fs.writeFile(dataFile, JSON.stringify(initialData, null, 2));
+    return initialData;
   }
 }
 
-async function criarExtensoesETabelas(pool) {
-  const queries = [
-    'CREATE EXTENSION IF NOT EXISTS pgcrypto',
-    `CREATE TABLE IF NOT EXISTS users (
-      id SERIAL PRIMARY KEY,
-      nome_completo VARCHAR(255) NOT NULL,
-      email VARCHAR(255) UNIQUE NOT NULL,
-      cpf VARCHAR(11) UNIQUE NOT NULL,
-      senha VARCHAR(255) NOT NULL,
-      codigo_verificacao VARCHAR(6),
-      verificado BOOLEAN DEFAULT FALSE,
-      nivel_acesso INTEGER DEFAULT 1
-    )`,
-    // ... (mantenha suas outras queries de tabela)
-  ];
-
-  try {
-    console.log('🛠 Verificando/Criando tabelas...');
-    for (const query of queries) {
-      await pool.query(query);
-    }
-    console.log('✅ Estrutura do banco verificada com sucesso');
-  } catch (err) {
-    console.error('❌ Erro ao configurar o banco:');
-    throw err;
-  }
+async function saveData(data) {
+  await fs.writeFile(dataFile, JSON.stringify(data, null, 2));
 }
 
-async function configurarApp(pool) {
+async function configurarApp() {
   const app = express();
+  let data = await loadData();
 
   // Middlewares essenciais
   app.use(express.json());
   app.use(express.urlencoded({ extended: true }));
   app.use(cors());
-  
+
   // Configuração de sessão segura para produção
   app.use(session({
     secret: process.env.SESSION_SECRET || 'segredo-desenvolvimento',
     resave: false,
     saveUninitialized: false,
-    cookie: { 
+    cookie: {
       secure: isProduction,
       httpOnly: true,
       sameSite: 'lax',
@@ -85,7 +54,7 @@ async function configurarApp(pool) {
 
   // Rotas
   const useRoutes = require('./routes/useRoutes');
-  app.use('/', useRoutes(pool));
+  app.use('/', useRoutes({ data, saveData })); // Passe os dados e função de salvar
 
   // Middleware de log de requisições
   app.use((req, res, next) => {
@@ -95,7 +64,7 @@ async function configurarApp(pool) {
 
   // Handlers de erro
   app.use((req, res) => {
-    res.status(404).render('error', { 
+    res.status(404).render('error', {
       message: 'Página não encontrada',
       errorCode: 404
     });
@@ -115,8 +84,7 @@ async function configurarApp(pool) {
 
 async function iniciarServidor() {
   try {
-    const pool = await configurarBancoDeDados();
-    const app = await configurarApp(pool);
+    const app = await configurarApp();
 
     app.listen(PORT, () => {
       console.log(`🚀 Servidor rodando na porta ${PORT}`);
