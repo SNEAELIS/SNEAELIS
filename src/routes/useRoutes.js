@@ -3,7 +3,7 @@ const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { jsPDF } = require('jspdf');
-const xlsx = require('xlsx');
+
 
 module.exports = (pool) => {
   const router = express.Router();
@@ -11,29 +11,6 @@ module.exports = (pool) => {
   // Configurações
   const DATA_DIR = path.join(__dirname, '../../data');
 
-  // Helper Functions
-  const loadSpreadsheetData = (filePath, sheetName) => {
-    try {
-      if (!fs.existsSync(filePath)) {
-        throw new Error(`Arquivo não encontrado: ${filePath}`);
-      }
-      const workbook = xlsx.readFile(filePath);
-      const worksheet = workbook.Sheets[sheetName || workbook.SheetNames[0]];
-      return xlsx.utils.sheet_to_json(worksheet);
-    } catch (error) {
-      console.error('Erro ao carregar planilha:', error);
-      throw error;
-    }
-  };
-
-  const groupByEtapa = (data) => {
-    return data.reduce((acc, item) => {
-      const key = item.etapa || 'Sem Etapa';
-      acc[key] = acc[key] || [];
-      acc[key].push(item);
-      return acc;
-    }, {});
-  };
 
   // Lista de Formulários
   const FORMULARIOS = [
@@ -83,7 +60,6 @@ FORMULARIOS.forEach(form => {
   });
 });
 
-// Precificação
 router.get('/precificacao', (req, res) => {
   try {
     if (!req.query.valor) {
@@ -95,31 +71,12 @@ router.get('/precificacao', (req, res) => {
       return res.redirect('/?error=Valor inválido');
     }
 
-    const filePath = path.join(DATA_DIR, 'Consolidado_Preços_Esporte_Amador.xlsx');
-    const rawData = loadSpreadsheetData(filePath, 'Sheet1');
-
-    const data = rawData.map(row => ({
-      codigoCatmat: row['CÓDIGO/CATMAT/CATSER/CBO'] || '',
-      codigoSipea: row['CÓDIGO SIPEA'] || '',
-      item: row['ITEM'] || '',
-      subitem: row['SUBITEM'] || row['ITEM'] || '',
-      unidade: row['UNIDADE'] || '',
-      valorUnitario: parseFloat(row['VALOR UNITÁRIO (R$)']) || 0,
-      uf: (row['UF'] || '').trim().toUpperCase(),
-      gnd: row['GND'] || '',
-      etapa: row['ETAPA ORÇAMENTÁRIA'] || '',
-      modalidade: row['MODALIDADE'] || '',
-      recursosHumanos: row['Recursos'] || '',
-    }));
-
-    res.render('precificacao', {
-      valorEmenda: valor,
-      valorFormatado: valor.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' }),
-      groupedData: groupByEtapa(data)
-    });
+    // Como você não quer usar xlsx, não vamos carregar dados de planilha.
+    // Podemos renderizar a página sem os dados da planilha ou redirecionar com um erro.
+    res.redirect('/?error=Funcionalidade de precificação desativada (dependência de planilha removida)');
   } catch (error) {
     console.error('Erro na precificação:', error);
-    res.redirect('/?error=Erro ao carregar dados');
+    res.redirect('/?error=Erro ao processar precificação');
   }
 });
 
