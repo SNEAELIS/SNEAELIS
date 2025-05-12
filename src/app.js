@@ -47,6 +47,19 @@ async function configurarApp() {
     }
   }));
 
+  // BACK-END (exemplo com Express.js)
+app.get("/api/cnpj/:cnpj", async (req, res) => {
+  const { cnpj } = req.params;
+  try {
+    const response = await fetch(`https://www.receitaws.com.br/v1/cnpj/${cnpj}`);
+    const data = await response.json();
+    res.json(data);
+  } catch (err) {
+    res.status(500).json({ error: "Erro ao buscar CNPJ." });
+  }
+});
+
+
   // Configurações de views e arquivos estáticos
   app.set('view engine', 'ejs');
   app.set('views', path.join(__dirname, 'views'));

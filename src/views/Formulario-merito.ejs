@@ -228,7 +228,7 @@
                     cnpj = cnpj.replace(/\D/g, '');
                     if (cnpj.length !== 14) return;
                     try {
-                        const response = await fetch(`https://www.receitaws.com.br/v1/cnpj/${cnpj}`);
+                        const response = await fetch(`/api/cnpj/${cnpj}`);
                         if (!response.ok) {
                             throw new Error(`Erro ${response.status}: ${response.statusText}`);
                         }
@@ -457,7 +457,13 @@
                     }
                 }));
             }, [formData.dadosProjeto.periodoEstruturacao, formData.dadosProjeto.periodoExecucao]);
-
+            useEffect(() => {
+                const cnpjNumeros = formData.proponente.cnpj.replace(/\D/g, '');
+                if (cnpjNumeros.length === 14) {
+                    buscarDadosCNPJ(formData.proponente.cnpj);
+                }
+            }, [formData.proponente.cnpj]);
+            
             const calcularValorGlobal = () => {
                 const valorConcedente = parseMoeda(formData.dadosProjeto.valorConcedente);
                 const valorContrapartida = parseMoeda(formData.dadosProjeto.valorContrapartida);

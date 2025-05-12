@@ -3,7 +3,6 @@ const path = require('path');
 const fs = require('fs');
 const ExcelJS = require('exceljs');
 const { jsPDF } = require('jspdf');
-const xlsx = require('xlsx');
 
 module.exports = (pool) => {
   const router = express.Router();
@@ -172,26 +171,6 @@ router.post('/gerar-pdf-merito', (req, res) => {
   }
 });
 
-// Rota para Ficha RTMA (Excel)
-router.post('/ficha-rtma', async (req, res) => {
-  try {
-    const templatePath = path.join(DATA_DIR, 'Ficha_Técnica_Template.xlsx');
-    const workbook = new ExcelJS.Workbook();
-    await workbook.xlsx.readFile(templatePath);
-    const worksheet = workbook.getWorksheet(1);
-
-    worksheet.getCell('A3').value = req.body.osc || '';
-    worksheet.getCell('A4').value = req.body.processo || '';
-    worksheet.getCell('A5').value = req.body.termo_fomento || '';
-
-    res.setHeader('Content-Type', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-    res.setHeader('Content-Disposition', 'attachment; filename=Ficha_RTMA.xlsx');
-    await workbook.xlsx.write(res);
-  } catch (error) {
-    console.error('Erro ao gerar RTMA:', error);
-    res.status(500).send('Erro ao gerar ficha técnica');
-  }
-});
 
 // Rota de Erro 404
 router.use((req, res) => {
