@@ -253,40 +253,6 @@ async function gerarPDF() {
 }
 const declaracoesCompletas = [
     {
-        title: "ATESTADO DE CAPACIDADE TÉCNICA",
-        content: `
-            Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR] / [UF], CPF [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ nº [CNPJ], situado(a) no [ENDERECO], CEP [CEP], atesto, para fins de formalização de Convênio com o Ministério do Esporte - MESP, que a presente Entidade apresenta capacidade técnica e operacional para executar o objeto apresentado na Proposta n.º [PROPOSTA], em atendimento ao inciso V, Art. 18, da Portaria Conjunta MGI/MF/CGU nº 33, de 30 de agosto de 2023, considerando as experiências adquiridas na execução de projeto(s)/ação(es) na(s) área(s) esportivo/educacional/social, devidamente especificada(s) no Histórico anexo.
-            
-            O(s) projeto(s)/ação(es) descrito(s) foi(ram) executado(s) com qualidade, não existindo, até a presente data, fatos que desabonem a conduta e a responsabilidade da entidade com as obrigações assumidas, confirmando assim a capacidade técnica e operacional para a execução do que foi proposto.
-            
-            [MUNICIPIO]/[UF], na data da assinatura.
-            
-            
-            [NOME]
-            [CARGO_DIRIGENTE]
-        `
-    },
-    {
-        content: `
-        ANEXO
-        
-            HISTÓRICO 
-        
-            I. Apresentação:
-            • Nome do projeto/ação: [NOME_PROJETO]
-            • Entidades Parceiras: [ENTIDADES_PARCEIRAS]
-            • Período de Vigência: [PERIODO_VIGENCIA]
-            • Número de Beneficiados: [NUMERO_BENEFICIADOS]
-            • Ações/Atividades desenvolvidas: [ACOES_DESENVOLVIDAS]
-        
-            Documentos Comprobatórios a serem encaminhados em anexo:
-            a) Fotos
-            b) Materiais de divulgação (folders, cartazes, etc.)
-            c) Matérias vinculadas na mídia (jornal, revistas, etc.)
-            d) Cópia de instrumento específico (contratos, convênios, termos de parceria, etc.)
-        `
-    },
-    {
         title: "DECLARAÇÃO DE DISPONIBILIDADE DE CONTRAPARTIDA",
         content: `
         Eu, [NOME], portador da carteira de identidade nº [RG], expedida pelo [ORGAO_EMISSOR] / [UF], [CPF], na condição de representante legal do(a) [ENTIDADE], CNPJ nº [CNPJ], DECLARO, em conformidade com a Lei de Diretrizes Orçamentárias vigente, que a presente Entidade dispõe e se compromete com o montante financeiro de R$ [VALOR_CONTRAPARTIDA] ([VALOR_CONTRAPARTIDA_EXTENSO]), para participar da contrapartida no repasse de recursos destinados ao cumprimento do objeto pactuado, disponível no Sistema Eletrônico Transferegov, Proposta sob o n.º [PROPOSTA].
