@@ -25,7 +25,7 @@ module.exports = (pool) => {
 
   // Rota Principal
   router.get('/', (req, res) => {
-    res.render('Formulario-merito', {
+    res.render('escolherFormulario', {
       user: req.session.user || null,
       error: req.query.error,
       success: req.query.success
