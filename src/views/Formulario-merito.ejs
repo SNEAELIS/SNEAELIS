@@ -224,59 +224,105 @@
                 }
             };
 
-            const buscarDadosCNPJ = async (cnpj) => {
+// Cache para armazenar respostas da BrasilAPI
+const cnpjCache = {};
+
+const buscarDadosCNPJ = async (cnpj) => {
+    // Remove caracteres não numéricos do CNPJ
     cnpj = cnpj.replace(/\D/g, '');
-    if (cnpj.length !== 14) return;
+    if (cnpj.length !== 14) {
+        console.warn('CNPJ inválido:', cnpj);
+        alert('Por favor, insira um CNPJ válido com 14 dígitos.');
+        return;
+    }
+
+    // Verifica se o CNPJ está no cache
+    if (cnpjCache[cnpj]) {
+        console.log('Usando dados do cache para CNPJ:', cnpj);
+        processarDados(cnpjCache[cnpj]);
+        return;
+    }
+
     try {
+        // Faz a requisição à BrasilAPI
+        console.log('Buscando dados na BrasilAPI para CNPJ:', cnpj);
         const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
         if (!response.ok) {
             throw new Error(`Erro ${response.status}: ${response.statusText}`);
         }
+
         const data = await response.json();
         console.log('Dados retornados pela BrasilAPI:', data);
 
-        // BrasilAPI returns data in a specific structure, no "status" field for errors
-        if (!data.erro) {
-            const uf = data.uf || '';
-            const municipio = data.municipio || '';
-            setFormData(prev => ({
+        // Armazena no cache
+        cnpjCache[cnpj] = data;
+
+        // Processa os dados
+        processarDados(data);
+    } catch (error) {
+        console.error('Erro ao buscar dados do CNPJ:', error);
+        alert(`Erro ao buscar dados do CNPJ: ${error.message}`);
+        setIsCNPJEditable(true);
+    }
+};
+
+const processarDados = async (data) => {
+    if (!data.erro) {
+        const uf = data.uf || '';
+        const municipio = data.municipio || '';
+
+        // Atualiza o estado do formulário
+        setFormData(prev => {
+            const newState = {
                 ...prev,
                 proponente: {
                     ...prev.proponente,
                     nomeProponente: data.razao_social || '',
-                    nomeDirigente: data.qsa?.find(q => 
-                        q.qualificacao === '05-Administrador' || 
+                    nomeDirigente: data.qsa?.find(q =>
+                        q.qualificacao === '05-Administrador' ||
                         q.qualificacao === '49-Socio-Administrador'
                     )?.nome || '',
                     uf: uf
                 }
-            }));
-            setIsCNPJEditable(false);
+            };
+            console.log('Novo estado do formData:', newState);
+            return newState;
+        });
 
-            if (uf) {
+        // Bloqueia a edição do CNPJ
+        setIsCNPJEditable(false);
+
+        // Carrega os municípios se UF estiver presente
+        if (uf) {
+            console.log('Carregando municípios para UF:', uf);
+            try {
                 await carregarMunicipios(uf);
-            } else {
-                console.warn('UF não fornecida pela BrasilAPI:', data);
-                setMunicipios([]);
-            }
-
-            if (municipio) {
-                console.log('Chamando preencherMunicipio com município:', municipio);
-                await preencherMunicipio(municipio);
-            } else {
-                console.warn('Município não fornecido pela BrasilAPI:', data);
-                setFormData(prev => ({
-                    ...prev,
-                    proponente: { ...prev.proponente, cidade: '' }
-                }));
+            } catch (error) {
+                console.error('Erro ao carregar municípios:', error);
             }
         } else {
-            alert("CNPJ não encontrado.");
-            setIsCNPJEditable(true);
+            console.warn('UF não fornecida pela BrasilAPI:', data);
+            setMunicipios([]);
         }
-    } catch (error) {
-        console.error('Erro ao buscar dados do CNPJ:', error);
-        alert("Erro ao buscar dados do CNPJ.");
+
+        // Preenche o município se disponível
+        if (municipio) {
+            console.log('Chamando preencherMunicipio com município:', municipio);
+            try {
+                await preencherMunicipio(municipio);
+            } catch (error) {
+                console.error('Erro ao preencher município:', error);
+            }
+        } else {
+            console.warn('Município não fornecido pela BrasilAPI:', data);
+            setFormData(prev => ({
+                ...prev,
+                proponente: { ...prev.proponente, cidade: '' }
+            }));
+        }
+    } else {
+        console.warn('CNPJ não encontrado na BrasilAPI:', data);
+        alert('CNPJ não encontrado.');
         setIsCNPJEditable(true);
     }
 };
