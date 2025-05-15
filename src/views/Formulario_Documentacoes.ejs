@@ -282,12 +282,22 @@ footer {
                 <h3>Dados do Dirigente da Entidade</h3>
                 <div class="form-row">
                     <div class="half-width">
-                        <label for="dirigente">Nome:</label>
+                        <label for="dirigente">Nome Completo:</label>
                         <input type="text" id="dirigente" name="Nome do Dirigente" maxlength="100" required>
                     </div>
                     <div class="half-width">
-                        <label for="cpf">Matricula:</label>
+                        <label for="cpf">CPF (apenas números):</label>
                         <input type="text" id="cpf" name="CPF do Dirigente" maxlength="14" pattern="\d{3}\.\d{3}\.\d{3}-\d{2}" placeholder="000.000.000-00" oninput="formatarCPF(this)" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="half-width">
+                        <label for="rg">RG:</label>
+                        <input type="text" id="rg" name="RG do Dirigente" maxlength="20" required>
+                    </div>
+                    <div class="half-width">
+                        <label for="orgao">Órgão Expedidor:</label>
+                        <input type="text" id="orgao" name="Órgão Expedidor" maxlength="10" required>
                     </div>
                 </div>
                 <div class="form-row">
