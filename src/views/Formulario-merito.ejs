@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Formulário Técnico - Projeto Esportivo</title>
+    <title>Projeto Técnico Pedagógico</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/js/all.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.25/jspdf.plugin.autotable.min.js"></script>
@@ -1308,7 +1308,7 @@ const processarDados = async (data) => {
     return (
                 <div className="min-h-screen flex flex-col">
                     <header className="bg-blue-900 text-white p-4 flex justify-between items-center fixed w-full top-0 z-10 shadow-md">
-                        <h1 className="text-lg font-bold">Formulário Técnico - Projeto Esportivo</h1>
+                        <h1 className="text-lg font-bold">Projeto Técnico Pedagógico- Projeto Esportivo</h1>
                         <p>Ministério do Esporte</p>
                     </header>
 
@@ -1761,46 +1761,55 @@ const processarDados = async (data) => {
                             </fieldset>
 
                             <fieldset className="border p-4 rounded">
-                            <legend className="text-blue-900 font-bold">1.7 Informações sobre o Estatuto da Entidade</legend>
-                            <div className="space-y-4">
-                                <label className="block">
-                                <span className="text-red-500">*</span> Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014:
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={formData.proponente.artigo2}
-                                    onChange={(e) => handleInputChange('proponente', 'artigo2', e.target.value)}
-                                    placeholder="Número do artigo"
-                                    required
-                                    disabled={formData.proponente.tipoParceria === 'Convênio'}
-                                />
-                                </label>
-                                <label className="block">
-                                <span className="text-red-500">*</span> Análise Estatutária, art. 33, inciso I, Lei 13.019/2014:
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={formData.proponente.artigo33I}
-                                    onChange={(e) => handleInputChange('proponente', 'artigo33I', e.target.value)}
-                                    placeholder="Número do artigo"
-                                    required
-                                    disabled={formData.proponente.tipoParceria === 'Convênio'}
-                                />
-                                </label>
-                                <label className="block">
-                                <span className="text-red-500">*</span> Análise Estatutária, art. 33, inciso III, Lei 13.019/2014:
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={formData.proponente.artigo33III}
-                                    onChange={(e) => handleInputChange('proponente', 'artigo33III', e.target.value)}
-                                    placeholder="Número do artigo"
-                                    required
-                                    disabled={formData.proponente.tipoParceria === 'Convênio'}
-                                />
-                                </label>
-                            </div>
-                            </fieldset>
+                                <legend className="text-blue-900 font-bold">1.7 Informações sobre o Estatuto da Entidade</legend>
+                                <div className="space-y-4">
+                                    {[
+                                    {
+                                        label: 'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014',
+                                        field: 'artigo2',
+                                        tooltip:
+                                        'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014: Verificar se a Entidade NÃO distribui entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva.',
+                                    },
+                                    {
+                                        label: 'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014',
+                                        field: 'artigo33I',
+                                        tooltip:
+                                        'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014: Verificar se a Entidade POSSUI objetivos voltados à promoção de atividades e finalidades de relevância pública e social.',
+                                    },
+                                    {
+                                        label: 'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014',
+                                        field: 'artigo33III',
+                                        tooltip:
+                                        'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014: Verificar se em caso de dissolução da entidade, o respectivo patrimônio líquido seja transferido a outra pessoa jurídica de igual natureza que preencha os requisitos desta Lei e cujo objeto social seja, preferencialmente, o mesmo da entidade extinta.',
+                                    },
+                                    ].map((item, index) => (
+                                    <label key={index} className="block relative">
+                                        <div className="flex items-center">
+                                        <span className="text-red-500">*</span>
+                                        <span>{item.label}:</span>
+                                        <details className="ml-2 cursor-pointer relative group">
+                                            <summary className="list-none text-blue-600">
+                                            <i className="fas fa-info-circle"></i>
+                                            </summary>
+                                            <div className="absolute left-0 top-6 w-80 p-2 bg-blue-900 text-white text-xs rounded shadow-lg z-10">
+                                            {item.tooltip}
+                                            </div>
+                                        </details>
+                                        </div>
+                                        <input
+                                        type="text"
+                                        className="w-full p-2 border rounded mt-1"
+                                        value={formData.proponente[item.field]}
+                                        onChange={(e) => handleInputChange('proponente', item.field, e.target.value)}
+                                        placeholder="Número do artigo"
+                                        required
+                                        disabled={formData.proponente.tipoParceria === 'Convênio'}
+                                        />
+                                    </label>
+                                    ))}
+                                </div>
+                                </fieldset>
+
 
                             <div className="flex gap-4">
                             <button
@@ -2085,7 +2094,7 @@ const processarDados = async (data) => {
                                             />
                                         </label>
                                         <label className="block">
-                                            <span className="text-red-500">*</span> Valor do Convenente – Contrapartida:
+                                            <span className="text-red-500">*</span> Valor Contrapartida:
                                             <input
                                                 type="text"
                                                 className="w-full p-2 border rounded"
