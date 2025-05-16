@@ -906,19 +906,46 @@ const processarDados = async (data) => {
             );
 
             // Seção 3 - INFORMAÇÕES DO PROJETO TÉCNICO
-            // 3.1 ESTRUTURAÇÃO DO PROJETO
-            const estruturacaoProjeto = [
-                ['Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:'],
-                ['• Contratação de recursos humanos'],
-                ['• Contratação de prestação de serviços'],
-                ['• Aquisição de materiais esportivos'],
-                ['• Aquisição de uniformes e acessórios para os beneficiários'],
-                ['• Aquisição dos materiais de identificação e divulgação']
+          // 3.1 ESTRUTURAÇÃO DO PROJETO - VERSÃO ATUALIZADA
+            const itensEstruturação = [
+                'Contratação de recursos humanos',
+                'Contratação de prestação de serviços',
+                'Aquisição de materiais esportivos',
+                'Aquisição de uniformes e acessórios para os beneficiários',
+                'Aquisição dos materiais de identificação e divulgação'
             ];
+
+            // Filtra apenas os itens marcados
+            const itensSelecionados = formData.infoProjeto.estruturacao?.filter(item => 
+                itensEstruturação.includes(item)
+            ) || [];
+
+            // Adiciona o campo "Outros" se existir e não estiver vazio
+            if (formData.infoProjeto.outrosEstruturação?.trim()) {
+                itensSelecionados.push(`Outros: ${formData.infoProjeto.outrosEstruturação}`);
+            }
+
+            // Prepara o conteúdo para o PDF
+            const conteudoEstruturacao = [
+                ['Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:'],
+                ...itensSelecionados.map(item => [`• ${item}`])
+            ];
+
+            // Se nenhum item foi selecionado, mantemos o texto padrão
+            if (itensSelecionados.length === 0) {
+                conteudoEstruturacao.push(
+                    ['• Contratação de recursos humanos'],
+                    ['• Contratação de prestação de serviços'],
+                    ['• Aquisição de materiais esportivos'],
+                    ['• Aquisição de uniformes e acessórios para os beneficiários'],
+                    ['• Aquisição dos materiais de identificação e divulgação']
+                );
+            }
+
             currentY = createTable(
                 '3. INFORMAÇÕES DO PROJETO TÉCNICO\n3.1 ESTRUTURAÇÃO DO PROJETO',
                 [['']],
-                estruturacaoProjeto,
+                conteudoEstruturacao,
                 currentY,
                 [190]
             );
@@ -942,7 +969,7 @@ const processarDados = async (data) => {
             );
 
             // 3.3 NÚCLEOS
-            const tipoEspaco = formData.infoProjeto.tipoNucleo === 'públicos' ? 'públicos' : formData.infoProjeto.tipoNucleo === 'privados' ? 'privados' : 'N/A';
+            const tipoEspaco = formData.infoProjeto.tipoNucleo ?.length > 0 ? formData.infoProjeto.tipoNucleo.join(' e '): 'N/A';
             const nucleosInfo = [
                 [`O(s) núcleo(s) do projeto será(ão) implementados em espaços comunitários ${tipoEspaco} adequadas às modalidades esportivas propostas, localizado próximo à comunidade beneficiada, que preferencialmente, não demandam transporte para o deslocamento dos beneficiários.`],
                 [`Esse(s) espaço(s) conta(m) com disponibilidade de área adequada para a prática esportiva, existência de infraestrutura básica, condições de acessibilidade dos espaços e segurança do local.`],
@@ -2162,18 +2189,67 @@ const processarDados = async (data) => {
                         {activeTab === 'info-projeto' && (
                             <div className="space-y-6">
                                 <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.1 Estruturação do Projeto</legend>
-                                    <p className="italic text-gray-600">
-                                        Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:
-                                    </p>
-                                    <ul className="list-disc pl-5">
-                                        <li>Contratação de recursos humanos</li>
-                                        <li>Contratação de prestação de serviços</li>
-                                        <li>Aquisição de materiais esportivos</li>
-                                        <li>Aquisição de uniformes e acessórios para os beneficiários</li>
-                                        <li>Aquisição dos materiais de identificação e divulgação</li>
-                                    </ul>
-                                </fieldset>
+                                        <legend className="text-blue-900 font-bold">3.1 Estruturação do Projeto</legend>
+                                        <p className="italic text-gray-600 mb-4">
+                                            Visa à organização e preparação das condições necessárias para a execução do projeto, garantindo que todas as etapas sejam realizadas de forma eficiente e dentro das diretrizes estabelecidas, conforme a seguir:
+                                        </p>
+                                        
+                                        <div className="space-y-2">
+                                            {/* Checkboxes para os itens pré-definidos */}
+                                            {[
+                                                "Contratação de recursos humanos",
+                                                "Contratação de prestação de serviços",
+                                                "Aquisição de materiais esportivos",
+                                                "Aquisição de uniformes e acessórios para os beneficiários",
+                                                "Aquisição dos materiais de identificação e divulgação"
+                                            ].map((item, index) => (
+                                                <label key={index} className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.infoProjeto.estruturacao?.includes(item) || false}
+                                                        onChange={(e) => {
+                                                            const novosItens = [...(formData.infoProjeto.estruturacao || [])];
+                                                            if (e.target.checked) {
+                                                                novosItens.push(item);
+                                                            } else {
+                                                                const index = novosItens.indexOf(item);
+                                                                if (index !== -1) novosItens.splice(index, 1);
+                                                            }
+                                                            handleInputChange('infoProjeto', 'estruturacao', novosItens);
+                                                        }}
+                                                        className="mr-2"
+                                                    />
+                                                    <span>{item}</span>
+                                                </label>
+                                            ))}
+
+                                            {/* Campo "Outros" */}
+                                           <div className="flex items-center mt-4">
+                                                <label className="flex items-center mr-4">
+                                                    <input
+                                                        type="checkbox"
+                                                        checked={formData.infoProjeto.outrosCheck || false}
+                                                        onChange={(e) => {
+                                                            handleInputChange('infoProjeto', 'outrosCheck', e.target.checked);
+                                                            if (!e.target.checked) {
+                                                                handleInputChange('infoProjeto', 'outrosEstruturação', ''); // Limpa o campo ao desmarcar
+                                                            }
+                                                        }}
+                                                        className="mr-2"
+                                                    />
+                                                    <span>Outros:</span>
+                                                </label>
+                                                <input
+                                                    type="text"
+                                                    value={formData.infoProjeto.outrosEstruturação || ''}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'outrosEstruturação', e.target.value)}
+                                                    placeholder="Especifique"
+                                                    className={`border rounded px-2 py-1 flex-1 ${!formData.infoProjeto.outrosCheck ? 'bg-gray-100' : ''}`}
+                                                    disabled={!formData.infoProjeto.outrosCheck}
+                                                />
+                                            </div>
+                                        </div>
+                                    </fieldset>
 
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.2 Núcleos</legend>
@@ -2183,21 +2259,35 @@ const processarDados = async (data) => {
                                             <div className="flex gap-4">
                                                 <label className="flex items-center">
                                                     <input
-                                                        type="radio"
-                                                        name="tipoNucleo"
-                                                        value="públicos"
-                                                        checked={formData.infoProjeto.tipoNucleo === 'públicos'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'tipoNucleo', e.target.value)}
+                                                        type="checkbox"
+                                                        name="tipoNucleoPublico"
+                                                        checked={formData.infoProjeto.tipoNucleo.includes('públicos')}
+                                                        onChange={(e) => {
+                                                            const tipos = new Set(formData.infoProjeto.tipoNucleo || []);
+                                                            if (e.target.checked) {
+                                                                tipos.add('públicos');
+                                                            } else {
+                                                                tipos.delete('públicos');
+                                                            }
+                                                            handleInputChange('infoProjeto', 'tipoNucleo', Array.from(tipos));
+                                                        }}
                                                     />
                                                     <span className="ml-2">Públicos</span>
                                                 </label>
                                                 <label className="flex items-center">
                                                     <input
-                                                        type="radio"
-                                                        name="tipoNucleo"
-                                                        value="privados"
-                                                        checked={formData.infoProjeto.tipoNucleo === 'privados'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'tipoNucleo', e.target.value)}
+                                                        type="checkbox"
+                                                        name="tipoNucleoPrivado"
+                                                        checked={formData.infoProjeto.tipoNucleo.includes('privados')}
+                                                        onChange={(e) => {
+                                                            const tipos = new Set(formData.infoProjeto.tipoNucleo || []);
+                                                            if (e.target.checked) {
+                                                                tipos.add('privados');
+                                                            } else {
+                                                                tipos.delete('privados');
+                                                            }
+                                                            handleInputChange('infoProjeto', 'tipoNucleo', Array.from(tipos));
+                                                        }}
                                                     />
                                                     <span className="ml-2">Privados</span>
                                                 </label>
