@@ -1273,10 +1273,10 @@ const processarDados = async (data) => {
                 [`Internet: ${Array.isArray(formData.infoProjeto.divulgacao) && formData.infoProjeto.divulgacao.includes('Internet') ? '(X)' : '( )'}`],
                 [`Outros: ${formData.infoProjeto.outrosDivulgacao ? `(X) ${formData.infoProjeto.outrosDivulgacao}` : '( )'}`],
                 ['Qual será a forma de custeio da divulgação?'],
-                [`• Recursos da Emenda Parlamentar: ${formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar' ? '(X)' : '( )'}`],
-                [`• Recursos Próprios da Entidade: ${formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade' ? '(X)' : '( )'}`]
+                [`Recursos da Emenda Parlamentar: ${Array.isArray(formData?.infoProjeto?.custeioDivulgacao) && formData.infoProjeto.custeioDivulgacao.includes('Recursos da Emenda Parlamentar') ? '(X)' : '( )'}`],
+                [`Outros Recursos: ${Array.isArray(formData?.infoProjeto?.custeioDivulgacao) && formData.infoProjeto.custeioDivulgacao.includes('Outros Recursos') ? '(X)' : '( )'}`]
             ];
-            currentY = createTable(
+           currentY = createTable(
                 '3.12 DIVULGAÇÃO DO PROJETO',
                 [['']],
                 divulgacaoProjeto,
@@ -2934,7 +2934,7 @@ const processarDados = async (data) => {
                                 </fieldset>
 
                                 <fieldset className="border p-4 rounded">
-                                <legend className="text-blue-900 font-bold">3.13 Divulgação do Projeto (Repetido para Consistência no PDF)</legend>
+                                <legend className="text-blue-900 font-bold">3.13 Divulgação do Projeto </legend>
                                 <div className="space-y-4">
                                     <p>Será realizada de forma ampla e irrestrita. O objetivo é dar publicidade aos distintos públicos sobre as ações e o
                                         retorno dos resultados das intervenções públicas junto à sociedade.
@@ -2978,28 +2978,36 @@ const processarDados = async (data) => {
                                             />
                                         </label>
                                     )}
-                                    <label className="block">
-                                        Forma de custeio da divulgação:
-                                        <div className="flex gap-4">
+                                   <label className="block">
+                                        <span className="text-red-500">*</span> Forma de custeio da divulgação:
+                                        <div className="flex flex-col gap-4 mt-2">
                                             <label className="flex items-center">
                                                 <input
-                                                    type="radio"
-                                                    name="custeioDivulgacaoRepetido"
+                                                    type="checkbox"
                                                     value="Recursos da Emenda Parlamentar"
-                                                    checked={formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar'}
-                                                    onChange={(e) => handleInputChange('infoProjeto', 'custeioDivulgacao', e.target.value)}
+                                                    checked={formData.infoProjeto?.custeioDivulgacao?.includes('Recursos da Emenda Parlamentar') || false}
+                                                    onChange={(e) => {
+                                                        const updatedCusteio = e.target.checked
+                                                            ? [...(formData.infoProjeto?.custeioDivulgacao || []), e.target.value]
+                                                            : (formData.infoProjeto?.custeioDivulgacao || []).filter(item => item !== e.target.value);
+                                                        handleInputChange('infoProjeto', 'custeioDivulgacao', updatedCusteio);
+                                                    }}
                                                 />
                                                 <span className="ml-2">Recursos da Emenda Parlamentar</span>
                                             </label>
                                             <label className="flex items-center">
                                                 <input
-                                                    type="radio"
-                                                    name="custeioDivulgacaoRepetido"
-                                                    value="Recursos Próprios da Entidade"
-                                                    checked={formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade'}
-                                                    onChange={(e) => handleInputChange('infoProjeto', 'custeioDivulgacao', e.target.value)}
+                                                    type="checkbox"
+                                                    value="Outros Recursos"
+                                                    checked={formData.infoProjeto?.custeioDivulgacao?.includes('Outros Recursos') || false}
+                                                    onChange={(e) => {
+                                                        const updatedCusteio = e.target.checked
+                                                            ? [...(formData.infoProjeto?.custeioDivulgacao || []), e.target.value]
+                                                            : (formData.infoProjeto?.custeioDivulgacao || []).filter(item => item !== e.target.value);
+                                                        handleInputChange('infoProjeto', 'custeioDivulgacao', updatedCusteio);
+                                                    }}
                                                 />
-                                                <span className="ml-2">Recursos Próprios da Entidade</span>
+                                                <span className="ml-2">Outros Recursos</span>
                                             </label>
                                         </div>
                                     </label>
@@ -3055,6 +3063,7 @@ const processarDados = async (data) => {
                                                     identificacao: [],
                                                     outrosIdentificacao: '',
                                                     divulgacao: [],
+                                                    custeioDivulgacao: [],
                                                     outrosDivulgacao: '',
                                                     custeioDivulgacao: '',
                                                     gradeHoraria: [{
