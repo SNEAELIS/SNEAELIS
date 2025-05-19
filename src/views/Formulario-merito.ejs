@@ -2303,45 +2303,6 @@ const processarDados = async (data) => {
                                     </div>
                                 </fieldset>
 
-                              <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.3 Identificação do Projeto</legend>
-                                    <div className="space-y-4">
-                                        <p className="italic text-gray-600">Em relação à divulgação do projeto, fundamenta-se como elemento primordial.</p>
-                                        <label className="block">
-                                            Marque as opções aplicáveis:
-                                            <div className="flex flex-wrap gap-4">
-                                                {['Faixas', 'Banners', 'Placa', 'Outros'].map(opt => (
-                                                    <label key={opt} className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={opt}
-                                                            checked={formData.infoProjeto.identificacao.includes(opt)}
-                                                            onChange={(e) => {
-                                                                const updatedIdentificacao = e.target.checked
-                                                                    ? [...formData.infoProjeto.identificacao, e.target.value]
-                                                                    : formData.infoProjeto.identificacao.filter(item => item !== e.target.value);
-                                                                handleInputChange('infoProjeto', 'identificacao', updatedIdentificacao);
-                                                            }}
-                                                        />
-                                                        <span className="ml-2">{opt}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </label>
-                                        {formData.infoProjeto.identificacao.includes('Outros') && (
-                                            <label className="block">
-                                                Especifique:
-                                                <input
-                                                    type="text"
-                                                    className="w-full p-2 border rounded"
-                                                    value={formData.infoProjeto.outrosIdentificacao}
-                                                    onChange={(e) => handleInputChange('infoProjeto', 'outrosIdentificacao', e.target.value)}
-                                                />
-                                            </label>
-                                        )}
-                                    </div>
-                                </fieldset>
-
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.4 Divulgação do Projeto</legend>
                                     <div className="space-y-4">
@@ -2924,14 +2885,14 @@ const processarDados = async (data) => {
                                     </div>
                                 </fieldset>
 
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.12 Identificação do Projeto (Repetido para Consistência no PDF)</legend>
+                                                              <fieldset className="border p-4 rounded">
+                                    <legend className="text-blue-900 font-bold">3.3 Identificação do Projeto</legend>
                                     <div className="space-y-4">
                                         <p className="italic text-gray-600">Em relação à divulgação do projeto, fundamenta-se como elemento primordial.</p>
                                         <label className="block">
                                             Marque as opções aplicáveis:
                                             <div className="flex flex-wrap gap-4">
-                                                {['Faixas', 'Banners', 'Outros'].map(opt => (
+                                                {['Faixas', 'Banners', 'Placa', 'Outros'].map(opt => (
                                                     <label key={opt} className="flex items-center">
                                                         <input
                                                             type="checkbox"
