@@ -1239,6 +1239,7 @@ const processarDados = async (data) => {
                 ['Em relação à divulgação do projeto, fundamenta-se como elemento primordial, com vistas ao alcance dos beneficiados junto à comunidade regional. A identificação visual do projeto será aplicada em lugar de visibilidade, no núcleo, observando os padrões estabelecidos no Manual de Identidade Visual, disponível no site do Ministério, para o acompanhamento pela comunidade local e pelos órgãos de controle e fiscalização.'],
                 [`• Faixas: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Faixas') ? '(X)' : '( )'}`],
                 [`• Banners: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Banners') ? '(X)' : '( )'}`],
+                [`• Placa: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Placa') ? '(X)' : '( )'}`],
                 [`• Outros: ${Array.isArray(formData.infoProjeto.identificacao) && formData.infoProjeto.identificacao.includes('Outros') ? `(X) ${formData.infoProjeto.outrosIdentificacao || 'N/A'}` : '( )'}`]
             ];
             currentY = createTable(
@@ -2252,7 +2253,7 @@ const processarDados = async (data) => {
                                     </fieldset>
 
                                 <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.2 Núcleos</legend>
+                                    <legend className="text-blue-900 font-bold">3.2 Implementação</legend>
                                     <div className="space-y-4">
                                         <label className="block">
                                             O(s) núcleo(s) do projeto será(ão) implementado(s) em espaços comunitários:
@@ -2302,14 +2303,14 @@ const processarDados = async (data) => {
                                     </div>
                                 </fieldset>
 
-                                <fieldset className="border p-4 rounded">
+                              <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.3 Identificação do Projeto</legend>
                                     <div className="space-y-4">
                                         <p className="italic text-gray-600">Em relação à divulgação do projeto, fundamenta-se como elemento primordial.</p>
                                         <label className="block">
                                             Marque as opções aplicáveis:
                                             <div className="flex flex-wrap gap-4">
-                                                {['Faixas', 'Banners', 'Outros'].map(opt => (
+                                                {['Faixas', 'Banners', 'Placa', 'Outros'].map(opt => (
                                                     <label key={opt} className="flex items-center">
                                                         <input
                                                             type="checkbox"
