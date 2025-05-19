@@ -15,547 +15,686 @@
 <body>
     <div id="root"></div>
     <script type="text/babel">
-        const { useState, useEffect } = React;
+const { useState, useEffect } = React;
 
-        // Funções utilitárias
-        const formatarCNPJ = (cnpj) => {
-            cnpj = cnpj.replace(/\D/g, '');
-            if (cnpj.length === 14) {
-                return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
-            }
-            return cnpj;
-        };
+// Funções utilitárias
+const formatarCNPJ = (cnpj) => {
+    cnpj = cnpj.replace(/\D/g, '');
+    if (cnpj.length === 14) {
+        return cnpj.replace(/^(\d{2})(\d{3})(\d{3})(\d{4})(\d{2})$/, '$1.$2.$3/$4-$5');
+    }
+    return cnpj;
+};
 
-        const formatarTelefone = (telefone) => {
-            telefone = telefone.replace(/\D/g, '');
-            if (telefone.length === 11) return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
-            if (telefone.length === 10) return telefone.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
-            return telefone;
-        };
+const formatarTelefone = (telefone) => {
+    telefone = telefone.replace(/\D/g, '');
+    if (telefone.length === 11) return telefone.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    if (telefone.length === 10) return telefone.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+    return telefone;
+};
 
-        const numeroPorExtenso = (num) => {
-            const unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
-            const dezenas = ['dez', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
-            const especiais = ['onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
+const numeroPorExtenso = (num) => {
+    const unidades = ['zero', 'um', 'dois', 'três', 'quatro', 'cinco', 'seis', 'sete', 'oito', 'nove'];
+    const dezenas = ['dez', 'vinte', 'trinta', 'quarenta', 'cinquenta', 'sessenta', 'setenta', 'oitenta', 'noventa'];
+    const especiais = ['onze', 'doze', 'treze', 'quatorze', 'quinze', 'dezesseis', 'dezessete', 'dezoito', 'dezenove'];
 
-            num = parseInt(num);
-            if (isNaN(num)) return 'XX';
-            if (num < 10) return unidades[num];
-            if (num >= 11 && num <= 19) return especiais[num - 11];
-            if (num < 100) {
-                const dezena = Math.floor(num / 10);
-                const unidade = num % 10;
-                return unidade === 0 ? dezenas[dezena - 1] : `${dezenas[dezena - 1]} e ${unidades[unidade]}`;
-            }
-            return num.toString();
-        };
+    num = parseInt(num);
+    if (isNaN(num)) return 'XX';
+    if (num < 10) return unidades[num];
+    if (num >= 11 && num <= 19) return especiais[num - 11];
+    if (num < 100) {
+        const dezena = Math.floor(num / 10);
+        const unidade = num % 10;
+        return unidade === 0 ? dezenas[dezena - 1] : `${dezenas[dezena - 1]} e ${unidades[unidade]}`;
+    }
+    return num.toString();
+};
 
-        const formatarMoeda = (valor) => {
-            if (!valor || isNaN(parseFloat(valor))) return 'R$ 0,00';
-            return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+\,)/g, '$1.')}`;
-        };
+const formatarMoeda = (valor) => {
+    if (!valor || isNaN(parseFloat(valor))) return 'R$ 0,00';
+    return `R$ ${parseFloat(valor).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+\,)/g, '$1.')}`;
+};
 
-        const parseMoeda = (valor) => {
-            if (!valor) return 0;
-            return parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
-        };
+const parseMoeda = (valor) => {
+    if (!valor) return 0;
+    return parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
+};
 
-        // Componente Principal
-        const App = () => {
-            const [activeTab, setActiveTab] = useState('info-proponente');
-            const [formData, setFormData] = useState({
-                proponente: {
-                    cnpj: '',
-                    nomeProponente: '',
-                    nomeDirigente: '',
-                    telefones: [''],
-                    email: '',
-                    numeroProposta: '',
-                    responsavelNome: '',
-                    responsavelEmail: '',
-                    responsavelVinculo: '',
-                    responsavelTelefones: [''],
-                    dimensaoProjeto: '',
-                    uf: '',
-                    cidade: '',
-                    idh: '',
-                    anoIDH: '',
-                    numHabitantes: '',
-                    anoHabitantes: '',
-                    temParceria: '',
-                    numParcerias: '',
-                    temPublicidade: '',
-                    publicidadeSite: '',
-                    artigo2: '',
-                    artigo33I: '',
-                    artigo33III: ''
-                },
-                dadosProjeto: {
-                    objetoProjeto: '',
-                    publicoAlvo: [],
-                    quantidadeNucleos: '',
-                    publicoDireto: '',
-                    faixaEtaria: '',
-                    publicoIndireto: '',
-                    periodoEstruturacao: '',
-                    periodoExecucao: '',
-                    vigenciaTotal: '',
-                    localidadeNucleos: '',
-                    modalidades: [{ modalidade: '' }],
-                    valorConcedente: '',
-                    valorContrapartida: '',
-                    valorGlobal: ''
-                },
-                infoProjeto: {
-                    tipoNucleo: '',
-                    identificacao: [],
-                    outrosIdentificacao: '',
-                    divulgacao: [],
-                    outrosDivulgacao: '',
-                    custeioDivulgacao: '',
-                    quantidadeConjuntosUniforme: '',
-                    gradeHoraria: [{
-                        nucleoLocalidade: '',
-                        modalidadesNucleo: '',
-                        rhNucleo: '',
-                        infoNucleo: '',
-                        gradeHoraria: ''
-                    }],
-                    recursosHumanos: [{
-                        funcaoRH: '',
-                        quantidadeRH: '',
-                        atribuicaoRH: '',
-                        cargaHorariaRH: '',
-                        periodoRH: '',
-                        tipoRH: ''
-                    }],
-                    materiais: [{
-                        modalidadeMaterial: '',
-                        material: '',
-                        tipoAquisicao: 'Aquisição',
-                        especificacaoMaterial: '',
-                        justificativaMaterial: ''
-                    }],
-                    uniformes: [{
-                        modalidadeUniforme: '',
-                        itemUniforme: '',
-                        especificacaoUniforme: ''
-                    }],
-                    eventosSelecionados: [], // Adicione esta linha
+// Componente Principal
+const App = () => {
+    const [activeTab, setActiveTab] = useState('info-proponente');
+    const [formData, setFormData] = useState({
+        proponente: {
+            cnpj: '',
+            nomeProponente: '',
+            nomeDirigente: '',
+            telefones: [''],
+            email: '',
+            numeroProposta: '',
+            responsavelNome: '',
+            responsavelEmail: '',
+            responsavelVinculo: '',
+            responsavelTelefones: [''],
+            dimensaoProjeto: '',
+            uf: '',
+            cidade: '',
+            idh: '',
+            anoIDH: '',
+            numHabitantes: '',
+            anoHabitantes: '',
+            temParceria: '',
+            numParcerias: '',
+            temPublicidade: '',
+            publicidadeSite: '',
+            artigo2: '',
+            artigo33I: '',
+            artigo33III: ''
+        },
+        dadosProjeto: {
+            objetoProjeto: '',
+            publicoAlvo: [],
+            quantidadeNucleos: '',
+            publicoDireto: '',
+            faixaEtaria: '',
+            publicoIndireto: '',
+            periodoEstruturacao: '',
+            periodoExecucao: '',
+            vigenciaTotal: '',
+            localidadeNucleos: '',
+            modalidades: [{ modalidade: '' }],
+            valorConcedente: '',
+            valorContrapartida: '',
+            valorGlobal: ''
+        },
+        infoProjeto: {
+            tipoNucleo: '',
+            identificacao: [],
+            outrosIdentificacao: '',
+            divulgacao: [],
+            outrosDivulgacao: '',
+            custeioDivulgacao: '',
+            quantidadeConjuntosUniforme: '',
+            gradeHoraria: [{
+                nucleoLocalidade: '',
+                modalidadesNucleo: '',
+                rhNucleo: '',
+                infoNucleo: '',
+                gradeHorariaDescricao: ''
+            }],
+            recursosHumanos: [{
+                funcaoRH: '',
+                quantidadeRH: '',
+                atribuicaoRH: '',
+                cargaHorariaRH: '',
+                periodoRH: '',
+                tipoRH: ''
+            }],
+            materiais: [{
+                modalidadeMaterial: '',
+                material: '',
+                tipoAquisicao: 'Aquisição',
+                especificacaoMaterial: '',
+                justificativaMaterial: ''
+            }],
+            uniformes: [{
+                modalidadeUniforme: '',
+                itemUniforme: '',
+                especificacaoUniforme: ''
+            }],
+            eventosSelecionados: [], // Adicione esta linha
                     abrangenciaEventos: '',
                     detalhamentoModalidades: 'Espaço destinado para a Entidade relatar detalhes específicos sobre as modalidades que serão oferecidas neste projeto, visando conectar o projeto à realidade da Instituição e dos objetivos que se pretende alcançar, tais como: desenvolvimento, características, habilidades, materiais, estrutura, vantagens, benefícios, etc.',
                     acompanhamento: 'As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos, relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico. Será emitido parecer, trimestralmente, dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.',
                     conclusao: 'O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.'
+
+        }
+    });
+    const [municipios, setMunicipios] = useState([]);
+    const [isCNPJEditable, setIsCNPJEditable] = useState(true);
+    const [isNomeDirigenteEditable, setIsNomeDirigenteEditable] = useState(false);
+    const [formularioValido, setFormularioValido] = useState(false);
+
+    // Lista de campos obrigatórios
+    const camposObrigatorios = {
+        proponente: [
+            'cnpj',
+            'nomeProponente',
+            'nomeDirigente',
+            'telefones',
+            'email',
+            'numeroProposta',
+            'responsavelNome',
+            'responsavelEmail',
+            'responsavelVinculo',
+            'responsavelTelefones',
+            'dimensaoProjeto',
+            'uf',
+            'cidade',
+            'numHabitantes',
+            'anoHabitantes',
+            'temParceria',
+            'temPublicidade',
+            'artigo2',
+            'artigo33I',
+            'artigo33III'
+        ],
+        dadosProjeto: [
+            'objetoProjeto',
+            'publicoAlvo',
+            'quantidadeNucleos',
+            'publicoDireto',
+            'faixaEtaria',
+            'periodoEstruturacao',
+            'periodoExecucao',
+            'localidadeNucleos',
+            'modalidades',
+            'valorConcedente',
+            'valorContrapartida'
+        ],
+        infoProjeto: [
+            'tipoNucleo',
+            'identificacao',
+            'divulgacao',
+            'custeioDivulgacao',
+            'quantidadeConjuntosUniforme',
+            'gradeHoraria',
+            'recursosHumanos',
+            'materiais',
+            'uniformes',
+            'detalhamentoModalidades'
+        ]
+    };
+
+    // Função de validação
+    const validarFormulario = () => {
+        const { proponente, dadosProjeto, infoProjeto } = formData;
+
+        // Função auxiliar para verificar se um campo está preenchido
+        const isFilled = (value) => {
+            if (Array.isArray(value)) {
+                return value.length > 0 && value.every(item => {
+                    if (typeof item === 'object') {
+                        return Object.values(item).every(v => isFilled(v));
+                    }
+                    return v !== '' && v !== null && v !== undefined;
+                });
+            }
+            return value !== '' && value !== null && value !== undefined;
+        };
+
+        // Verifica cada seção
+        for (const secao of Object.keys(camposObrigatorios)) {
+            for (const campo of camposObrigatorios[secao]) {
+                const valor = formData[secao][campo];
+
+                // Verifica se o campo está preenchido
+                if (!isFilled(valor)) {
+                    console.log(`Campo obrigatório não preenchido: ${secao}.${campo}`);
+                    return false;
                 }
+
+                // Validações específicas para alguns campos
+                if (secao === 'proponente') {
+                    if (campo === 'cnpj' && valor.replace(/\D/g, '').length !== 14) {
+                        return false; // CNPJ inválido
+                    }
+                    if (campo === 'email' && !valor.includes('@')) {
+                        return false; // Email inválido
+                    }
+                    if (campo === 'temParceria' && valor === 'sim' && !isFilled(proponente.numParcerias)) {
+                        return false; // numParcerias obrigatório se temParceria for 'sim'
+                    }
+                    if (campo === 'temPublicidade' && valor === 'sim' && !isFilled(proponente.publicidadeSite)) {
+                        return false; // publicidadeSite obrigatório se temPublicidade for 'sim'
+                    }
+                }
+                if (secao === 'dadosProjeto') {
+                    if (campo === 'valorConcedente' && parseMoeda(valor) <= 0) {
+                        return false; // Valor concedente inválido
+                    }
+                    if (campo === 'publicoDireto' && parseInt(valor) <= 0) {
+                        return false; // Público direto inválido
+                    }
+                    if (campo === 'modalidades') {
+                        return valor.every(mod => isFilled(mod.modalidade));
+                    }
+                }
+                if (secao === 'infoProjeto') {
+                    if (campo === 'gradeHoraria') {
+                        return valor.every(row => isFilled(row.nucleoLocalidade) && isFilled(row.modalidadesNucleo) && isFilled(row.gradeHorariaDescricao));
+                    }
+                    if (campo === 'recursosHumanos') {
+                        return valor.every(row => isFilled(row.funcaoRH) && isFilled(row.quantidadeRH) && isFilled(row.atribuicaoRH) && isFilled(row.cargaHorariaRH) && isFilled(row.periodoRH));
+                    }
+                    if (campo === 'materiais') {
+                        return valor.every(row => isFilled(row.modalidadeMaterial) && isFilled(row.material) && isFilled(row.especificacaoMaterial) && isFilled(row.justificativaMaterial));
+                    }
+                    if (campo === 'uniformes') {
+                        return valor.every(row => isFilled(row.modalidadeUniforme) && isFilled(row.itemUniforme) && isFilled(row.especificacaoUniforme));
+                    }
+                }
+            }
+        }
+
+        // eventosSelecionados é opcional, então não é verificado
+        // abrangenciaEventos é exigido apenas se eventosSelecionados tiver valores
+        if (infoProjeto.eventosSelecionados?.length > 0 && !isFilled(infoProjeto.abrangenciaEventos)) {
+            console.log('abrangenciaEventos é obrigatório quando eventosSelecionados está preenchido');
+            return false;
+        }
+
+        return true; // Todos os campos obrigatórios estão preenchidos
+    };
+
+    useEffect(() => {
+        setFormularioValido(validarFormulario());
+    }, [formData]);
+
+    useEffect(() => {
+        loadSavedData();
+    }, []);
+
+    const loadSavedData = () => {
+        const saved = localStorage.getItem('formData');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            setFormData(parsed);
+            if (parsed.proponente.uf) carregarMunicipios(parsed.proponente.uf);
+            if (parsed.proponente.cidade) preencherMunicipio(parsed.proponente.cidade);
+        }
+    };
+
+    const saveForm = (section) => {
+        const updatedData = { ...formData, [section]: formData[section] };
+        setFormData(updatedData);
+        localStorage.setItem('formData', JSON.stringify(updatedData));
+        alert('Dados salvos com sucesso!');
+    };
+
+    const handleInputChange = (section, field, value, index = null, subField = null) => {
+        setFormData(prev => {
+            const newData = { ...prev };
+            if (index !== null && subField) {
+                newData[section][field][index][subField] = value;
+            } else if (index !== null) {
+                newData[section][field][index] = value;
+            } else {
+                newData[section][field] = value;
+            }
+            return newData;
+        });
+
+        if (section === 'proponente') {
+            if (field === 'cnpj') buscarDadosCNPJ(value);
+            if (field === 'uf') carregarMunicipios(value);
+            if (field === 'cidade') buscarDadosMunicipio(value);
+        }
+        if (section === 'dadosProjeto') {
+            if (field === 'valorConcedente' || field === 'valorContrapartida') {
+                calcularValorGlobal();
+            }
+            if (field === 'periodoEstruturacao' || field === 'periodoExecucao') {
+                calcularVigenciaTotal();
+            }
+            if (field === 'publicoDireto') {
+                calcularPublicoIndireto(value);
+            }
+        }
+    };
+
+    const addItem = (section, field) => {
+        setFormData(prev => {
+            const newData = { ...prev };
+            const template = { modalidade: '' }; // Novo item com modalidade em branco
+            newData[section][field] = [...prev[section][field], { ...template }];
+            return newData;
+        });
+    };
+
+    const removeItem = (section, field, index) => {
+        if (formData[section][field].length > 1) {
+            setFormData(prev => {
+                const newData = { ...prev };
+                newData[section][field] = prev[section][field].filter((_, i) => i !== index);
+                return newData;
             });
-            const [municipios, setMunicipios] = useState([]);
-            const [isCNPJEditable, setIsCNPJEditable] = useState(true);
+        } else {
+            alert('É necessário ter pelo menos uma linha.');
+        }
+    };
 
-            useEffect(() => {
-                loadSavedData();
-            }, []);
+    // Cache para armazenar respostas da BrasilAPI
+    const cnpjCache = {};
 
-            const loadSavedData = () => {
-                const saved = localStorage.getItem('formData');
-                if (saved) {
-                    const parsed = JSON.parse(saved);
-                    setFormData(parsed);
-                    if (parsed.proponente.uf) carregarMunicipios(parsed.proponente.uf);
-                    if (parsed.proponente.cidade) preencherMunicipio(parsed.proponente.cidade);
-                }
-            };
+    const buscarDadosCNPJ = async (cnpj) => {
+        // Remove caracteres não numéricos do CNPJ
+        cnpj = cnpj.replace(/\D/g, '');
 
-            const saveForm = (section) => {
-                const updatedData = { ...formData, [section]: formData[section] };
-                setFormData(updatedData);
-                localStorage.setItem('formData', JSON.stringify(updatedData));
-                alert('Dados salvos com sucesso!');
-            };
-
-            const handleInputChange = (section, field, value, index = null, subField = null) => {
-                setFormData(prev => {
-                    const newData = { ...prev };
-                    if (index !== null && subField) {
-                        newData[section][field][index][subField] = value;
-                    } else if (index !== null) {
-                        newData[section][field][index] = value;
-                    } else {
-                        newData[section][field] = value;
-                    }
-                    return newData;
-                });
-
-                if (section === 'proponente') {
-                    if (field === 'cnpj') buscarDadosCNPJ(value);
-                    if (field === 'uf') carregarMunicipios(value);
-                    if (field === 'cidade') buscarDadosMunicipio(value);
-                }
-                if (section === 'dadosProjeto') {
-                    if (field === 'valorConcedente' || field === 'valorContrapartida') {
-                        calcularValorGlobal();
-                    }
-                    if (field === 'periodoEstruturacao' || field === 'periodoExecucao') {
-                        calcularVigenciaTotal();
-                    }
-                    if (field === 'publicoDireto') {
-                        calcularPublicoIndireto(value);
-                    }
-                }
-            };
-
-            const addItem = (section, field) => {
-                setFormData(prev => {
-                    const newData = { ...prev };
-                    const template = { modalidade: '' }; // Novo item com modalidade em branco
-                    newData[section][field] = [...prev[section][field], { ...template }];
-                    return newData;
-                });
-            };
-
-            const removeItem = (section, field, index) => {
-                if (formData[section][field].length > 1) {
-                    setFormData(prev => {
-                        const newData = { ...prev };
-                        newData[section][field] = prev[section][field].filter((_, i) => i !== index);
-                        return newData;
-                    });
-                } else {
-                    alert('É necessário ter pelo menos uma linha.');
-                }
-            };
-
-// Cache para armazenar respostas da BrasilAPI
-const cnpjCache = {};
-
-const buscarDadosCNPJ = async (cnpj) => {
-    // Remove caracteres não numéricos do CNPJ
-    cnpj = cnpj.replace(/\D/g, '');
-
-    // Só exibe a mensagem se o CNPJ tiver 12 ou 13 dígitos
-    if (cnpj.length === 12 || cnpj.length === 13) {
-        console.warn('CNPJ inválido:', cnpj);
-        alert('Por favor, insira um CNPJ válido com 14 dígitos.');
-        return;
-    }
-
-    // Se o CNPJ tiver 14 dígitos, prossegue com a busca
-    if (cnpj.length === 14) {
-        // Verifica se o CNPJ está no cache
-        if (cnpjCache[cnpj]) {
-            console.log('Usando dados do cache para CNPJ:', cnpj);
-            processarDados(cnpjCache[cnpj]);
+        // Só exibe a mensagem se o CNPJ tiver 12 ou 13 dígitos
+        if (cnpj.length === 12 || cnpj.length === 13) {
+            console.warn('CNPJ inválido:', cnpj);
+            alert('Por favor, insira um CNPJ válido com 14 dígitos.');
             return;
         }
 
-        try {
-            // Faz a requisição à BrasilAPI
-            console.log('Buscando dados na BrasilAPI para CNPJ:', cnpj);
-            const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-            if (!response.ok) {
-                throw new Error(`Erro ${response.status}: ${response.statusText}`);
+        // Se o CNPJ tiver 14 dígitos, prossegue com a busca
+        if (cnpj.length === 14) {
+            // Verifica se o CNPJ está no cache
+            if (cnpjCache[cnpj]) {
+                console.log('Usando dados do cache para CNPJ:', cnpj);
+                processarDados(cnpjCache[cnpj]);
+                return;
             }
 
-            const data = await response.json();
-            console.log('Dados retornados pela BrasilAPI:', data);
+            try {
+                // Faz a requisição à BrasilAPI
+                console.log('Buscando dados na BrasilAPI para CNPJ:', cnpj);
+                const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
 
-            // Armazena no cache
-            cnpjCache[cnpj] = data;
+                const data = await response.json();
+                console.log('Dados retornados pela BrasilAPI:', data);
 
-            // Processa os dados
-            processarDados(data);
-        } catch (error) {
-            console.error('Erro ao buscar dados do CNPJ:', error);
-            alert(`Erro ao buscar dados do CNPJ: ${error.message}`);
+                // Armazena no cache
+                cnpjCache[cnpj] = data;
+
+                // Processa os dados
+                processarDados(data);
+            } catch (error) {
+                console.error('Erro ao buscar dados do CNPJ:', error);
+                alert(`Erro ao buscar dados do CNPJ: ${error.message}`);
+                setIsCNPJEditable(true);
+            }
+        }
+    };
+
+    const processarDados = async (data) => {
+        if (!data.erro) {
+            const uf = data.uf || '';
+            const municipio = data.municipio || '';
+
+            // Atualiza o estado do formulário
+            setFormData(prev => {
+                const newState = {
+                    ...prev,
+                    proponente: {
+                        ...prev.proponente,
+                        nomeProponente: data.razao_social || '',
+                        nomeDirigente: data.qsa?.find(q =>
+                            q.qualificacao === '05-Administrador' ||
+                            q.qualificacao === '49-Socio-Administrador'
+                        )?.nome || '',
+                        uf: uf
+                    }
+                };
+                console.log('Novo estado do formData:', newState);
+                return newState;
+            });
+
+            // Bloqueia a edição do CNPJ
+            setIsCNPJEditable(false);
+
+            // Carrega os municípios se UF estiver presente
+            if (uf) {
+                console.log('Carregando municípios para UF:', uf);
+                try {
+                    await carregarMunicipios(uf);
+                } catch (error) {
+                    console.error('Erro ao carregar municípios:', error);
+                }
+            } else {
+                console.warn('UF não fornecida pela BrasilAPI:', data);
+                setMunicipios([]);
+            }
+
+            // Preenche o município se disponível
+            if (municipio) {
+                console.log('Chamando preencherMunicipio com município:', municipio);
+                try {
+                    await preencherMunicipio(municipio);
+                } catch (error) {
+                    console.error('Erro ao preencher município:', error);
+                }
+            } else {
+                console.warn('Município não fornecido pela BrasilAPI:', data);
+                setFormData(prev => ({
+                    ...prev,
+                    proponente: { ...prev.proponente, cidade: '' }
+                }));
+            }
+        } else {
+            console.warn('CNPJ não encontrado na BrasilAPI:', data);
+            alert('CNPJ não encontrado.');
             setIsCNPJEditable(true);
         }
-    }
-};
+    };
 
-const processarDados = async (data) => {
-    if (!data.erro) {
-        const uf = data.uf || '';
-        const municipio = data.municipio || '';
-
-        // Atualiza o estado do formulário
-        setFormData(prev => {
-            const newState = {
+    const buscarDadosMunicipio = async (municipioId) => {
+        if (!municipioId) {
+            console.warn('ID do município não fornecido.');
+            setFormData(prev => ({
                 ...prev,
                 proponente: {
                     ...prev.proponente,
-                    nomeProponente: data.razao_social || '',
-                    nomeDirigente: data.qsa?.find(q =>
-                        q.qualificacao === '05-Administrador' ||
-                        q.qualificacao === '49-Socio-Administrador'
-                    )?.nome || '',
-                    uf: uf
+                    numHabitantes: '',
+                    anoHabitantes: '',
+                    idh: '',
+                    anoIDH: ''
                 }
-            };
-            console.log('Novo estado do formData:', newState);
-            return newState;
-        });
-
-        // Bloqueia a edição do CNPJ
-        setIsCNPJEditable(false);
-
-        // Carrega os municípios se UF estiver presente
-        if (uf) {
-            console.log('Carregando municípios para UF:', uf);
-            try {
-                await carregarMunicipios(uf);
-            } catch (error) {
-                console.error('Erro ao carregar municípios:', error);
-            }
-        } else {
-            console.warn('UF não fornecida pela BrasilAPI:', data);
-            setMunicipios([]);
+            }));
+            return;
         }
-
-        // Preenche o município se disponível
-        if (municipio) {
-            console.log('Chamando preencherMunicipio com município:', municipio);
-            try {
-                await preencherMunicipio(municipio);
-            } catch (error) {
-                console.error('Erro ao preencher município:', error);
+        try {
+            // Buscar dados populacionais
+            const response = await fetch(`https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2021/variaveis/9324?localidades=N6[${municipioId}]`);
+            if (!response.ok) {
+                throw new Error(`Erro ${response.status}: ${response.statusText}`);
             }
-        } else {
-            console.warn('Município não fornecido pela BrasilAPI:', data);
+            const data = await response.json();
+            console.log('Dados populacionais retornados:', data);
+
+            // Extrair população e ano de referência
+            const populacao = data?.[0]?.resultados?.[0]?.series?.[0]?.serie?.['2021'] || '';
+            const anoReferencia = '2021'; // Ano fixo baseado na API usada (ajuste conforme a fonte)
+
+            // Atualizar formData com os dados populacionais
+            setFormData(prev => ({
+                ...prev,
+                proponente: {
+                    ...prev.proponente,
+                    numHabitantes: populacao ? populacao.toString() : '',
+                    anoHabitantes: anoReferencia
+                }
+            }));
+        } catch (error) {
+            console.error('Erro ao buscar dados do município:', error);
+            alert('Erro ao buscar dados populacionais do município. Verifique a conexão ou tente novamente.');
+            setFormData(prev => ({
+                ...prev,
+                proponente: {
+                    ...prev.proponente,
+                    numHabitantes: '',
+                    anoHabitantes: ''
+                }
+            }));
+        }
+    };
+
+    const carregarMunicipios = async (uf, retries = 3) => {
+        if (!uf || !/^[A-Z]{2}$/.test(uf)) {
+            console.warn(`UF inválida: "${uf}". Definindo municipios como vazio.`);
+            setMunicipios([]);
+            return [];
+        }
+        for (let attempt = 1; attempt <= retries; attempt++) {
+            try {
+                const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
+                if (!response.ok) {
+                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                }
+                const data = await response.json();
+                console.log(`Municípios carregados para UF ${uf}:`, data);
+                setMunicipios(data || []);
+                return data || [];
+            } catch (error) {
+                console.error(`Tentativa ${attempt} falhou ao carregar municípios para UF ${uf}:`, error);
+                if (attempt === retries) {
+                    console.warn(`Não foi possível carregar municípios para UF ${uf}.`);
+                    alert(`Não foi possível carregar os municípios para UF ${uf}. Verifique sua conexão ou tente novamente.`);
+                    setMunicipios([]);
+                    return [];
+                }
+            }
+        }
+    };
+
+    const preencherMunicipio = async (nomeMunicipio) => {
+        if (!nomeMunicipio) {
+            console.warn('Nome do município não fornecido.');
             setFormData(prev => ({
                 ...prev,
                 proponente: { ...prev.proponente, cidade: '' }
             }));
+            return;
         }
-    } else {
-        console.warn('CNPJ não encontrado na BrasilAPI:', data);
-        alert('CNPJ não encontrado.');
-        setIsCNPJEditable(true);
-    }
-};
 
-                const buscarDadosMunicipio = async (municipioId) => {
-                if (!municipioId) {
-                    console.warn('ID do município não fornecido.');
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: {
-                            ...prev.proponente,
-                            numHabitantes: '',
-                            anoHabitantes: '',
-                            idh: '',
-                            anoIDH: ''
-                        }
-                    }));
-                    return;
-                }
-                try {
-                    // Buscar dados populacionais
-                    const response = await fetch(`https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2021/variaveis/9324?localidades=N6[${municipioId}]`);
-                    if (!response.ok) {
-                        throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                    }
-                    const data = await response.json();
-                    console.log('Dados populacionais retornados:', data);
-
-                    // Extrair população e ano de referência
-                    const populacao = data?.[0]?.resultados?.[0]?.series?.[0]?.serie?.['2021'] || '';
-                    const anoReferencia = '2021'; // Ano fixo baseado na API usada (ajuste conforme a fonte)
-
-                    // Atualizar formData com os dados populacionais
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: {
-                            ...prev.proponente,
-                            numHabitantes: populacao ? populacao.toString() : '',
-                            anoHabitantes: anoReferencia
-                        }
-                    }));
-                                } catch (error) {
-                        console.error('Erro ao buscar dados do município:', error);
-                        alert('Erro ao buscar dados populacionais do município. Verifique a conexão ou tente novamente.');
-                        setFormData(prev => ({
-                            ...prev,
-                            proponente: {
-                                ...prev.proponente,
-                                numHabitantes: '',
-                                anoHabitantes: ''
-                            }
-                        }));
-                    }
-                };
-
-                const carregarMunicipios = async (uf, retries = 3) => {
-                    if (!uf || !/^[A-Z]{2}$/.test(uf)) {
-                        console.warn(`UF inválida: "${uf}". Definindo municipios como vazio.`);
-                        setMunicipios([]);
-                        return [];
-                    }
-                    for (let attempt = 1; attempt <= retries; attempt++) {
-                        try {
-                            const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
-                            if (!response.ok) {
-                                throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                            }
-                            const data = await response.json();
-                            console.log(`Municípios carregados para UF ${uf}:`, data);
-                            setMunicipios(data || []);
-                            return data || [];
-                        } catch (error) {
-                            console.error(`Tentativa ${attempt} falhou ao carregar municípios para UF ${uf}:`, error);
-                            if (attempt === retries) {
-                                console.warn(`Não foi possível carregar municípios para UF ${uf}.`);
-                                alert(`Não foi possível carregar os municípios para UF ${uf}. Verifique sua conexão ou tente novamente.`);
-                                setMunicipios([]);
-                                return [];
-                            }
-                        }
-                    }
-                };
-
-
-            const preencherMunicipio = async (nomeMunicipio) => {
-                if (!nomeMunicipio) {
-                    console.warn('Nome do município não fornecido.');
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: { ...prev.proponente, cidade: '' }
-                    }));
-                    return;
-                }
-
-                // Verificar se nomeMunicipio é um ID (ex.: '1300102')
-                if (/^\d+$/.test(nomeMunicipio)) {
-                    console.warn(`nomeMunicipio "${nomeMunicipio}" parece ser um ID, não um nome.`);
-                    
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: { ...prev.proponente, cidade: nomeMunicipio }
-                    }));
-
-                    if (formData.proponente.uf) {
-                        const lista = await carregarMunicipios(formData.proponente.uf);
-
-                        if (Array.isArray(lista)) {
-                            const municipioId = Number(nomeMunicipio.trim());
-                            const municipio = lista.find(mun => mun.id === municipioId);
-
-                            if (municipio) {
-                                console.log('Município encontrado pelo ID:', municipio.nome);
-                                buscarDadosMunicipio(municipio.id);
-                            } else {
-                                console.warn(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
-                                alert(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
-                            }
-                        } else {
-                            console.warn('Falha ao obter a lista de municípios.');
-                            alert('Erro ao carregar municípios. Tente novamente.');
-                        }
-                    }
-                    return;
-                }
-                // Garantir que municipios esteja carregado
-                if (!municipios.length && formData.proponente.uf) {
-                    console.log(`Carregando municípios para UF ${formData.proponente.uf}...`);
-                    await carregarMunicipios(formData.proponente.uf);
-                }
-
-                const normalizedInput = normalizeString(nomeMunicipio);
-                const municipio = municipios.find(mun => {
-                    const normalizedMun = normalizeString(mun.nome);
-                    return (
-                        normalizedMun === normalizedInput ||
-                        normalizedMun.includes(normalizedInput) ||
-                        normalizedInput.includes(normalizedMun)
-                    );
-                });
-
-                if (municipio) {
-                    console.log('Município encontrado pelo nome:', municipio.nome, 'ID:', municipio.id);
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: { ...prev.proponente, cidade: municipio.id }
-                    }));
-                    buscarDadosMunicipio(municipio.id);
-                } else {
-                    console.warn(`Município "${nomeMunicipio}" não encontrado para UF ${formData.proponente.uf}. Municipios disponíveis:`, municipios);
-                    setFormData(prev => ({
-                        ...prev,
-                        proponente: { ...prev.proponente, cidade: '' }
-                    }));
-                    alert(`Município "${nomeMunicipio}" não encontrado na lista de municípios da UF ${formData.proponente.uf}.`);
-                }
-            };
-
-            const normalizeString = (str) => {
-                return str
-                    ?.toLowerCase()
-                    .normalize('NFD')
-                    .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-                    .replace(/[^a-z0-9\s]/g, ''); // Remove caracteres especiais
-            };
-
-
-            const calcularVigenciaTotal = () => {
-                const periodoEstruturacao = parseFloat(formData.dadosProjeto.periodoEstruturacao) || 1;
-                const periodoExecucao = parseFloat(formData.dadosProjeto.periodoExecucao) || 0;
-                const vigenciaTotal = periodoEstruturacao + periodoExecucao;
-                setFormData(prev => ({
-                    ...prev,
-                    dadosProjeto: { ...prev.dadosProjeto, vigenciaTotal: vigenciaTotal.toString() }
-                }));
-            };
-            useEffect(() => {
-                const estruturacao = parseInt(formData.dadosProjeto.periodoEstruturacao) || 0;
-                const execucao = parseInt(formData.dadosProjeto.periodoExecucao) || 0;
-                const total = estruturacao + execucao;
-                setFormData(prev => ({
-                    ...prev,
-                    dadosProjeto: {
-                        ...prev.dadosProjeto,
-                        vigenciaTotal: total > 0 ? total.toString() : ''
-                    }
-                }));
-            }, [formData.dadosProjeto.periodoEstruturacao, formData.dadosProjeto.periodoExecucao]);
-            useEffect(() => {
-                const cnpjNumeros = formData.proponente.cnpj.replace(/\D/g, '');
-                if (cnpjNumeros.length === 14) {
-                    buscarDadosCNPJ(formData.proponente.cnpj);
-                }
-            }, [formData.proponente.cnpj]);
+        // Verificar se nomeMunicipio é um ID (ex.: '1300102')
+        if (/^\d+$/.test(nomeMunicipio)) {
+            console.warn(`nomeMunicipio "${nomeMunicipio}" parece ser um ID, não um nome.`);
             
-            const calcularValorGlobal = () => {
-                const valorConcedente = parseMoeda(formData.dadosProjeto.valorConcedente);
-                const valorContrapartida = parseMoeda(formData.dadosProjeto.valorContrapartida);
-                const valorGlobal = valorConcedente + valorContrapartida;
-                setFormData(prev => ({
-                    ...prev,
-                    dadosProjeto: { ...prev.dadosProjeto, valorGlobal: formatarMoeda(valorGlobal) }
-                }));
-            };
+            setFormData(prev => ({
+                ...prev,
+                proponente: { ...prev.proponente, cidade: nomeMunicipio }
+            }));
 
-            const calcularPublicoIndireto = (publicoDireto) => {
-                const publicoDiretoNum = parseInt(publicoDireto) || 0;
-                const publicoIndireto = publicoDiretoNum * 3;
-                setFormData(prev => ({
-                    ...prev,
-                    dadosProjeto: { ...prev.dadosProjeto, publicoIndireto: publicoIndireto.toString() }
-                }));
-            };
+            if (formData.proponente.uf) {
+                const lista = await carregarMunicipios(formData.proponente.uf);
 
-            const getObjetivosEspecificos = () => {
-                const publico = formData.dadosProjeto.publicoAlvo;
-                const quantidadeNucleos = formData.dadosProjeto.quantidadeNucleos || 'XX';
-                const publicoStr = publico.length > 0 ? publico.join(', ') : 'crianças, adolescentes, jovens, adultos e idosos';
-                return [
-                    `Oportunizar a prática esportiva sistematizada para ${publicoStr} em ${quantidadeNucleos} núcleo(s); (adequar o núcleo de acordo com a dimensão do projeto).`,
-                    'Auxiliar na diminuição de situações de risco e vulnerabilidade, através do fomento à prática esportiva;',
-                    'Oferecer um ambiente seguro e motivador, incentivando disciplina, trabalho em equipe e respeito.',
-                    'Promover hábitos saudáveis e a importância da atividade física regular;',
-                    'Desenvolver capacidades motoras, como força, flexibilidade, equilíbrio e coordenação, por meio das modalidades oferecidas;',
-                    'Estimular a socialização e o respeito mútuo entre os participantes, promovendo valores como disciplina, cooperação e cidadania.'
-                ];
-            };
+                if (Array.isArray(lista)) {
+                    const municipioId = Number(nomeMunicipio.trim());
+                    const municipio = lista.find(mun => mun.id === municipioId);
 
-            const generatePDF = () => {
+                    if (municipio) {
+                        console.log('Município encontrado pelo ID:', municipio.nome);
+                        buscarDadosMunicipio(municipio.id);
+                    } else {
+                        console.warn(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
+                        alert(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
+                    }
+                } else {
+                    console.warn('Falha ao obter a lista de municípios.');
+                    alert('Erro ao carregar municípios. Tente novamente.');
+                }
+            }
+            return;
+        }
+        // Garantir que municipios esteja carregado
+        if (!municipios.length && formData.proponente.uf) {
+            console.log(`Carregando municípios para UF ${formData.proponente.uf}...`);
+            await carregarMunicipios(formData.proponente.uf);
+        }
+
+        const normalizedInput = normalizeString(nomeMunicipio);
+        const municipio = municipios.find(mun => {
+            const normalizedMun = normalizeString(mun.nome);
+            return (
+                normalizedMun === normalizedInput ||
+                normalizedMun.includes(normalizedInput) ||
+                normalizedInput.includes(normalizedMun)
+            );
+        });
+
+        if (municipio) {
+            console.log('Município encontrado pelo nome:', municipio.nome, 'ID:', municipio.id);
+            setFormData(prev => ({
+                ...prev,
+                proponente: { ...prev.proponente, cidade: municipio.id }
+            }));
+            buscarDadosMunicipio(municipio.id);
+        } else {
+            console.warn(`Município "${nomeMunicipio}" não encontrado para UF ${formData.proponente.uf}. Municipios disponíveis:`, municipios);
+            setFormData(prev => ({
+                ...prev,
+                proponente: { ...prev.proponente, cidade: '' }
+            }));
+            alert(`Município "${nomeMunicipio}" não encontrado na lista de municípios da UF ${formData.proponente.uf}.`);
+        }
+    };
+
+    const normalizeString = (str) => {
+        return str
+            ?.toLowerCase()
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '') // Remove acentos
+            .replace(/[^a-z0-9\s]/g, ''); // Remove caracteres especiais
+    };
+
+    const calcularVigenciaTotal = () => {
+        const periodoEstruturacao = parseFloat(formData.dadosProjeto.periodoEstruturacao) || 1;
+        const periodoExecucao = parseFloat(formData.dadosProjeto.periodoExecucao) || 0;
+        const vigenciaTotal = periodoEstruturacao + periodoExecucao;
+        setFormData(prev => ({
+            ...prev,
+            dadosProjeto: { ...prev.dadosProjeto, vigenciaTotal: vigenciaTotal.toString() }
+        }));
+    };
+
+    useEffect(() => {
+        const estruturacao = parseInt(formData.dadosProjeto.periodoEstruturacao) || 0;
+        const execucao = parseInt(formData.dadosProjeto.periodoExecucao) || 0;
+        const total = estruturacao + execucao;
+        setFormData(prev => ({
+            ...prev,
+            dadosProjeto: {
+                ...prev.dadosProjeto,
+                vigenciaTotal: total > 0 ? total.toString() : ''
+            }
+        }));
+    }, [formData.dadosProjeto.periodoEstruturacao, formData.dadosProjeto.periodoExecucao]);
+
+    useEffect(() => {
+        const cnpjNumeros = formData.proponente.cnpj.replace(/\D/g, '');
+        if (cnpjNumeros.length === 14) {
+            buscarDadosCNPJ(formData.proponente.cnpj);
+        }
+    }, [formData.proponente.cnpj]);
+
+    const calcularValorGlobal = () => {
+        const valorConcedente = parseMoeda(formData.dadosProjeto.valorConcedente);
+        const valorContrapartida = parseMoeda(formData.dadosProjeto.valorContrapartida);
+        const valorGlobal = valorConcedente + valorContrapartida;
+        setFormData(prev => ({
+            ...prev,
+            dadosProjeto: { ...prev.dadosProjeto, valorGlobal: formatarMoeda(valorGlobal) }
+        }));
+    };
+
+    const calcularPublicoIndireto = (publicoDireto) => {
+        const publicoDiretoNum = parseInt(publicoDireto) || 0;
+        const publicoIndireto = publicoDiretoNum * 3;
+        setFormData(prev => ({
+            ...prev,
+            dadosProjeto: { ...prev.dadosProjeto, publicoIndireto: publicoIndireto.toString() }
+        }));
+    };
+
+    const getObjetivosEspecificos = () => {
+        const publico = formData.dadosProjeto.publicoAlvo;
+        const quantidadeNucleos = formData.dadosProjeto.quantidadeNucleos || 'XX';
+        const publicoStr = publico.length > 0 ? publico.join(', ') : 'crianças, adolescentes, jovens, adultos e idosos';
+        return [
+            `Oportunizar a prática esportiva sistematizada para ${publicoStr} em ${quantidadeNucleos} núcleo(s); (adequar o núcleo de acordo com a dimensão do projeto).`,
+            'Auxiliar na diminuição de situações de risco e vulnerabilidade, através do fomento à prática esportiva;',
+            'Oferecer um ambiente seguro e motivador, incentivando disciplina, trabalho em equipe e respeito.',
+            'Promover hábitos saudáveis e a importância da atividade física regular;',
+            'Desenvolver capacidades motoras, como força, flexibilidade, equilíbrio e coordenação, por meio das modalidades oferecidas;',
+            'Estimular a socialização e o respeito mútuo entre os participantes, promovendo valores como disciplina, cooperação e cidadania.'
+        ];
+    };
+
+    const generatePDF = () => {
         try {
             if (!window.jspdf || !window.jspdf.jsPDF) {
                 throw new Error('jsPDF library is not loaded.');
@@ -665,23 +804,23 @@ const processarDados = async (data) => {
 
             // Seção 1 - INFORMAÇÕES GERAIS DO PROPONENTE
             // 1.1 IDENTIFICAÇÃO PROPONENTE
-                const identificacaoProponente = [
-                    [`CNPJ Proponente: ${formData.proponente.cnpj || 'N/A'}`],
-                    [`Nome Proponente: ${formData.proponente.nomeProponente || 'N/A'}`],
-                    [`Nome do Dirigente: ${formData.proponente.nomeDirigente || 'N/A'}`],
-                    [`Telefone(s) de contato com DDD: ${Array.isArray(formData.proponente.telefones) && formData.proponente.telefones.length ? formData.proponente.telefones.join(', ') : 'N/A'}`],
-                    [`E-mail: ${formData.proponente.email || 'N/A'}`],
-                    [`Número da Proposta: ${formData.proponente.numeroProposta || 'N/A'}`],
-                    [`Emenda Parlamentar: ${formData.proponente.emendaParlamentar || 'N/A'}`],
-                    [`GND - Material de Consumo e Permanente: ${Array.isArray(formData.proponente.gnd) && formData.proponente.gnd.length ? formData.proponente.gnd.join(', ') : 'N/A'}`]
-                ];
-                currentY = createTable(
-                    '1. INFORMAÇÕES GERAIS DO PROPONENTE\n1.1 IDENTIFICAÇÃO PROPONENTE*',
-                    [['']],
-                    identificacaoProponente,
-                    currentY,
-                    [190]
-                );
+            const identificacaoProponente = [
+                [`CNPJ Proponente: ${formData.proponente.cnpj || 'N/A'}`],
+                [`Nome Proponente: ${formData.proponente.nomeProponente || 'N/A'}`],
+                [`Nome do Dirigente: ${formData.proponente.nomeDirigente || 'N/A'}`],
+                [`Telefone(s) de contato com DDD: ${Array.isArray(formData.proponente.telefones) && formData.proponente.telefones.length ? formData.proponente.telefones.join(', ') : 'N/A'}`],
+                [`E-mail: ${formData.proponente.email || 'N/A'}`],
+                [`Número da Proposta: ${formData.proponente.numeroProposta || 'N/A'}`],
+                [`Emenda Parlamentar: ${formData.proponente.emendaParlamentar || 'N/A'}`],
+                [`GND - Material de Consumo e Permanente: ${Array.isArray(formData.proponente.gnd) && formData.proponente.gnd.length ? formData.proponente.gnd.join(', ') : 'N/A'}`]
+            ];
+            currentY = createTable(
+                '1. INFORMAÇÕES GERAIS DO PROPONENTE\n1.1 IDENTIFICAÇÃO PROPONENTE*',
+                [['']],
+                identificacaoProponente,
+                currentY,
+                [190]
+            );
 
             // 1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO
             const responsavelElaboracao = [
@@ -913,7 +1052,7 @@ const processarDados = async (data) => {
             );
 
             // Seção 3 - INFORMAÇÕES DO PROJETO TÉCNICO
-          // 3.1 ESTRUTURAÇÃO DO PROJETO - VERSÃO ATUALIZADA
+            // 3.1 ESTRUTURAÇÃO DO PROJETO - VERSÃO ATUALIZADA
             const itensEstruturação = [
                 'Contratação de recursos humanos',
                 'Contratação de prestação de serviços',
@@ -1097,18 +1236,18 @@ const processarDados = async (data) => {
                 currentY,
                 [190]
             );
+
             const gradeHorariaRows = Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gradeHoraria.length > 0 
                 ? formData.infoProjeto.gradeHoraria.map((row, index) => [
                     `${index + 1}.`,
                     row.nucleoLocalidade || 'N/A',
                     row.modalidadesNucleo || 'N/A',
-                    row.diasSelecionados && row.horarioInicio && row.horarioFim
-                        ? `${row.diasSelecionados.join(', ')} - ${row.horarioInicio} a ${row.horarioFim}`
-                        : 'N/A'
-                    ]) 
+                    row.gradeHorariaDescricao || 'N/A' // Usar o novo campo
+                ]) 
                 : [['1.', 'N/A', 'N/A', 'N/A']];
+
             currentY = createTable(
-                null, // Sem título, pois já foi adicionado acima
+                null,
                 [['Nº', 'Núcleo (localidade)', 'Modalidades', 'Grade Horária']],
                 gradeHorariaRows,
                 currentY,
@@ -1284,62 +1423,259 @@ const processarDados = async (data) => {
                 [190]
             );
 
-            // Seção 4 - ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES
-            const desenvolvimentoAtividades = [
-                ['As aulas ministradas serão registradas em Planos de Aula aprovados pela coordenação geral, registros fotográficos e relatórios emitidos pelo educador/instrutor. Tendo em vista a intencionalidade pedagógica da prática desportiva neste Projeto Técnico, será emitido, trimestralmente, um parecer dos profissionais que acompanharão as turmas sobre a evolução de aspectos pedagógicos e sociais, além de interação social e compreensão da importância de práticas esportivas para a saúde.']
-            ];
-            currentY = createTable(
-                '4. ACOMPANHAMENTO E MONITORAMENTO DAS ATIVIDADES\n4.1 DESENVOLVIMENTO DAS ATIVIDADES',
-                [['']],
-                desenvolvimentoAtividades,
-                currentY,
-                [190]
-            );
+// Footer
+const addFooter = () => {
+    const pageCount = doc.internal.getNumberOfPages();
+    for (let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(config.fontSize.small);
+        doc.setTextColor(100);
+        doc.text(`Página ${i} de ${pageCount}`, config.marginLeft, config.pageHeight - 10);
+    }
+};
+addFooter();
 
-            // Seção 5 - CONCLUSÃO
-            const conclusao = [
-                ['O Projeto busca não apenas o desenvolvimento atlético, mas também o crescimento pessoal e social dos participantes. Ao utilizar o esporte como ferramenta, o projeto contribui para um futuro mais justo e cheio de oportunidades, proporcionando aos beneficiários em situação de vulnerabilidade uma chance de transformar suas vidas.']
-            ];
-            currentY = createTable(
-                '5. CONCLUSÃO',
-                [['']],
-                conclusao,
-                currentY,
-                [190]
-            );
+// Save PDF
+const nomeProponente = formData.proponente.nomeProponente
+    ? formData.proponente.nomeProponente.replace(/[^a-zA-Z0-9]/g, '_')
+    : 'projeto_tecnico';
+const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+doc.save(`Projeto_Tecnico_${nomeProponente}_${timestamp}.pdf`);
+console.log('PDF gerado com sucesso!');
+} catch (error) {
+    console.error('Erro ao gerar o PDF:', error);
+    alert(`Erro ao gerar o PDF: ${error.message}`);
+}
+};
 
-            // Assinatura, Data e Local
-            checkPageBreak(80);
-            doc.setFontSize(config.fontSize.body);
-            doc.setLineWidth(0.5);
-            const signatureSpace = 11.29;
-            doc.line(60, currentY, 150, currentY);
-            currentY += signatureSpace / 2;
-            doc.text('Assinatura do Responsável', 105, currentY, { align: 'center' });
-            currentY += signatureSpace / 2;
-            const city = selectedCity.includes('Cidade não encontrada') ? 'N/A' : selectedCity;
-            const uf = formData?.proponente?.uf ?? 'N/A';
-            const localText = city === 'N/A' && uf === 'N/A' ? 'N/A' : `${city}/${uf}`;
-            doc.text(`Local: ${localText}`, 105, currentY, { align: 'center' });
-            currentY += 5;
-            doc.text(`Data: ${new Date().toLocaleDateString('pt-BR')}`, 105, currentY, { align: 'center' });
+// Função para renderizar abas
+const renderTabs = () => (
+    <div className="tabs">
+        {['info-proponente', 'dados-projeto', 'info-projeto'].map(tab => (
+            <button
+                key={tab}
+                className={activeTab === tab ? 'active' : ''}
+                onClick={() => setActiveTab(tab)}
+            >
+                {tab === 'info-proponente' ? 'Informações do Proponente' :
+                    tab === 'dados-projeto' ? 'Dados do Projeto' :
+                        'Informações do Projeto'}
+            </button>
+        ))}
+    </div>
+);
 
-            // Rodapé
-            const pageCount = doc.internal.getNumberOfPages();
-            for (let i = 1; i <= pageCount; i++) {
-                doc.setPage(i);
-                doc.setFontSize(config.fontSize.small);
-                doc.setTextColor(100);
-                doc.text(`Página ${i} de ${pageCount}`, 195, config.pageHeight - 10, { align: 'right' });
-                doc.text('© 2025 Ministério do Esporte', 105, config.pageHeight - 10, { align: 'center' });
-            }
-
-            doc.save(`Projeto_Esportivo_${formData.proponente.numeroProposta}.pdf`);
-        } catch (error) {
-            console.error('Erro ao gerar o PDF:', error);
-            alert(`Ocorreu um erro ao gerar o PDF: ${error.message}`);
-        }
-    };
+// Função para renderizar campos de uma seção
+const renderFields = (section, fields) => (
+        <div className="form-section">
+            {fields.map(field => (
+                <div key={field.name} className="form-group">
+                    {field.customRender ? (
+                        field.customRender(formData, handleInputChange, isCNPJEditable)
+                    ) : (
+                        <>
+                            <label>{field.label}</label>
+                            {field.type === 'select' ? (
+                                <select
+                                    value={formData[section][field.name] || ''}
+                                    onChange={(e) => handleInputChange(section, field.name, e.target.value)}
+                                >
+                                    <option value="">Selecione</option>
+                                    {field.options.map(option => (
+                                        <option key={option} value={option}>{option}</option>
+                                    ))}
+                                </select>
+                            ) : field.type === 'checkbox' ? (
+                                <div>
+                                    {field.options.map(option => (
+                                        <label key={option}>
+                                            <input
+                                                type="checkbox"
+                                                checked={Array.isArray(formData[section][field.name]) && formData[section][field.name].includes(option)}
+                                                onChange={(e) => {
+                                                    const current = formData[section][field.name] || [];
+                                                    const updated = e.target.checked
+                                                        ? [...current, option]
+                                                        : current.filter(item => item !== option);
+                                                    handleInputChange(section, field.name, updated);
+                                                }}
+                                            />
+                                            {option}
+                                        </label>
+                                    ))}
+                                    {field.name === 'identificacao' && (
+                                        <input
+                                            type="text"
+                                            placeholder="Outros"
+                                            value={formData[section].outrosIdentificacao || ''}
+                                            onChange={(e) => handleInputChange(section, 'outrosIdentificacao', e.target.value)}
+                                        />
+                                    )}
+                                    {field.name === 'divulgacao' && (
+                                        <input
+                                            type="text"
+                                            placeholder="Outros"
+                                            value={formData[section].outrosDivulgacao || ''}
+                                            onChange={(e) => handleInputChange(section, 'outrosDivulgacao', e.target.value)}
+                                        />
+                                    )}
+                                </div>
+                            ) : field.type === 'array' ? (
+                                <div>
+                                    {formData[section][field.name].map((item, index) => (
+                                        <div key={index} className="array-item">
+                                            {field.subFields.map(subField => (
+                                                <input
+                                                    key={subField.name}
+                                                    type={subField.type || 'text'}
+                                                    placeholder={subField.label}
+                                                    value={item[subField.name] || ''}
+                                                    onChange={(e) => handleInputChange(section, field.name, e.target.value, index, subField.name)}
+                                                />
+                                            ))}
+                                            <button onClick={() => removeItem(section, field.name, index)}>Remover</button>
+                                        </div>
+                                    ))}
+                                    <button onClick={() => addItem(section, field.name)}>Adicionar</button>
+                                </div>
+                            ) : (
+                                <input
+                                    type={field.type || 'text'}
+                                    value={formData[section][field.name] || ''}
+                                    onChange={(e) => handleInputChange(section, field.name, e.target.value)}
+                                    disabled={field.name === 'cnpj' && !isCNPJEditable}
+                                />
+                            )}
+                        </>
+                    )}
+                </div>
+            ))}
+            <button onClick={() => saveForm(section)}>Salvar</button>
+        </div>
+    );
+// Campos para cada seção
+const sections = {
+    'info-proponente': [
+        { name: 'cnpj', label: 'CNPJ', type: 'text' },
+        { name: 'nomeProponente', label: 'Nome do Proponente', type: 'text' },
+        { name: 'nomeDirigente',
+                label: 'Nome do Dirigente (Presidente)',
+                customRender: (formData, handleInputChange, isCNPJEditable) => (
+                    <label className="block">
+                        <span className="text-red-500">*</span> Nome do Dirigente (Presidente):
+                        <input
+                            type="text"
+                            className="w-full p-2 border rounded"
+                            value={formData.proponente.nomeDirigente}
+                            onChange={(e) => handleInputChange('proponente', 'nomeDirigente', e.target.value)}
+                            readOnly={!isCNPJEditable}
+                            required
+                        />
+                    </label>
+                ) },
+        { name: 'telefones', label: 'Telefones', type: 'text' },
+        { name: 'email', label: 'E-mail', type: 'email' },
+        { name: 'numeroProposta', label: 'Número da Proposta', type: 'text' },
+        { name: 'responsavelNome', label: 'Responsável - Nome', type: 'text' },
+        { name: 'responsavelEmail', label: 'Responsável - E-mail', type: 'email' },
+        { name: 'responsavelVinculo', label: 'Responsável - Vínculo', type: 'text' },
+        { name: 'responsavelTelefones', label: 'Responsável - Telefones', type: 'text' },
+        { name: 'dimensaoProjeto', label: 'Dimensão do Projeto', type: 'select', options: ['Projeto Educacional', 'Projeto de Participação'] },
+        { name: 'uf', label: 'UF', type: 'select', options: ['AC', 'AL', 'AP', 'AM', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MT', 'MS', 'MG', 'PA', 'PB', 'PR', 'PE', 'PI', 'RJ', 'RN', 'RS', 'RO', 'RR', 'SC', 'SP', 'SE', 'TO'] },
+        {
+            name: 'cidade',
+            label: 'Cidade',
+            type: 'select',
+            options: municipios.map(mun => ({ value: mun.id, label: mun.nome }))
+        },
+        { name: 'idh', label: 'IDH', type: 'text' },
+        { name: 'anoIDH', label: 'Ano do IDH', type: 'text' },
+        { name: 'numHabitantes', label: 'Número de Habitantes', type: 'text' },
+        { name: 'anoHabitantes', label: 'Ano dos Habitantes', type: 'text' },
+        { name: 'temParceria', label: 'Tem Parceria?', type: 'select', options: ['sim', 'nao'] },
+        { name: 'numParcerias', label: 'Número de Parcerias', type: 'text' },
+        { name: 'temPublicidade', label: 'Tem Publicidade?', type: 'select', options: ['sim', 'nao'] },
+        { name: 'publicidadeSite', label: 'Site da Publicidade', type: 'text' },
+        { name: 'artigo2', label: 'Artigo 2º', type: 'text' },
+        { name: 'artigo33I', label: 'Artigo 33, Inciso I', type: 'text' },
+        { name: 'artigo33III', label: 'Artigo 33, Inciso III', type: 'text' }
+    ],
+    'dados-projeto': [
+        { name: 'objetoProjeto', label: 'Objeto do Projeto', type: 'text' },
+        { name: 'publicoAlvo', label: 'Público-Alvo', type: 'checkbox', options: ['crianças', 'adolescentes', 'jovens', 'adultos', 'idosos'] },
+        { name: 'quantidadeNucleos', label: 'Quantidade de Núcleos', type: 'number' },
+        { name: 'publicoDireto', label: 'Público Direto', type: 'number' },
+        { name: 'faixaEtaria', label: 'Faixa Etária', type: 'text' },
+        { name: 'publicoIndireto', label: 'Público Indireto', type: 'number' },
+        { name: 'periodoEstruturacao', label: 'Período de Estruturação', type: 'number' },
+        { name: 'periodoExecucao', label: 'Período de Execução', type: 'number' },
+        { name: 'vigenciaTotal', label: 'Vigência Total', type: 'number' },
+        { name: 'localidadeNucleos', label: 'Localidade dos Núcleos', type: 'text' },
+        {
+            name: 'modalidades',
+            label: 'Modalidades',
+            type: 'array',
+            subFields: [{ name: 'modalidade', label: 'Modalidade', type: 'text' }]
+        },
+        { name: 'valorConcedente', label: 'Valor do Concedente', type: 'text' },
+        { name: 'valorContrapartida', label: 'Valor da Contrapartida', type: 'text' },
+        { name: 'valorGlobal', label: 'Valor Global', type: 'text' }
+    ],
+    'info-projeto': [
+        { name: 'tipoNucleo', label: 'Tipo de Núcleo', type: 'checkbox', options: ['escola pública', 'praça pública', 'quadra pública', 'espaço comunitário'] },
+        { name: 'identificacao', label: 'Identificação', type: 'checkbox', options: ['Faixas', 'Banners', 'Placa', 'Outros'] },
+        { name: 'divulgacao', label: 'Divulgação', type: 'checkbox', options: ['Carros ou bicicletas de som', 'Cartazes', 'Faixas', 'Banners', 'Jornais', 'Panfletos', 'Folder', 'Rádios', 'Redes Sociais', 'Outros'] },
+        { name: 'custeioDivulgacao', label: 'Custeio da Divulgação', type: 'text' },
+        { name: 'quantidadeConjuntosUniforme', label: 'Quantidade de Conjuntos de Uniforme', type: 'number' },
+        {
+            name: 'gradeHoraria',
+            label: 'Grade Horária',
+            type: 'array',
+            subFields: [
+                { name: 'nucleoLocalidade', label: 'Núcleo (Localidade)', type: 'text' },
+                { name: 'modalidadesNucleo', label: 'Modalidades', type: 'text' },
+                { name: 'gradeHorariaDescricao', label: 'Grade Horária', type: 'text' }
+            ]
+        },
+        {
+            name: 'recursosHumanos',
+            label: 'Recursos Humanos',
+            type: 'array',
+            subFields: [
+                { name: 'funcaoRH', label: 'Função', type: 'text' },
+                { name: 'quantidadeRH', label: 'Quantidade', type: 'number' },
+                { name: 'atribuicaoRH', label: 'Atribuição', type: 'text' },
+                { name: 'cargaHorariaRH', label: 'Carga Horária', type: 'text' },
+                { name: 'periodoRH', label: 'Período', type: 'text' }
+            ]
+        },
+        {
+            name: 'materiais',
+            label: 'Materiais',
+            type: 'array',
+            subFields: [
+                { name: 'modalidadeMaterial', label: 'Modalidade', type: 'text' },
+                { name: 'material', label: 'Material', type: 'text' },
+                { name: 'tipoAquisicao', label: 'Aquisição/Locação', type: 'select', options: ['Aquisição', 'Locação'] },
+                { name: 'especificacaoMaterial', label: 'Especificação', type: 'text' },
+                { name: 'justificativaMaterial', label: 'Justificativa', type: 'text' }
+            ]
+        },
+        {
+            name: 'uniformes',
+            label: 'Uniformes',
+            type: 'array',
+            subFields: [
+                { name: 'modalidadeUniforme', label: 'Modalidade', type: 'text' },
+                { name: 'itemUniforme', label: 'Item', type: 'text' },
+                { name: 'especificacaoUniforme', label: 'Especificação', type: 'text' }
+            ]
+        },
+        { name: 'eventosSelecionados', label: 'Eventos', type: 'checkbox', options: ['Evento de Abertura', 'Evento de Encerramento'] },
+        { name: 'abrangenciaEventos', label: 'Abrangência dos Eventos', type: 'select', options: ['Por Projeto', 'Por Núcleo'] },
+        { name: 'detalhamentoModalidades', label: 'Detalhamento das Modalidades', type: 'text' }
+    ]
+};
     return (
                 <div className="min-h-screen flex flex-col">
                     <header className="bg-blue-900 text-white p-4 flex justify-between items-center fixed w-full top-0 z-10 shadow-md">
@@ -1859,54 +2195,52 @@ const processarDados = async (data) => {
                             </fieldset>
 
                             <fieldset className="border p-4 rounded">
-                                <legend className="text-blue-900 font-bold">1.7 Informações sobre o Estatuto da Entidade</legend>
-                                <div className="space-y-4">
-                                    {[
-                                    {
-                                        label: 'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014',
-                                        field: 'artigo2',
-                                        tooltip:
-                                        'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014: Verificar se a Entidade NÃO distribui entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva.',
-                                    },
-                                    {
-                                        label: 'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014',
-                                        field: 'artigo33I',
-                                        tooltip:
-                                        'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014: Verificar se a Entidade POSSUI objetivos voltados à promoção de atividades e finalidades de relevância pública e social.',
-                                    },
-                                    {
-                                        label: 'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014',
-                                        field: 'artigo33III',
-                                        tooltip:
-                                        'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014: Verificar se em caso de dissolução da entidade, o respectivo patrimônio líquido seja transferido a outra pessoa jurídica de igual natureza que preencha os requisitos desta Lei e cujo objeto social seja, preferencialmente, o mesmo da entidade extinta.',
-                                    },
-                                    ].map((item, index) => (
-                                    <label key={index} className="block relative">
-                                        <div className="flex items-center">
-                                        <span className="text-red-500">*</span>
-                                        <span>{item.label}:</span>
-                                        <details className="ml-2 cursor-pointer relative group">
-                                            <summary className="list-none text-blue-600">
-                                            <i className="fas fa-info-circle"></i>
-                                            </summary>
-                                            <div className="absolute left-0 top-6 w-80 p-2 bg-blue-900 text-white text-xs rounded shadow-lg z-10">
-                                            {item.tooltip}
-                                            </div>
-                                        </details>
+                            <legend className="text-blue-900 font-bold">1.7 Informações sobre o Estatuto da Entidade</legend>
+                            <div className="space-y-4">
+                                {[
+                                {
+                                    label: 'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014',
+                                    field: 'artigo2',
+                                    tooltip:
+                                    'Análise Estatutária, art. 2º, inciso I, Lei 13.019/2014: Verificar se a Entidade NÃO distribui entre os seus sócios ou associados, conselheiros, diretores, empregados, doadores ou terceiros eventuais resultados, sobras, excedentes operacionais, brutos ou líquidos, dividendos, isenções de qualquer natureza, participações ou parcelas do seu patrimônio, auferidos mediante o exercício de suas atividades, e que os aplique integralmente na consecução do respectivo objeto social, de forma imediata ou por meio da constituição de fundo patrimonial ou fundo de reserva.',
+                                },
+                                {
+                                    label: 'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014',
+                                    field: 'artigo33I',
+                                    tooltip:
+                                    'Análise Estatutária, art. 33, inciso I, Lei 13.019/2014: Verificar se a Entidade POSSUI objetivos voltados à promoção de atividades e finalidades de relevância pública e social.',
+                                },
+                                {
+                                    label: 'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014',
+                                    field: 'artigo33III',
+                                    tooltip:
+                                    'Análise Estatutária, art. 33, inciso III, Lei 13.019/2014: Verificar se em caso de dissolução da entidade, o respectivo patrimônio líquido seja transferido a outra pessoa jurídica de igual natureza que preencha os requisitos desta Lei e cujo objeto social seja, preferencialmente, o mesmo da entidade extinta.',
+                                },
+                                ].map((item, index) => (
+                                <label key={index} className="block relative">
+                                    <div className="flex items-center">
+                                    <span className="text-red-500">*</span>
+                                    <span>{item.label}:</span>
+                                    <span className="ml-2 cursor-pointer relative group">
+                                        <i className="fas fa-info-circle text-blue-600"></i>
+                                        <div className="absolute left-0 top-6 w-80 p-2 bg-blue-900 text-white text-xs rounded shadow-lg z-10 hidden group-hover:block">
+                                        {item.tooltip}
                                         </div>
-                                        <input
-                                        type="text"
-                                        className="w-full p-2 border rounded mt-1"
-                                        value={formData.proponente[item.field]}
-                                        onChange={(e) => handleInputChange('proponente', item.field, e.target.value)}
-                                        placeholder="Número do artigo"
-                                        required
-                                        disabled={formData.proponente.tipoParceria === 'Convênio'}
-                                        />
-                                    </label>
-                                    ))}
-                                </div>
-                                </fieldset>
+                                    </span>
+                                    </div>
+                                    <input
+                                    type="text"
+                                    className="w-full p-2 border rounded mt-1"
+                                    value={formData.proponente[item.field]}
+                                    onChange={(e) => handleInputChange('proponente', item.field, e.target.value)}
+                                    placeholder="Número do artigo"
+                                    required
+                                    disabled={formData.proponente.tipoParceria === 'Convênio'}
+                                    />
+                                </label>
+                                ))}
+                            </div>
+                            </fieldset>
 
 
                             <div className="flex gap-4">
@@ -2521,141 +2855,81 @@ const processarDados = async (data) => {
                                     </div>
                                 </fieldset>
 
-                                <fieldset className="border p-4 rounded">
-                                <legend className="text-blue-900 font-bold">3.8 Grade Horária das Atividades</legend>
+                               <fieldset className="border p-4 rounded">
+                                <legend className="text-blue-900 font-bold">3.6 Grade Horária das Atividades</legend>
                                 <p className="italic text-gray-600">
                                     O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 horas semanais de atividades, com 16 horas de atendimento e 4 horas de planejamento, para atender os {formData.dadosProjeto.publicoDireto || 'XX'} beneficiários.
                                 </p>
                                 <div className="space-y-4">
                                     {formData.infoProjeto.gradeHoraria.map((row, index) => (
-                                    <div key={index} className="border p-4 rounded">
-                                        <h4 className="font-bold">Núcleo {index + 1}</h4>
-                                        <label className="block">
-                                        Localidade:
-                                        <input
-                                            type="text"
-                                            className="w-full p-2 border rounded"
-                                            value={row.nucleoLocalidade}
-                                            onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'nucleoLocalidade')}
-                                        />
-                                        </label>
-                                        <label className="block">
-                                        Modalidades:
-                                        <input
-                                            type="text"
-                                            className="w-full p-2 border rounded"
-                                            value={row.modalidadesNucleo}
-                                            onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'modalidadesNucleo')}
-                                        />
-                                        </label>
-                                        <label className="block">
-                                        Recursos Humanos:
-                                        <input
-                                            type="text"
-                                            className="w-full p-2 border rounded"
-                                            value={row.rhNucleo}
-                                            onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'rhNucleo')}
-                                        />
-                                        </label>
-                                        <label className="block">
-                                        Informações do Núcleo:
-                                        <textarea
-                                            className="w-full p-2 border rounded"
-                                            value={row.infoNucleo}
-                                            onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'infoNucleo')}
-                                            rows="3"
-                                        />
-                                        </label>
-                                        <label className="block">
-                                        Grade Horária:
-                                        <div className="space-y-2">
-                                            <div className="flex flex-wrap gap-4">
-                                            {['Segunda-feira', 'Terça-feira', 'Quarta-feira', 'Quinta-feira', 'Sexta-feira'].map((day) => (
-                                                <label key={day} className="flex items-center">
+                                        <div key={index} className="border p-4 rounded">
+                                            <h4 className="font-bold">Núcleo {index + 1}</h4>
+                                            <label className="block">
+                                                Localidade:
                                                 <input
-                                                    type="checkbox"
-                                                    checked={row.diasSelecionados?.includes(day) || false}
-                                                    onChange={(e) => {
-                                                    const updatedDias = e.target.checked
-                                                        ? [...(row.diasSelecionados || []), day]
-                                                        : (row.diasSelecionados || []).filter((d) => d !== day);
-                                                    handleInputChange('infoProjeto', 'gradeHoraria', updatedDias, index, 'diasSelecionados');
-                                                    }}
-                                                    className="mr-2"
+                                                    type="text"
+                                                    className="w-full p-2 border rounded"
+                                                    value={row.nucleoLocalidade}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'nucleoLocalidade')}
                                                 />
-                                                {day}
-                                                </label>
-                                            ))}
-                                            </div>
-                                            <div className="flex space-x-4">
-                                            <label className="block">
-                                                De:
-                                                <select
-                                                className="w-full p-2 border rounded"
-                                                value={row.horarioInicio || ''}
-                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'horarioInicio')}
-                                                >
-                                                <option value="">Selecione</option>
-                                                    <option value="07:00">07:00</option>
-                                                    <option value="08:00">08:00</option>
-                                                    <option value="09:00">09:00</option>
-                                                    <option value="10:00">10:00</option>
-                                                    <option value="11:00">11:00</option>
-                                                    <option value="12:00">12:00</option>
-                                                    <option value="13:00">13:00</option>
-                                                    <option value="14:00">14:00</option>
-                                                    <option value="15:00">15:00</option>
-                                                    <option value="16:00">16:00</option>
-                                                    <option value="17:00">17:00</option>
-                                                    <option value="18:00">18:00</option>
-                                                </select>
                                             </label>
                                             <label className="block">
-                                                Até:
-                                                <select
-                                                className="w-full p-2 border rounded"
-                                                value={row.horarioFim || ''}
-                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'horarioFim')}
-                                                >
-                                                <option value="">Selecione</option>
-                                                    <option value="08:00">08:00</option>
-                                                    <option value="09:00">09:00</option>
-                                                    <option value="10:00">10:00</option>
-                                                    <option value="11:00">11:00</option>
-                                                    <option value="12:00">12:00</option>
-                                                    <option value="13:00">13:00</option>
-                                                    <option value="14:00">14:00</option>
-                                                    <option value="15:00">15:00</option>
-                                                    <option value="16:00">16:00</option>
-                                                    <option value="17:00">17:00</option>
-                                                    <option value="18:00">18:00</option>
-                                                    <option value="19:00">19:00</option>
-                                                    <option value="20:00">20:00</option>
-                                                </select>
+                                                Modalidades:
+                                                <input
+                                                    type="text"
+                                                    className="w-full p-2 border rounded"
+                                                    value={row.modalidadesNucleo}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'modalidadesNucleo')}
+                                                />
                                             </label>
-                                            </div>
+                                            <label className="block">
+                                                Recursos Humanos:
+                                                <input
+                                                    type="text"
+                                                    className="w-full p-2 border rounded"
+                                                    value={row.rhNucleo}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'rhNucleo')}
+                                                />
+                                            </label>
+                                            <label className="block">
+                                                Informações do Núcleo:
+                                                <textarea
+                                                    className="w-full p-2 border rounded"
+                                                    value={row.infoNucleo}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'infoNucleo')}
+                                                    rows="3"
+                                                />
+                                            </label>
+                                            <label className="block">
+                                                Grade Horária:
+                                                <textarea
+                                                    className="w-full p-2 border rounded"
+                                                    placeholder="Ex.: 3 vezes na semana, 1h30 cada aula, 4h planejamento, 20h semanais por professor"
+                                                    value={row.gradeHorariaDescricao || ''}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'gradeHorariaDescricao')}
+                                                    rows="3"
+                                                />
+                                            </label>
+                                            {formData.infoProjeto.gradeHoraria.length > 1 && (
+                                                <button
+                                                    type="button"
+                                                    className="bg-red-500 text-white px-2 py-1 rounded mt-2"
+                                                    onClick={() => removeItem('infoProjeto', 'gradeHoraria', index)}
+                                                >
+                                                    Remover Núcleo
+                                                </button>
+                                            )}
                                         </div>
-                                        </label>
-                                        {formData.infoProjeto.gradeHoraria.length > 1 && (
-                                        <button
-                                            type="button"
-                                            className="bg-red-500 text-white px-2 py-1 rounded mt-2"
-                                            onClick={() => removeItem('infoProjeto', 'gradeHoraria', index)}
-                                        >
-                                            Remover Núcleo
-                                        </button>
-                                        )}
-                                    </div>
                                     ))}
                                     <button
-                                    type="button"
-                                    className="bg-green-500 text-white px-4 py-2 rounded"
-                                    onClick={() => addItem('infoProjeto', 'gradeHoraria')}
+                                        type="button"
+                                        className="bg-green-500 text-white px-4 py-2 rounded"
+                                        onClick={() => addItem('infoProjeto', 'gradeHoraria')}
                                     >
-                                    Adicionar Núcleo
+                                        Adicionar Núcleo
                                     </button>
                                 </div>
-                                </fieldset>
+                            </fieldset>
 
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.9 Recursos Humanos</legend>
@@ -3071,7 +3345,7 @@ const processarDados = async (data) => {
                                                         modalidadesNucleo: '',
                                                         rhNucleo: '',
                                                         infoNucleo: '',
-                                                        gradeHoraria: ''
+                                                        gradeHorariaDescricao: ''
                                                     }],
                                                     recursosHumanos: [{
                                                         funcaoRH: '',
