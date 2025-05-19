@@ -206,7 +206,7 @@
             const addItem = (section, field) => {
                 setFormData(prev => {
                     const newData = { ...prev };
-                    const template = prev[section][field][0];
+                    const template = { modalidade: '' }; // Novo item com modalidade em branco
                     newData[section][field] = [...prev[section][field], { ...template }];
                     return newData;
                 });
@@ -230,39 +230,44 @@ const cnpjCache = {};
 const buscarDadosCNPJ = async (cnpj) => {
     // Remove caracteres não numéricos do CNPJ
     cnpj = cnpj.replace(/\D/g, '');
-    if (cnpj.length !== 14) {
+
+    // Só exibe a mensagem se o CNPJ tiver 12 ou 13 dígitos
+    if (cnpj.length === 12 || cnpj.length === 13) {
         console.warn('CNPJ inválido:', cnpj);
         alert('Por favor, insira um CNPJ válido com 14 dígitos.');
         return;
     }
 
-    // Verifica se o CNPJ está no cache
-    if (cnpjCache[cnpj]) {
-        console.log('Usando dados do cache para CNPJ:', cnpj);
-        processarDados(cnpjCache[cnpj]);
-        return;
-    }
-
-    try {
-        // Faz a requisição à BrasilAPI
-        console.log('Buscando dados na BrasilAPI para CNPJ:', cnpj);
-        const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
-        if (!response.ok) {
-            throw new Error(`Erro ${response.status}: ${response.statusText}`);
+    // Se o CNPJ tiver 14 dígitos, prossegue com a busca
+    if (cnpj.length === 14) {
+        // Verifica se o CNPJ está no cache
+        if (cnpjCache[cnpj]) {
+            console.log('Usando dados do cache para CNPJ:', cnpj);
+            processarDados(cnpjCache[cnpj]);
+            return;
         }
 
-        const data = await response.json();
-        console.log('Dados retornados pela BrasilAPI:', data);
+        try {
+            // Faz a requisição à BrasilAPI
+            console.log('Buscando dados na BrasilAPI para CNPJ:', cnpj);
+            const response = await fetch(`https://brasilapi.com.br/api/cnpj/v1/${cnpj}`);
+            if (!response.ok) {
+                throw new Error(`Erro ${response.status}: ${response.statusText}`);
+            }
 
-        // Armazena no cache
-        cnpjCache[cnpj] = data;
+            const data = await response.json();
+            console.log('Dados retornados pela BrasilAPI:', data);
 
-        // Processa os dados
-        processarDados(data);
-    } catch (error) {
-        console.error('Erro ao buscar dados do CNPJ:', error);
-        alert(`Erro ao buscar dados do CNPJ: ${error.message}`);
-        setIsCNPJEditable(true);
+            // Armazena no cache
+            cnpjCache[cnpj] = data;
+
+            // Processa os dados
+            processarDados(data);
+        } catch (error) {
+            console.error('Erro ao buscar dados do CNPJ:', error);
+            alert(`Erro ao buscar dados do CNPJ: ${error.message}`);
+            setIsCNPJEditable(true);
+        }
     }
 };
 
