@@ -2376,69 +2376,6 @@ const processarDados = async (data) => {
                                 </fieldset>
 
                                 <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.4 Divulgação do Projeto</legend>
-                                    <div className="space-y-4">
-                                        <label className="block">
-                                            Marque as opções aplicáveis:
-                                            <div className="flex flex-wrap gap-4">
-                                                {['Rádio', 'TV', 'Jornal', 'Redes Sociais', 'Outros'].map(opt => (
-                                                    <label key={opt} className="flex items-center">
-                                                        <input
-                                                            type="checkbox"
-                                                            value={opt}
-                                                            checked={formData.infoProjeto.divulgacao.includes(opt)}
-                                                            onChange={(e) => {
-                                                                const updatedDivulgacao = e.target.checked
-                                                                    ? [...formData.infoProjeto.divulgacao, e.target.value]
-                                                                    : formData.infoProjeto.divulgacao.filter(item => item !== e.target.value);
-                                                                handleInputChange('infoProjeto', 'divulgacao', updatedDivulgacao);
-                                                            }}
-                                                        />
-                                                        <span className="ml-2">{opt}</span>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </label>
-                                        {formData.infoProjeto.divulgacao.includes('Outros') && (
-                                            <label className="block">
-                                                Especifique:
-                                                <input
-                                                    type="text"
-                                                    className="w-full p-2 border rounded"
-                                                    value={formData.infoProjeto.outrosDivulgacao}
-                                                    onChange={(e) => handleInputChange('infoProjeto', 'outrosDivulgacao', e.target.value)}
-                                                />
-                                            </label>
-                                        )}
-                                        <label className="block">
-                                            Forma de custeio da divulgação:
-                                            <div className="flex gap-4">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="custeioDivulgacao"
-                                                        value="Recursos da Emenda Parlamentar"
-                                                        checked={formData.infoProjeto.custeioDivulgacao === 'Recursos da Emenda Parlamentar'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'custeioDivulgacao', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Recursos da Emenda Parlamentar</span>
-                                                </label>
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="custeioDivulgacao"
-                                                        value="Recursos Próprios da Entidade"
-                                                        checked={formData.infoProjeto.custeioDivulgacao === 'Recursos Próprios da Entidade'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'custeioDivulgacao', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Recursos Próprios da Entidade</span>
-                                                </label>
-                                            </div>
-                                        </label>
-                                    </div>
-                                </fieldset>
-
-                                <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.5 Metodologia de Desenvolvimento do Projeto</legend>
                                     <p className="italic text-gray-600">
                                         Este Projeto visa combater o sedentarismo e promover um estilo de vida saudável através da prática regular de atividades físicas e fortalecimento da inclusão social. A implementação deste projeto trará benefícios significativos na qualidade de vida dos beneficiários, visando criar uma comunidade mais ativa e integrada. O projeto terá duração de {formData.dadosProjeto.vigenciaTotal || 'XX'} ({numeroPorExtenso(formData.dadosProjeto.vigenciaTotal || 'XX')}) meses, sendo {formData.dadosProjeto.periodoEstruturacao || 'XX'} ({numeroPorExtenso(formData.dadosProjeto.periodoEstruturacao || 'XX')}) para estruturação e {formData.dadosProjeto.periodoExecucao || 'XX'} ({numeroPorExtenso(formData.dadosProjeto.periodoExecucao || 'XX')}) para execução.
@@ -2999,6 +2936,12 @@ const processarDados = async (data) => {
                                 <fieldset className="border p-4 rounded">
                                 <legend className="text-blue-900 font-bold">3.13 Divulgação do Projeto (Repetido para Consistência no PDF)</legend>
                                 <div className="space-y-4">
+                                    <p>Será realizada de forma ampla e irrestrita. O objetivo é dar publicidade aos distintos públicos sobre as ações e o
+                                        retorno dos resultados das intervenções públicas junto à sociedade.
+                                        Além de informações de interesse do público-alvo e de ações de relevância social, a divulgação apresenta resultados
+                                        que, a partir do desenvolvimento de estratégias de comunicação, são passíveis de aumentar a consciência do cidadão
+                                        comum sobre o papel e a importância dos projetos sociais no seu cotidiano. Portanto, deve-se fazer uso dos diversos
+                                        meios de comunicação e mídia.</p>
                                     <label className="block">
                                         Marque as opções aplicáveis:
                                         <div className="flex flex-wrap gap-4">
