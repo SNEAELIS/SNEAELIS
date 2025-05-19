@@ -660,21 +660,23 @@ const processarDados = async (data) => {
 
             // Seção 1 - INFORMAÇÕES GERAIS DO PROPONENTE
             // 1.1 IDENTIFICAÇÃO PROPONENTE
-            const identificacaoProponente = [
-                [`CNPJ Proponente: ${formData.proponente.cnpj || 'N/A'}`],
-                [`Nome Proponente: ${formData.proponente.nomeProponente || 'N/A'}`],
-                [`Nome do Dirigente: ${formData.proponente.nomeDirigente || 'N/A'}`],
-                [`Telefone(s) de contato com DDD: ${Array.isArray(formData.proponente.telefones) ? formData.proponente.telefones.join(', ') : 'N/A'}`],
-                [`E-mail: ${formData.proponente.email || 'N/A'}`],
-                [`Número da Proposta: ${formData.proponente.numeroProposta || 'N/A'}`]
-            ];
-            currentY = createTable(
-                '1. INFORMAÇÕES GERAIS DO PROPONENTE\n1.1 IDENTIFICAÇÃO PROPONENTE*',
-                [['']],
-                identificacaoProponente,
-                currentY,
-                [190]
-            );
+                const identificacaoProponente = [
+                    [`CNPJ Proponente: ${formData.proponente.cnpj || 'N/A'}`],
+                    [`Nome Proponente: ${formData.proponente.nomeProponente || 'N/A'}`],
+                    [`Nome do Dirigente: ${formData.proponente.nomeDirigente || 'N/A'}`],
+                    [`Telefone(s) de contato com DDD: ${Array.isArray(formData.proponente.telefones) && formData.proponente.telefones.length ? formData.proponente.telefones.join(', ') : 'N/A'}`],
+                    [`E-mail: ${formData.proponente.email || 'N/A'}`],
+                    [`Número da Proposta: ${formData.proponente.numeroProposta || 'N/A'}`],
+                    [`Emenda Parlamentar: ${formData.proponente.emendaParlamentar || 'N/A'}`],
+                    [`GND - Material de Consumo e Permanente: ${Array.isArray(formData.proponente.gnd) && formData.proponente.gnd.length ? formData.proponente.gnd.join(', ') : 'N/A'}`]
+                ];
+                currentY = createTable(
+                    '1. INFORMAÇÕES GERAIS DO PROPONENTE\n1.1 IDENTIFICAÇÃO PROPONENTE*',
+                    [['']],
+                    identificacaoProponente,
+                    currentY,
+                    [190]
+                );
 
             // 1.2 RESPONSÁVEL PELA ELABORAÇÃO DO PROJETO TÉCNICO
             const responsavelElaboracao = [
@@ -1364,158 +1366,221 @@ const processarDados = async (data) => {
 
                         {activeTab === 'info-proponente' && (
                         <div className="space-y-6">
-                            <fieldset className="border p-4 rounded">
+                          <fieldset className="border p-4 rounded">
                             <legend className="text-blue-900 font-bold">1.1 Identificação do Proponente</legend>
                             <div className="space-y-4">
-                                {/* Novo campo para escolher Convênio ou Termo de Fomento */}
+                                {/* Campo para escolher Convênio ou Termo de Fomento */}
                                 <label className="block">
-                                <span className="text-red-screensize: sm max-w-full flex flex-col min-h-screen" class="text-red-500">*</span> Tipo de Parceria:
-                                <div className="flex gap-4 mt-2">
-                                    <label className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="tipoParceria"
-                                        value="Convênio"
-                                        checked={formData.proponente.tipoParceria === 'Convênio'}
-                                        onChange={(e) => {
-                                        handleInputChange('proponente', 'tipoParceria', e.target.value);
-                                        if (e.target.value === 'Convênio') {
-                                            setFormData((prev) => ({
-                                            ...prev,
-                                            proponente: {
-                                                ...prev.proponente,
-                                                artigo2: 'Não se Aplica',
-                                                artigo33I: 'Não se Aplica',
-                                                artigo33III: 'Não se Aplica',
-                                            },
-                                            }));
-                                        } else {
-                                            setFormData((prev) => ({
-                                            ...prev,
-                                            proponente: {
-                                                ...prev.proponente,
-                                                artigo2: '',
-                                                artigo33I: '',
-                                                artigo33III: '',
-                                            },
-                                            }));
-                                        }
-                                        }}
-                                        required
-                                    />
-                                    <span className="ml-2">Convênio</span>
-                                    </label>
-                                    <label className="flex items-center">
-                                    <input
-                                        type="radio"
-                                        name="tipoParceria"
-                                        value="Termo de Fomento"
-                                        checked={formData.proponente.tipoParceria === 'Termo de Fomento'}
-                                        onChange={(e) => handleInputChange('proponente', 'tipoParceria', e.target.value)}
-                                        required
-                                    />
-                                    <span className="ml-2">Termo de Fomento</span>
-                                    </label>
-                                </div>
+                                    <span className="text-red-500">*</span> Tipo de Parceria:
+                                    <div className="flex gap-4 mt-2">
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                name="tipoParceria"
+                                                value="Convênio"
+                                                checked={formData.proponente.tipoParceria === 'Convênio'}
+                                                onChange={(e) => {
+                                                    handleInputChange('proponente', 'tipoParceria', e.target.value);
+                                                    if (e.target.value === 'Convênio') {
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            proponente: {
+                                                                ...prev.proponente,
+                                                                artigo2: 'Não se Aplica',
+                                                                artigo33I: 'Não se Aplica',
+                                                                artigo33III: 'Não se Aplica',
+                                                            },
+                                                        }));
+                                                    } else {
+                                                        setFormData((prev) => ({
+                                                            ...prev,
+                                                            proponente: {
+                                                                ...prev.proponente,
+                                                                artigo2: '',
+                                                                artigo33I: '',
+                                                                artigo33III: '',
+                                                            },
+                                                        }));
+                                                    }
+                                                }}
+                                                required
+                                            />
+                                            <span className="ml-2">Convênio</span>
+                                        </label>
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                name="tipoParceria"
+                                                value="Termo de Fomento"
+                                                checked={formData.proponente.tipoParceria === 'Termo de Fomento'}
+                                                onChange={(e) => handleInputChange('proponente', 'tipoParceria', e.target.value)}
+                                                required
+                                            />
+                                            <span className="ml-2">Termo de Fomento</span>
+                                        </label>
+                                    </div>
                                 </label>
 
                                 <label className="block">
-                                <span className="text-red-500">*</span> CNPJ Proponente:
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={formData.proponente.cnpj}
-                                    onChange={(e) => handleInputChange('proponente', 'cnpj', formatarCNPJ(e.target.value))}
-                                    placeholder="00.000.000/0000-00"
-                                    maxLength="18"
-                                    required
-                                />
-                                </label>
-                                <label className="block">
-                                <span className="text-red-500">*</span> Nome Proponente:
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={formData.proponente.nomeProponente}
-                                    onChange={(e) => handleInputChange('proponente', 'nomeProponente', e.target.value)}
-                                    readOnly={!isCNPJEditable}
-                                    required
-                                />
-                                </label>
-                                <label className="block">
-                                <span className="text-red-500">*</span> Nome do Dirigente (Presidente):
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={formData.proponente.nomeDirigente}
-                                    onChange={(e) => handleInputChange('proponente', 'nomeDirigente', e.target.value)}
-                                    readOnly={!isCNPJEditable}
-                                    required
-                                />
-                                </label>
-                                <label className="block">
-                                <span className="text-red-500">*</span> Telefone(s) de contato com DDD:
-                                <div className="flex flex-wrap gap-2">
-                                    {formData.proponente.telefones.map((tel, index) => (
-                                    <div key={index} className="flex items-center gap-2">
-                                        <input
+                                    <span className="text-red-500">*</span> CNPJ Proponente:
+                                    <input
                                         type="text"
-                                        className="p-2 border rounded flex-1 min-w-[200px]"
-                                        value={tel}
-                                        onChange={(e) => {
-                                            const newTelefones = [...formData.proponente.telefones];
-                                            newTelefones[index] = formatarTelefone(e.target.value);
-                                            handleInputChange('proponente', 'telefones', newTelefones);
-                                        }}
-                                        placeholder="(00) 00000-0000"
-                                        maxLength="15"
+                                        className="w-full p-2 border rounded"
+                                        value={formData.proponente.cnpj}
+                                        onChange={(e) => handleInputChange('proponente', 'cnpj', formatarCNPJ(e.target.value))}
+                                        placeholder="00.000.000/0000-00"
+                                        maxLength="18"
                                         required
-                                        />
-                                        {index > 0 && (
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-red-500">*</span> Nome Proponente:
+                                    <input
+                                        type="text"
+                                        className="w-full p-2 border rounded"
+                                        value={formData.proponente.nomeProponente}
+                                        onChange={(e) => handleInputChange('proponente', 'nomeProponente', e.target.value)}
+                                        readOnly={!isCNPJEditable}
+                                        required
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-red-500">*</span> Nome do Dirigente (Presidente):
+                                    <input
+                                        type="text"
+                                        className="w-full p-2 border rounded"
+                                        value={formData.proponente.nomeDirigente}
+                                        onChange={(e) => handleInputChange('proponente', 'nomeDirigente', e.target.value)}
+                                        readOnly={!isCNPJEditable}
+                                        required
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-red-500">*</span> Telefone(s) de contato com DDD:
+                                    <div className="flex flex-wrap gap-2">
+                                        {formData.proponente.telefones.map((tel, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <input
+                                                    type="text"
+                                                    className="p-2 border rounded flex-1 min-w-[200px]"
+                                                    value={tel}
+                                                    onChange={(e) => {
+                                                        const newTelefones = [...formData.proponente.telefones];
+                                                        newTelefones[index] = formatarTelefone(e.target.value);
+                                                        handleInputChange('proponente', 'telefones', newTelefones);
+                                                    }}
+                                                    placeholder="(00) 00000-0000"
+                                                    maxLength="15"
+                                                    required
+                                                />
+                                                {index > 0 && (
+                                                    <button
+                                                        type="button"
+                                                        className="bg-red-500 text-white px-2 py-1 rounded"
+                                                        onClick={() => {
+                                                            const newTelefones = formData.proponente.telefones.filter((_, i) => i !== index);
+                                                            handleInputChange('proponente', 'telefones', newTelefones);
+                                                        }}
+                                                    >
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                )}
+                                            </div>
+                                        ))}
                                         <button
                                             type="button"
-                                            className="bg-red-500 text-white px-2 py-1 rounded"
-                                            onClick={() => {
-                                            const newTelefones = formData.proponente.telefones.filter((_, i) => i !== index);
-                                            handleInputChange('proponente', 'telefones', newTelefones);
-                                            }}
+                                            className="bg-green-500 text-white px-4 py-2 rounded"
+                                            onClick={() => handleInputChange('proponente', 'telefones', [...formData.proponente.telefones, ''])}
                                         >
-                                            <i className="fas fa-trash"></i>
+                                            Adicionar Telefone
                                         </button>
-                                        )}
                                     </div>
-                                    ))}
-                                    <button
-                                    type="button"
-                                    className="bg-green-500 text-white px-4 py-2 rounded"
-                                    onClick={() => handleInputChange('proponente', 'telefones', [...formData.proponente.telefones, ''])}
-                                    >
-                                    Adicionar Telefone
-                                    </button>
-                                </div>
                                 </label>
                                 <label className="block">
-                                <span className="text-red-500">*</span> E-mail:
-                                <input
-                                    type="email"
-                                    className="w-full p-2 border rounded"
-                                    value={formData.proponente.email}
-                                    onChange={(e) => handleInputChange('proponente', 'email', e.target.value)}
-                                    required
-                                />
+                                    <span className="text-red-500">*</span> E-mail:
+                                    <input
+                                        type="email"
+                                        className="w-full p-2 border rounded"
+                                        value={formData.proponente.email}
+                                        onChange={(e) => handleInputChange('proponente', 'email', e.target.value)}
+                                        required
+                                    />
                                 </label>
                                 <label className="block">
-                                <span className="text-red-500">*</span> Número da Proposta (Plataforma Transferegov):
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded"
-                                    value={formData.proponente.numeroProposta}
-                                    onChange={(e) => handleInputChange('proponente', 'numeroProposta', e.target.value)}
-                                    required
-                                />
+                                    <span className="text-red-500">*</span> Número da Proposta (Plataforma Transferegov):
+                                    <input
+                                        type="text"
+                                        className="w-full p-2 border rounded"
+                                        value={formData.proponente.numeroProposta}
+                                        onChange={(e) => handleInputChange('proponente', 'numeroProposta', e.target.value)}
+                                        required
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-red-500">*</span> Emenda Parlamentar:
+                                    <input
+                                        type="text"
+                                        className="w-full p-2 border rounded"
+                                        value={formData.proponente.emendaParlamentar}
+                                        onChange={(e) => {
+                                            const value = e.target.value.replace(/\D/g, ''); // Remove tudo que não for número
+                                            if (value.length <= 8) {
+                                                handleInputChange('proponente', 'emendaParlamentar', value);
+                                            }
+                                        }}
+                                        placeholder=""
+                                        maxLength="8"
+                                        required
+                                    />
+                                </label>
+                                <label className="block">
+                                    <span className="text-red-500">*</span> GND - Material de Consumo e Permanente:
+                                    <p className="italic text-gray-600 mb-2">
+                                        Selecione as opções aplicáveis (obrigatório selecionar pelo menos uma):
+                                    </p>
+                                    <div className="flex flex-col gap-4">
+                                        <label className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                value="GND3"
+                                                checked={formData.proponente.gnd?.includes('GND3') || false}
+                                                onChange={(e) => {
+                                                    const updatedGnd = e.target.checked
+                                                        ? [...(formData.proponente.gnd || []), 'GND3']
+                                                        : (formData.proponente.gnd || []).filter(item => item !== 'GND3');
+                                                    handleInputChange('proponente', 'gnd', updatedGnd);
+                                                }}
+                                                required={!formData.proponente.gnd?.length} // Requer pelo menos uma seleção
+                                            />
+                                            <span className="ml-2">GND3 - Material de Consumo</span>
+                                        </label>
+                                        <p className="italic text-gray-600 ml-6">
+                                            Material de Consumo, aquele que, em razão de seu uso corrente e da definição da Lei n. 4.320/64, 
+                                            perde normalmente sua identidade física e/ou tem sua utilização limitada a dois anos.
+                                        </p>
+                                        <label className="flex items-center">
+                                            <input
+                                                type="checkbox"
+                                                value="GND4"
+                                                checked={formData.proponente.gnd?.includes('GND4') || false}
+                                                onChange={(e) => {
+                                                    const updatedGnd = e.target.checked
+                                                        ? [...(formData.proponente.gnd || []), 'GND4']
+                                                        : (formData.proponente.gnd || []).filter(item => item !== 'GND4');
+                                                    handleInputChange('proponente', 'gnd', updatedGnd);
+                                                }}
+                                                required={!formData.proponente.gnd?.length} // Requer pelo menos uma seleção
+                                            />
+                                            <span className="ml-2">GND4 - Material Permanente</span>
+                                        </label>
+                                        <p className="italic text-gray-600 ml-6">
+                                            Material Permanente, aquele que, em razão de seu uso corrente, não perde a sua identidade física, 
+                                            e/ou tem uma durabilidade superior a dois anos.
+                                        </p>
+                                    </div>
                                 </label>
                             </div>
-                            </fieldset>
+                        </fieldset>
 
                             <fieldset className="border p-4 rounded">
                             <legend className="text-blue-900 font-bold">1.2 Responsável pela Elaboração do Projeto Técnico</legend>
@@ -1859,6 +1924,8 @@ const processarDados = async (data) => {
                                     telefones: [''],
                                     email: '',
                                     numeroProposta: '',
+                                    emendaParlamentar: '',
+                                    gnd: [],
                                     responsavelNome: '',
                                     responsavelEmail: '',
                                     responsavelVinculo: '',
