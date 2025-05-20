@@ -3384,12 +3384,13 @@ const sections = {
                         )}
 
                         <div className="mt-6">
-                            <button
-                                className="bg-blue-900 text-white px-4 py-2 rounded hover:bg-blue-800 w-full"
-                                onClick={generatePDF}
-                            >
-                                Gerar Projeto Técnico
-                            </button>
+                           <button
+                    className={`px-4 py-2 rounded w-full ${formularioValido ? 'bg-blue-900 text-white hover:bg-blue-800' : 'bg-gray-400 text-white cursor-not-allowed'}`}
+                    onClick={generatePDF}
+                    disabled={!formularioValido}
+                >
+                    Gerar Projeto Técnico
+                </button>
                         </div>
                         
                     </main>
