@@ -60,6 +60,21 @@ const parseMoeda = (valor) => {
     return parseFloat(valor.replace(/[^\d,]/g, '').replace(',', '.')) || 0;
 };
 
+class ErrorBoundary extends React.Component {
+    state = { hasError: false };
+
+    static getDerivedStateFromError() {
+        return { hasError: true };
+    }
+
+    render() {
+        if (this.state.hasError) {
+            return <h1>Algo deu errado. Por favor, recarregue a página.</h1>;
+        }
+        return this.props.children;
+    }
+}
+
 // Componente Principal
 const App = () => {
     const [activeTab, setActiveTab] = useState('info-proponente');
@@ -151,7 +166,7 @@ const App = () => {
     });
     const [municipios, setMunicipios] = useState([]);
     const [isCNPJEditable, setIsCNPJEditable] = useState(true);
-    const [isNomeDirigenteEditable, setIsNomeDirigenteEditable] = useState(false);
+    const [isNomeDirigenteEditable, setIsNomeDirigenteEditable] = useState(true);
     const [formularioValido, setFormularioValido] = useState(false);
 
     // Lista de campos obrigatórios
@@ -210,17 +225,17 @@ const App = () => {
         const { proponente, dadosProjeto, infoProjeto } = formData;
 
         // Função auxiliar para verificar se um campo está preenchido
-        const isFilled = (value) => {
-            if (Array.isArray(value)) {
-                return value.length > 0 && value.every(item => {
-                    if (typeof item === 'object') {
-                        return Object.values(item).every(v => isFilled(v));
-                    }
-                    return v !== '' && v !== null && v !== undefined;
-                });
-            }
-            return value !== '' && value !== null && value !== undefined;
-        };
+            const isFilled = (value) => {
+                if (Array.isArray(value)) {
+                    return value.length > 0 && value.every(item => {
+                        if (typeof item === 'object') {
+                            return Object.values(item).every(v => isFilled(v));
+                        }
+                        return item !== '' && item !== null && item !== undefined;
+                    });
+                }
+                return value !== '' && value !== null && value !== undefined;
+            };
 
         // Verifica cada seção
         for (const secao of Object.keys(camposObrigatorios)) {
@@ -1553,6 +1568,8 @@ const renderFields = (section, fields) => (
             <button onClick={() => saveForm(section)}>Salvar</button>
         </div>
     );
+
+
 // Campos para cada seção
 const sections = {
     'info-proponente': [
@@ -1560,19 +1577,29 @@ const sections = {
         { name: 'nomeProponente', label: 'Nome do Proponente', type: 'text' },
         { name: 'nomeDirigente',
                 label: 'Nome do Dirigente (Presidente)',
-                customRender: (formData, handleInputChange, isCNPJEditable) => (
-                    <label className="block">
-                        <span className="text-red-500">*</span> Nome do Dirigente (Presidente):
-                        <input
-                            type="text"
-                            className="w-full p-2 border rounded"
-                            value={formData.proponente.nomeDirigente}
-                            onChange={(e) => handleInputChange('proponente', 'nomeDirigente', e.target.value)}
-                            readOnly={!isCNPJEditable}
-                            required
-                        />
-                    </label>
-                ) },
+                customRender: (formData, handleInputChange) => (
+                    <div className="block">
+                        <label>
+                            <span className="text-red-500">*</span> Nome do Dirigente (Presidente):
+                            <input
+                                type="text"
+                                className="w-full p-2 border rounded"
+                                value={formData.proponente.nomeDirigente}
+                                onChange={(e) => handleInputChange('proponente', 'nomeDirigente', e.target.value)}
+                                readOnly={!isNomeDirigenteEditable} // Usa isNomeDirigenteEditable
+                                required
+                            />
+                        </label>
+                        <button
+                            type="button"
+                            className="ml-2 p-2 bg-blue-500 text-white rounded"
+                            onClick={() => setIsNomeDirigenteEditable(!isNomeDirigenteEditable)}
+                        >
+                            {isNomeDirigenteEditable ? 'Bloquear Edição' : 'Editar'}
+                        </button>
+                    </div>
+                )
+            },
         { name: 'telefones', label: 'Telefones', type: 'text' },
         { name: 'email', label: 'E-mail', type: 'email' },
         { name: 'numeroProposta', label: 'Número da Proposta', type: 'text' },
@@ -1792,7 +1819,7 @@ const sections = {
                                         className="w-full p-2 border rounded"
                                         value={formData.proponente.nomeDirigente}
                                         onChange={(e) => handleInputChange('proponente', 'nomeDirigente', e.target.value)}
-                                        readOnly={!isCNPJEditable}
+                                        readOnly={!isNomeDirigenteEditable} // Alterado para usar isNomeDirigenteEditable
                                         required
                                     />
                                 </label>
