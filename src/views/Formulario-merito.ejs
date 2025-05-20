@@ -486,158 +486,228 @@ const App = () => {
         }
     };
 
-    const buscarDadosMunicipio = async (municipioId) => {
-        if (!municipioId) {
-            console.warn('ID do município não fornecido.');
-            setFormData(prev => ({
-                ...prev,
-                proponente: {
-                    ...prev.proponente,
-                    numHabitantes: '',
-                    anoHabitantes: '',
-                    idh: '',
-                    anoIDH: ''
-                }
-            }));
-            return;
+// Função para buscar dados populacionais (IBGE) e IDH (Wikipédia)
+const buscarDadosMunicipio = async (municipioId) => {
+    if (!municipioId) {
+        console.warn('ID do município não fornecido.');
+        setFormData(prev => ({
+            ...prev,
+            proponente: {
+                ...prev.proponente,
+                numHabitantes: '',
+                anoHabitantes: '',
+                idh: '',
+                anoIDH: ''
+            }
+        }));
+        return;
+    }
+
+    try {
+        // Buscar dados populacionais do IBGE
+        const responsePop = await fetch(`https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2021/variaveis/9324?localidades=N6[${municipioId}]`);
+        if (!responsePop.ok) {
+            throw new Error(`Erro ao buscar população: HTTP ${responsePop.status} - ${responsePop.statusText}`);
         }
+        const dataPop = await responsePop.json();
+        console.log('Dados populacionais retornados:', dataPop);
+
+        const populacao = dataPop?.[0]?.resultados?.[0]?.series?.[0]?.serie?.['2021'] || '';
+        const anoReferenciaPop = '2021';
+
+        // Buscar nome do município para consulta na Wikipédia
+        const responseMunicipio = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/municipios/${municipioId}`);
+        if (!responseMunicipio.ok) {
+            throw new Error(`Erro ao buscar nome do município: HTTP ${responseMunicipio.status} - ${responseMunicipio.statusText}`);
+        }
+        const municipioData = await responseMunicipio.json();
+        const nomeMunicipio = municipioData.nome;
+
+        // Buscar IDH na Wikipédia com retry
+        let idh = '';
+        let anoIDH = '';
+        const maxRetries = 3;
+        for (let attempt = 1; attempt <= maxRetries; attempt++) {
+            try {
+                const wikiUrl = `https://pt.wikipedia.org/w/api.php?action=query&prop=revisions&titles=${encodeURIComponent(nomeMunicipio)}&rvprop=content&format=json&rvsection=0&origin=*`;
+                const responseWiki = await fetch(wikiUrl, { method: 'GET' });
+                if (!responseWiki.ok) {
+                    throw new Error(`HTTP ${responseWiki.status} - ${responseWiki.statusText}`);
+                }
+                const dataWiki = await responseWiki.json();
+
+                const page = Object.values(dataWiki.query.pages)[0];
+                if (page.missing) {
+                    throw new Error(`Página da Wikipédia não encontrada para o município ${nomeMunicipio}`);
+                }
+                const content = page.revisions?.[0]?.['*'] || '';
+
+                // Extrair IDH e ano usando regex
+                const idhMatch = content.match(/IDH\s*=\s*(\d\.\d{3})\s*\|?\s*ano\s*=\s*(\d{4})/i) ||
+                                content.match(/IDH\s*=\s*(\d\.\d{3})/i);
+                idh = idhMatch ? idhMatch[1] : '';
+                anoIDH = idhMatch && idhMatch[2] ? idhMatch[2] : '2010'; // Default para 2010
+                console.log(`IDH extraído para ${nomeMunicipio} (tentativa ${attempt}):`, { idh, anoIDH });
+                break; // Sucesso, sair do loop
+            } catch (wikiError) {
+                console.warn(`Tentativa ${attempt} falhou ao buscar IDH na Wikipédia para município ${nomeMunicipio}:`, wikiError.message);
+                if (attempt === maxRetries) {
+                    console.warn(`Esgotadas ${maxRetries} tentativas para buscar IDH na Wikipédia para ${nomeMunicipio}.`);
+                    idh = '';
+                    anoIDH = '';
+                } else {
+                    // Pausa de 1 segundo antes de tentar novamente
+                    await new Promise(resolve => setTimeout(resolve, 1000));
+                }
+            }
+        }
+
+        // Atualizar formData com dados populacionais e IDH
+        setFormData(prev => ({
+            ...prev,
+            proponente: {
+                ...prev.proponente,
+                numHabitantes: populacao ? populacao.toString() : '',
+                anoHabitantes: anoReferenciaPop,
+                idh,
+                anoIDH
+            }
+        }));
+    } catch (error) {
+        console.error('Erro ao buscar dados do município:', error.message);
+        alert(`Erro ao buscar dados populacionais ou IDH do município ${municipioId}. Verifique a conexão ou tente novamente.`);
+        setFormData(prev => ({
+            ...prev,
+            proponente: {
+                ...prev.proponente,
+                numHabitantes: '',
+                anoHabitantes: '',
+                idh: '',
+                anoIDH: ''
+            }
+        }));
+    }
+};
+
+// Função para carregar a lista de municípios de uma UF
+const carregarMunicipios = async (uf, retries = 3) => {
+    if (!uf || !/^[A-Z]{2}$/.test(uf)) {
+        console.warn(`UF inválida: "${uf}". Definindo lista de municípios como vazia.`);
+        setMunicipios([]);
+        return [];
+    }
+
+    for (let attempt = 1; attempt <= retries; attempt++) {
         try {
-            // Buscar dados populacionais
-            const response = await fetch(`https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2021/variaveis/9324?localidades=N6[${municipioId}]`);
+            const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
             if (!response.ok) {
-                throw new Error(`Erro ${response.status}: ${response.statusText}`);
+                throw new Error(`HTTP ${response.status} - ${response.statusText}`);
             }
             const data = await response.json();
-            console.log('Dados populacionais retornados:', data);
-
-            // Extrair população e ano de referência
-            const populacao = data?.[0]?.resultados?.[0]?.series?.[0]?.serie?.['2021'] || '';
-            const anoReferencia = '2021'; // Ano fixo baseado na API usada (ajuste conforme a fonte)
-
-            // Atualizar formData com os dados populacionais
-            setFormData(prev => ({
-                ...prev,
-                proponente: {
-                    ...prev.proponente,
-                    numHabitantes: populacao ? populacao.toString() : '',
-                    anoHabitantes: anoReferencia
-                }
-            }));
+            if (!Array.isArray(data)) {
+                throw new Error('Resposta da API não contém uma lista válida de municípios.');
+            }
+            console.log(`Municípios carregados para UF ${uf} (tentativa ${attempt}):`, data);
+            setMunicipios(data);
+            return data;
         } catch (error) {
-            console.error('Erro ao buscar dados do município:', error);
-            alert('Erro ao buscar dados populacionais do município. Verifique a conexão ou tente novamente.');
-            setFormData(prev => ({
-                ...prev,
-                proponente: {
-                    ...prev.proponente,
-                    numHabitantes: '',
-                    anoHabitantes: ''
-                }
-            }));
-        }
-    };
-
-    const carregarMunicipios = async (uf, retries = 3) => {
-        if (!uf || !/^[A-Z]{2}$/.test(uf)) {
-            console.warn(`UF inválida: "${uf}". Definindo municipios como vazio.`);
-            setMunicipios([]);
-            return [];
-        }
-        for (let attempt = 1; attempt <= retries; attempt++) {
-            try {
-                const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-                const data = await response.json();
-                console.log(`Municípios carregados para UF ${uf}:`, data);
-                setMunicipios(data || []);
-                return data || [];
-            } catch (error) {
-                console.error(`Tentativa ${attempt} falhou ao carregar municípios para UF ${uf}:`, error);
-                if (attempt === retries) {
-                    console.warn(`Não foi possível carregar municípios para UF ${uf}.`);
-                    alert(`Não foi possível carregar os municípios para UF ${uf}. Verifique sua conexão ou tente novamente.`);
-                    setMunicipios([]);
-                    return [];
-                }
+            console.error(`Tentativa ${attempt} falhou ao carregar municípios para UF ${uf}:`, error.message);
+            if (attempt === retries) {
+                console.warn(`Esgotadas ${retries} tentativas para UF ${uf}.`);
+                alert(`Erro ao carregar municípios para UF ${uf}. Verifique sua conexão e tente novamente.`);
+                setMunicipios([]);
+                return [];
             }
+            await new Promise(resolve => setTimeout(resolve, 1000));
         }
-    };
+    }
+};
 
-    const preencherMunicipio = async (nomeMunicipio) => {
-        if (!nomeMunicipio) {
-            console.warn('Nome do município não fornecido.');
-            setFormData(prev => ({
-                ...prev,
-                proponente: { ...prev.proponente, cidade: '' }
-            }));
+// Função para preencher dados do município com base no nome ou ID
+const preencherMunicipio = async (nomeMunicipio) => {
+    if (!nomeMunicipio) {
+        console.warn('Nome ou ID do município não fornecido.');
+        setFormData(prev => ({
+            ...prev,
+            proponente: { ...prev.proponente, cidade: '' }
+        }));
+        return;
+    }
+
+    if (/^\d+$/.test(nomeMunicipio)) {
+        console.log(`nomeMunicipio "${nomeMunicipio}" identificado como ID.`);
+        setFormData(prev => ({
+            ...prev,
+            proponente: { ...prev.proponente, cidade: nomeMunicipio }
+        }));
+
+        if (!formData.proponente.uf) {
+            console.warn('UF não definida no formData.proponente.');
+            alert('Por favor, selecione uma UF antes de buscar o município.');
             return;
         }
 
-        // Verificar se nomeMunicipio é um ID (ex.: '1300102')
-        if (/^\d+$/.test(nomeMunicipio)) {
-            console.warn(`nomeMunicipio "${nomeMunicipio}" parece ser um ID, não um nome.`);
-            
-            setFormData(prev => ({
-                ...prev,
-                proponente: { ...prev.proponente, cidade: nomeMunicipio }
-            }));
-
-            if (formData.proponente.uf) {
-                const lista = await carregarMunicipios(formData.proponente.uf);
-
-                if (Array.isArray(lista)) {
-                    const municipioId = Number(nomeMunicipio.trim());
-                    const municipio = lista.find(mun => mun.id === municipioId);
-
-                    if (municipio) {
-                        console.log('Município encontrado pelo ID:', municipio.nome);
-                        buscarDadosMunicipio(municipio.id);
-                    } else {
-                        console.warn(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
-                        alert(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
-                    }
-                } else {
-                    console.warn('Falha ao obter a lista de municípios.');
-                    alert('Erro ao carregar municípios. Tente novamente.');
-                }
-            }
+        const lista = await carregarMunicipios(formData.proponente.uf);
+        if (!Array.isArray(lista)) {
+            console.warn('Falha ao obter a lista de municípios.');
+            alert('Erro ao carregar municípios. Tente novamente.');
             return;
         }
-        // Garantir que municipios esteja carregado
-        if (!municipios.length && formData.proponente.uf) {
-            console.log(`Carregando municípios para UF ${formData.proponente.uf}...`);
-            await carregarMunicipios(formData.proponente.uf);
-        }
 
-        const normalizedInput = normalizeString(nomeMunicipio);
-        const municipio = municipios.find(mun => {
-            const normalizedMun = normalizeString(mun.nome);
-            return (
-                normalizedMun === normalizedInput ||
-                normalizedMun.includes(normalizedInput) ||
-                normalizedInput.includes(normalizedMun)
-            );
-        });
+        const municipioId = Number(nomeMunicipio.trim());
+        const municipio = lista.find(mun => mun.id === municipioId);
 
         if (municipio) {
-            console.log('Município encontrado pelo nome:', municipio.nome, 'ID:', municipio.id);
-            setFormData(prev => ({
-                ...prev,
-                proponente: { ...prev.proponente, cidade: municipio.id }
-            }));
+            console.log('Município encontrado pelo ID:', municipio.nome, 'ID:', municipio.id);
             buscarDadosMunicipio(municipio.id);
         } else {
-            console.warn(`Município "${nomeMunicipio}" não encontrado para UF ${formData.proponente.uf}. Municipios disponíveis:`, municipios);
+            console.warn(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
+            alert(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
             setFormData(prev => ({
                 ...prev,
                 proponente: { ...prev.proponente, cidade: '' }
             }));
-            alert(`Município "${nomeMunicipio}" não encontrado na lista de municípios da UF ${formData.proponente.uf}.`);
         }
-    };
+        return;
+    }
 
+    if (!formData.proponente.uf) {
+        console.warn('UF não definida no formData.proponente.');
+        alert('Por favor, selecione uma UF antes de buscar o município.');
+        return;
+    }
+
+    if (!municipios.length) {
+        console.log(`Carregando municípios para UF ${formData.proponente.uf}...`);
+        await carregarMunicipios(formData.proponente.uf);
+    }
+
+    const normalizedInput = normalizeString(nomeMunicipio);
+    const municipio = municipios.find(mun => {
+        const normalizedMun = normalizeString(mun.nome);
+        return (
+            normalizedMun === normalizedInput ||
+            normalizedMun.includes(normalizedInput) ||
+            normalizedInput.includes(normalizedMun)
+        );
+    });
+
+    if (municipio) {
+        console.log('Município encontrado pelo nome:', municipio.nome, 'ID:', municipio.id);
+        setFormData(prev => ({
+            ...prev,
+            proponente: { ...prev.proponente, cidade: municipio.id }
+        }));
+        buscarDadosMunicipio(municipio.id);
+    } else {
+        console.warn(`Município "${nomeMunicipio}" não encontrado para UF ${formData.proponente.uf}. Municipios disponíveis:`, municipios);
+        alert(`Município "${nomeMunicipio}" não encontrado na lista de municípios da UF ${formData.proponente.uf}.`);
+        setFormData(prev => ({
+            ...prev,
+            proponente: { ...prev.proponente, cidade: '' }
+        }));
+    }
+};
     const normalizeString = (str) => {
         return str
             ?.toLowerCase()
@@ -708,6 +778,7 @@ const App = () => {
             'Estimular a socialização e o respeito mútuo entre os participantes, promovendo valores como disciplina, cooperação e cidadania.'
         ];
     };
+    
 
     const generatePDF = () => {
         try {
@@ -1271,44 +1342,48 @@ const App = () => {
             );
 
             // 3.7 EVENTOS
-            const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados)
-                ? formData.infoProjeto.eventosSelecionados
-                : [];
-            const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Por Projeto';
-            const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
-            const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
+                const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados)
+                    ? formData.infoProjeto.eventosSelecionados
+                    : [];
+                const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Por Projeto';
+                const justificativaNucleo = formData.infoProjeto.justificativaNucleo || '';
+                const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
+                const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
 
-            let eventosContent = `Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro e acolhedor para os beneficiários e suas famílias. Essas celebrações destacam o impacto positivo do projeto, incentivando a continuidade da prática esportiva e a inclusão social. Durante cada evento, serão distribuídos kits de lanches aos beneficiados e à equipe técnica do projeto.\n`;
+                let eventosContent = `Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro e acolhedor para os beneficiários e suas famílias. Essas celebrações destacam o impacto positivo do projeto, incentivando a continuidade da prática esportiva e a inclusão social. Durante cada evento, serão distribuídos kits de lanches aos beneficiados e à equipe técnica do projeto.\n`;
 
-            if (eventosSelecionados.length > 0) {
-                eventosContent += `Eventos selecionados: ${eventosSelecionados.join(' e ')}.\n`;
-            } else {
-                eventosContent += `Nenhum evento selecionado.\n`;
-            }
+                if (eventosSelecionados.length > 0) {
+                    eventosContent += `Eventos selecionados: ${eventosSelecionados.join(' e ')}.\n`;
+                } else {
+                    eventosContent += `Nenhum evento selecionado.\n`;
+                }
 
-            if (eventosSelecionados.includes('Evento de Abertura')) {
-                eventosContent += `EVENTO DE ABERTURA\n`;
-                eventosContent += `Tem como principal objetivo apresentar o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, além de promover os valores fundamentais que o esporte oferece, como inclusão social, saúde, cidadania e trabalho em equipe. O evento marcará o início do projeto, com uma saudação e explicação dos objetivos e da programação, incluindo:\n`;
-                eventosContent += `• Divulgação ampla: Informar à comunidade local sobre a existência do projeto, seus objetivos e como as pessoas podem participar ou apoiar. Esse momento é essencial para atrair beneficiados, entusiastas do esporte, famílias e potenciais parceiros.\n`;
-                eventosContent += `• Educação e conscientização: Sensibilizar a comunidade sobre temas relacionados ao esporte, como saúde, prevenção de doenças, disciplina e trabalho em equipe.\n`;
-                eventosContent += `• Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de organizar e sustentar um projeto transformador, reforçando o orgulho local.\n`;
-            }
+                if (eventosSelecionados.includes('Evento de Abertura')) {
+                    eventosContent += `EVENTO DE ABERTURA\n`;
+                    eventosContent += `Tem como principal objetivo apresentar o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, além de promover os valores fundamentais que o esporte oferece, como inclusão social, saúde, cidadania e trabalho em equipe. O evento marcará o início do projeto, com uma saudação e explicação dos objetivos e da programação, incluindo:\n`;
+                    eventosContent += `• Divulgação ampla: Informar à comunidade local sobre a existência do projeto, seus objetivos e como as pessoas podem participar ou apoiar. Esse momento é essencial para atrair beneficiados, entusiastas do esporte, famílias e potenciais parceiros.\n`;
+                    eventosContent += `• Educação e conscientização: Sensibilizar a comunidade sobre temas relacionados ao esporte, como saúde, prevenção de doenças, disciplina e trabalho em equipe.\n`;
+                    eventosContent += `• Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de organizar e sustentar um projeto transformador, reforçando o orgulho local.\n`;
+                }
 
-            if (eventosSelecionados.includes('Evento de Encerramento')) {
-                eventosContent += `EVENTO DE ENCERRAMENTO\n`;
-                eventosContent += `Será organizado para comemorar o término do projeto e reconhecer os esforços e o progresso dos participantes, por meio de competições/torneios entre os beneficiados. Incluirá cerimônia de premiação, demonstrações de habilidades, apresentações, discursos de agradecimento e registros fotográficos/vídeos das atividades. Todos os participantes receberão medalhas personalizadas em reconhecimento ao seu esforço, e os três melhores colocados receberão troféus especiais.\n`;
-            }
+                if (eventosSelecionados.includes('Evento de Encerramento')) {
+                    eventosContent += `EVENTO DE ENCERRAMENTO\n`;
+                    eventosContent += `Será organizado para comemorar o término do projeto e reconhecer os esforços e o progresso dos participantes, por meio de competições/torneios entre os beneficiados. Incluirá cerimônia de premiação, demonstrações de habilidades, apresentações, discursos de agradecimento e registros fotográficos/vídeos das atividades. Todos os participantes receberão medalhas personalizadas em reconhecimento ao seu esforço, e os três melhores colocados receberão troféus especiais.\n`;
+                }
 
-            eventosContent += `Abrangência: ${abrangencia}\n`;
-            eventosContent += `Total de Eventos: ${eventosSelecionados.length * multiplicador}`;
+                eventosContent += `Abrangência: ${abrangencia}\n`;
+                if (abrangencia === 'Por Núcleo' && justificativaNucleo) {
+                    eventosContent += `Justificativa para eventos por núcleo: ${justificativaNucleo}\n`;
+                }
+                eventosContent += `Total de Eventos: ${eventosSelecionados.length * multiplicador}`;
 
-            currentY = createTable(
-                '3.7 EVENTOS',
-                [['']],
-                [[eventosContent]],
-                currentY,
-                [190]
-            );
+                currentY = createTable(
+                    '3.7 EVENTOS',
+                    [['']],
+                    [[eventosContent]],
+                    currentY,
+                    [190]
+                );
 
             // 3.8 RECURSOS HUMANOS
             const tipoRH = formData.infoProjeto.tipoRH?.toLowerCase() === 'cedidos' ? 'cedidos' : 'contratados';
@@ -2804,83 +2879,96 @@ const sections = {
                                 </fieldset>
 
                                 <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.7 Eventos</legend>
-                                    <div className="space-y-4">
-                                        <p className="italic text-gray-600">
-                                            Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica.
-                                        </p>
+                                <legend className="text-blue-900 font-bold">3.7 Eventos</legend>
+                                <div className="space-y-4">
+                                    <p className="italic text-gray-600">
+                                        Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica.
+                                    </p>
+                                    <label className="block">
+                                        <span className="text-red-500">*</span> Selecione os eventos a serem realizados:
+                                        <div className="flex flex-wrap gap-4 mt-2">
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value="Evento de Abertura"
+                                                    checked={(formData.infoProjeto.eventosSelecionados || []).includes('Evento de Abertura')}
+                                                    onChange={(e) => {
+                                                        const updatedEventos = e.target.checked
+                                                            ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
+                                                            : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
+                                                        handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
+                                                    }}
+                                                />
+                                                <span className="ml-2">Evento de Abertura</span>
+                                            </label>
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    value="Evento de Encerramento"
+                                                    checked={(formData.infoProjeto.eventosSelecionados || []).includes('Evento de Encerramento')}
+                                                    onChange={(e) => {
+                                                        const updatedEventos = e.target.checked
+                                                            ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
+                                                            : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
+                                                        handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
+                                                    }}
+                                                />
+                                                <span className="ml-2">Evento de Encerramento</span>
+                                            </label>
+                                        </div>
+                                    </label>
+                                    <label className="block">
+                                        <span className="text-red-500">*</span> Os eventos serão realizados:
+                                        <div className="flex gap-4 mt-2">
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="radio"
+                                                    name="abrangenciaEventos"
+                                                    value="Por Projeto"
+                                                    checked={formData.infoProjeto.abrangenciaEventos === 'Por Projeto'}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
+                                                    required
+                                                />
+                                                <span className="ml-2">Por Projeto (1 ocorrência por evento)</span>
+                                            </label>
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="radio"
+                                                    name="abrangenciaEventos"
+                                                    value="Por Núcleo"
+                                                    checked={formData.infoProjeto.abrangenciaEventos === 'Por Núcleo'}
+                                                    onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
+                                                />
+                                                <span className="ml-2">Por Núcleo (multiplicado pelo número de núcleos)</span>
+                                            </label>
+                                        </div>
+                                    </label>
+                                    {formData.infoProjeto.abrangenciaEventos === 'Por Núcleo' && (
                                         <label className="block">
-                                            <span className="text-red-500">*</span> Selecione os eventos a serem realizados:
-                                            <div className="flex flex-wrap gap-4 mt-2">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        value="Evento de Abertura"
-                                                        checked={(formData.infoProjeto.eventosSelecionados || []).includes('Evento de Abertura')}
-                                                        onChange={(e) => {
-                                                            const updatedEventos = e.target.checked
-                                                                ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
-                                                                : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
-                                                            handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
-                                                        }}
-                                                    />
-                                                    <span className="ml-2">Evento de Abertura</span>
-                                                </label>
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        value="Evento de Encerramento"
-                                                        checked={(formData.infoProjeto.eventosSelecionados || []).includes('Evento de Encerramento')}
-                                                        onChange={(e) => {
-                                                            const updatedEventos = e.target.checked
-                                                                ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
-                                                                : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
-                                                            handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
-                                                        }}
-                                                    />
-                                                    <span className="ml-2">Evento de Encerramento</span>
-                                                </label>
-                                            </div>
+                                            <span className="text-red-500">*</span> Justificativa para eventos por núcleo:
+                                            <textarea
+                                                className="mt-2 w-full p-2 border rounded"
+                                                rows="4"
+                                                value={formData.infoProjeto.justificativaNucleo || ''}
+                                                onChange={(e) => handleInputChange('infoProjeto', 'justificativaNucleo', e.target.value)}
+                                                placeholder="Explique por que os eventos serão realizados por núcleo..."
+                                                required
+                                            />
                                         </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Os eventos serão realizados:
-                                            <div className="flex gap-4 mt-2">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="abrangenciaEventos"
-                                                        value="Por Projeto"
-                                                        checked={formData.infoProjeto.abrangenciaEventos === 'Por Projeto'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
-                                                        required
-                                                    />
-                                                    <span className="ml-2">Por Projeto (1 ocorrência por evento)</span>
-                                                </label>
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="abrangenciaEventos"
-                                                        value="Por Núcleo"
-                                                        checked={formData.infoProjeto.abrangenciaEventos === 'Por Núcleo'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Por Núcleo (multiplicado pelo número de núcleos)</span>
-                                                </label>
-                                            </div>
-                                        </label>
-                                        <p className="italic text-gray-600">
-                                            <strong>Evento de Abertura:</strong> Apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania. Inclui:
-                                        </p>
-                                        <ul className="list-disc pl-5">
-                                            <li>Divulgação ampla: Informar à comunidade sobre o projeto e como participar.</li>
-                                            <li>Educação e conscientização: Sensibilizar sobre temas relacionados ao esporte.</li>
-                                            <li>Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de sustentar um projeto transformador.</li>
-                                        </ul>
-                                        <p className="italic text-gray-600">
-                                            <strong>Evento de Encerramento:</strong> Comemorará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades. Todos os participantes receberão medalhas, e os três melhores colocados receberão troféus.
-                                        </p>
-                                    </div>
-                                </fieldset>
+                                    )}
+                                    <p className="italic text-gray-600">
+                                        <strong>Evento de Abertura:</strong> Apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania. Inclui:
+                                    </p>
+                                    <ul className="list-disc pl-5">
+                                        <li>Divulgação ampla: Informar à comunidade sobre o projeto e como participar.</li>
+                                        <li>Educação e conscientização: Sensibilizar sobre temas relacionados ao esporte.</li>
+                                        <li>Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de sustentar um projeto transformador.</li>
+                                    </ul>
+                                    <p className="italic text-gray-600">
+                                        <strong>Evento de Encerramento:</strong> Comemorará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades. Todos os participantes receberão medalhas, e os três melhores colocados receberão troféus.
+                                    </p>
+                                </div>
+                            </fieldset>
 
                                <fieldset className="border p-4 rounded">
                                 <legend className="text-blue-900 font-bold">3.6 Grade Horária das Atividades</legend>
