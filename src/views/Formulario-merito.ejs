@@ -1512,7 +1512,19 @@ const preencherMunicipio = async (nomeMunicipio) => {
                 currentY,
                 [190]
             );
-
+// 3.13 ASSINATURA
+const assinaturaData = [
+    [`Nome do Dirigente (Presidente): ${formData.proponente.nomeDirigente || 'N/A'}`],
+    ['_____________________________________________'],
+    ['Assinatura']
+];
+currentY = createTable(
+    '3.13 ASSINATURA',
+    [['']],
+    assinaturaData,
+    currentY,
+    [190]
+);
 // Footer
 const addFooter = () => {
     const pageCount = doc.internal.getNumberOfPages();
