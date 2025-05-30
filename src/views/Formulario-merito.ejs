@@ -17,6 +17,21 @@
     <script type="text/babel">
 const { useState, useEffect } = React;
 
+
+// ✅ Sanitizador para prevenir erros de estrutura
+const sanitizeGradeHoraria = (gradeHoraria) => {
+  return gradeHoraria.map(item => ({
+    nucleoLocalidade: Array.isArray(item.nucleoLocalidade) ? item.nucleoLocalidade : [item.nucleoLocalidade || ''],
+    modalidadesNucleo: Array.isArray(item.modalidadesNucleo) ? item.modalidadesNucleo : [item.modalidadesNucleo || ''],
+    rhNucleo: Array.isArray(item.rhNucleo) && item.rhNucleo[0]?.cargo !== undefined
+      ? item.rhNucleo
+      : [{ cargo: item.rhNucleo || '', descricao: '' }],
+    infoNucleo: Array.isArray(item.infoNucleo) ? item.infoNucleo : [item.infoNucleo || ''],
+    gradeHorariaDescricao: item.gradeHorariaDescricao || '',
+    gradeDetalhada: item.gradeDetalhada || []
+  }));
+};
+
 // Funções utilitárias (mantidas do seu backend)
 const formatarCNPJ = (cnpj) => {
     cnpj = cnpj.replace(/\D/g, '');
@@ -77,6 +92,69 @@ class ErrorBoundary extends React.Component {
 
 // Componente Principal
 const App = () => {
+
+
+
+    const updateGradeField = (index, field, newValue) => {
+  setFormData((prevData) => {
+    const updatedGrade = [...prevData.infoProjeto.gradeHoraria];
+    updatedGrade[index][field] = newValue;
+    return {
+      ...prevData,
+      infoProjeto: {
+        ...prevData.infoProjeto,
+        gradeHoraria: updatedGrade
+      }
+    };
+  });
+};
+
+
+const handleAddGradeItem = (nucleoIndex) => {
+  const newItem = { dia: '', horario: '', atividade: '', responsavel: '' };
+  setFormData((prev) => {
+    const updated = [...prev.infoProjeto.gradeHoraria];
+    updated[nucleoIndex].gradeHorariaItens = [...(updated[nucleoIndex].gradeHorariaItens || []), newItem];
+    return {
+      ...prev,
+      infoProjeto: {
+        ...prev.infoProjeto,
+        gradeHoraria: updated
+      }
+    };
+  });
+};
+
+const handleRemoveGradeItem = (nucleoIndex, itemIndex) => {
+  setFormData((prev) => {
+    const updated = [...prev.infoProjeto.gradeHoraria];
+    updated[nucleoIndex].gradeHorariaItens.splice(itemIndex, 1);
+    return {
+      ...prev,
+      infoProjeto: {
+        ...prev.infoProjeto,
+        gradeHoraria: updated
+      }
+    };
+  });
+};
+
+const handleUpdateGradeItem = (nucleoIndex, itemIndex, field, value) => {
+  setFormData((prev) => {
+    const updated = [...prev.infoProjeto.gradeHoraria];
+    updated[nucleoIndex].gradeHorariaItens[itemIndex][field] = value;
+    return {
+      ...prev,
+      infoProjeto: {
+        ...prev.infoProjeto,
+        gradeHoraria: updated
+      }
+    };
+  });
+};
+
+
+
     const [activeTab, setActiveTab] = useState('info-proponente');
     const [formData, setFormData] = useState({
         proponente: {
@@ -130,11 +208,13 @@ const App = () => {
             custeioDivulgacao: '',
             quantidadeConjuntosUniforme: '',
             gradeHoraria: [{
-                nucleoLocalidade: '',
-                modalidadesNucleo: '',
-                rhNucleo: '',
-                infoNucleo: '',
-                gradeHorariaDescricao: ''
+            nucleoLocalidade: [''],
+            modalidadesNucleo: [''],
+            rhNucleo: [{ cargo: '', descricao: '' }],
+            infoNucleo: [''],
+            gradeHorariaDescricao: '',
+            gradeDetalhada: [],
+            gradeHorariaItens: [] // ✅ novo campo
             }],
             recursosHumanos: [{
                 funcaoRH: '',
@@ -218,27 +298,122 @@ const camposObrigatorios = {
         'detalhamentoModalidades'
     ],
     // Subfields for each gradeHoraria object
-    gradeHoraria: [
-        'nucleoLocalidade',
-        'modalidadesNucleo',
-        'rhNucleo',
-        'infoNucleo',
-        'gradeHorariaDescricao'
-    ]
+    gradeHoraria: [{
+    nucleoLocalidade: '',
+    modalidadesNucleo: '',
+    rhNucleo: [{ cargo: '', descricao: '' }],
+    infoNucleo: '',
+    gradeHorariaDescricao: '',
+    gradeDetalhada: [] // <= ADICIONADO
+}]
 };
-// Validation function
+// ✅ Função de validação corrigida
 const validateForm = (formData) => {
-    // Check top-level fields in proponente, dadosProjeto, and infoProjeto
-    for (const section of ['proponente', 'dadosProjeto', 'infoProjeto']) {
-        for (const field of camposObrigatorios[section]) {
-            // Skip gradeHoraria for now, as it’s an array
-            if (field === 'gradeHoraria') continue;
-            const value = formData[section][field];
-            if (!value || (typeof value === 'string' && value.trim() === '')) {
-                return false;
-            }
-        }
+  const camposObrigatorios = {
+    proponente: ['cnpj', 'nomeProponente', 'nomeDirigente'],
+    dadosProjeto: ['objetoProjeto', 'quantidadeNucleos', 'publicoDireto'],
+    infoProjeto: ['tipoNucleo'],
+    gradeHoraria: ['nucleoLocalidade', 'modalidadesNucleo', 'rhNucleo', 'infoNucleo', 'gradeHorariaDescricao']
+  };
+    
+
+
+
+
+const updateGradeField = (index, field, newValue) => {
+  const newGrade = [...formData.infoProjeto.gradeHoraria];
+  newGrade[index][field] = newValue;
+  setFormData(prev => ({
+    ...prev,
+    infoProjeto: {
+      ...prev.infoProjeto,
+      gradeHoraria: newGrade
     }
+  }));
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    
 
  // Validação específica para gradeHoraria
     const gradeHoraria = formData.infoProjeto.gradeHoraria;
@@ -261,17 +436,21 @@ const validateForm = (formData) => {
             const validarFormulario = () => {
                     const { proponente } = formData;
 
-                    const isFilled = (value) => {
-                        if (Array.isArray(value)) {
-                            return value.length > 0 && value.every(item => {
-                                if (typeof item === 'object') {
-                                    return Object.values(item).every(v => isFilled(v));
-                                }
-                                return item !== '' && item !== null && item !== undefined;
-                            });
-                        }
-                        return value !== '' && value !== null && value !== undefined;
-                    };
+                     const isFilled = (value) => {
+    if (Array.isArray(value)) {
+      return value.length > 0 && value.every(item => isFilled(item));
+    }
+    if (typeof value === 'object' && value !== null) {
+      return Object.values(value).every(isFilled);
+    }
+    return value !== null && value !== undefined && value !== '';
+  };
+
+  for (const secao of ['proponente', 'dadosProjeto', 'infoProjeto']) {
+    for (const campo of camposObrigatorios[secao]) {
+      if (!isFilled(formData[secao][campo])) return false;
+    }
+  }
 
         // Verifica cada seção
 for (const secao of Object.keys(camposObrigatorios)) {
@@ -311,7 +490,11 @@ for (const secao of Object.keys(camposObrigatorios)) {
                 }
                 if (secao === 'infoProjeto') {
                     if (campo === 'gradeHoraria') {
-                        return valor.every(row => isFilled(row.nucleoLocalidade) && isFilled(row.modalidadesNucleo) && isFilled(row.gradeHorariaDescricao));
+                    return valor.every(row =>
+                        Array.isArray(row.nucleoLocalidade) && row.nucleoLocalidade.every(isFilled) &&
+                        Array.isArray(row.modalidadesNucleo) && row.modalidadesNucleo.every(isFilled) &&
+                        typeof row.gradeHorariaDescricao === 'string' && row.gradeHorariaDescricao.trim() !== ''
+                    );
                     }
                     if (campo === 'recursosHumanos') {
                         return valor.every(row => isFilled(row.funcaoRH) && isFilled(row.quantidadeRH) && isFilled(row.atribuicaoRH) && isFilled(row.cargaHorariaRH) && isFilled(row.periodoRH));
@@ -336,70 +519,85 @@ for (const secao of Object.keys(camposObrigatorios)) {
         return true; // Todos os campos obrigatórios estão preenchidos
     };
 
-    useEffect(() => {
-        setFormularioValido(validarFormulario());
-    }, [formData]);
-
-    useEffect(() => {
-        loadSavedData();
-    }, []);
+   useEffect(() => {
+  const saved = localStorage.getItem('formulario');
+  if (saved) {
+    const parsed = JSON.parse(saved);
+    parsed.infoProjeto.gradeHoraria = sanitizeGradeHoraria(parsed.infoProjeto.gradeHoraria || []);
+    setFormData(parsed);
+  }
+}, []);
 
     const loadSavedData = () => {
-        const saved = localStorage.getItem('formData');
-        if (saved) {
-            const parsed = JSON.parse(saved);
-            setFormData(parsed);
-            if (parsed.proponente.uf) carregarMunicipios(parsed.proponente.uf);
-            if (parsed.proponente.cidade) preencherMunicipio(parsed.proponente.cidade);
+        const saved = localStorage.getItem('formulario');
+if (saved) {
+  const parsed = JSON.parse(saved);
+
+  // Saneando gradeHoraria antes de setar
+  parsed.infoProjeto.gradeHoraria = sanitizeGradeHoraria(parsed.infoProjeto.gradeHoraria || []);
+
+  setFormData(parsed);
+}
+    };
+
+        const saveForm = (section) => {
+        try {
+            localStorage.setItem('formData', JSON.stringify(formData));
+            alert(`${section} salvo com sucesso!`);
+        } catch (error) {
+            console.error('Erro ao salvar no localStorage:', error);
+            alert('Erro ao salvar os dados. Verifique o console para mais detalhes.');
         }
-    };
-
-    const saveForm = (section) => {
-        const updatedData = { ...formData, [section]: formData[section] };
-        setFormData(updatedData);
-        localStorage.setItem('formData', JSON.stringify(updatedData));
-        alert('Dados salvos com sucesso!');
-    };
-
-    const handleInputChange = (section, field, value, index = null, subField = null) => {
-        setFormData(prev => {
-            const newData = { ...prev };
+        };
+        useEffect(() => {
+            try {
+                localStorage.setItem('formData', JSON.stringify(formData));
+            } catch (error) {
+                console.error('Erro ao salvar no localStorage:', error);
+            }
+            }, [formData]);
+        const handleInputChange = (section, field, value, index = null, subField = null) => {
+        setFormData((prev) => {
             if (index !== null && subField) {
-                newData[section][field][index][subField] = value;
-            } else if (index !== null) {
-                newData[section][field][index] = value;
+            // Atualiza um campo específico em uma lista (ex.: materiais, uniformes)
+            const updatedArray = [...prev[section][field]];
+            updatedArray[index] = { ...updatedArray[index], [subField]: value };
+            return {
+                ...prev,
+                [section]: {
+                ...prev[section],
+                [field]: updatedArray,
+                },
+            };
+            } else if (Array.isArray(prev[section][field])) {
+            // Atualiza uma lista diretamente (ex.: telefones)
+            return {
+                ...prev,
+                [section]: {
+                ...prev[section],
+                [field]: value,
+                },
+            };
             } else {
-                newData[section][field] = value;
+            // Atualiza um campo simples
+            return {
+                ...prev,
+                [section]: {
+                ...prev[section],
+                [field]: value,
+                },
+            };
             }
-            return newData;
         });
+        };
 
-        if (section === 'proponente') {
-            if (field === 'cnpj') buscarDadosCNPJ(value);
-            if (field === 'uf') carregarMunicipios(value);
-            if (field === 'cidade') buscarDadosMunicipio(value);
-        }
-        if (section === 'dadosProjeto') {
-            if (field === 'valorConcedente' || field === 'valorContrapartida') {
-                calcularValorGlobal();
-            }
-            if (field === 'periodoEstruturacao' || field === 'periodoExecucao') {
-                calcularVigenciaTotal();
-            }
-            if (field === 'publicoDireto') {
-                calcularPublicoIndireto(value);
-            }
-        }
-    };
-
-    const addItem = (section, field) => {
-        setFormData(prev => {
-            const newData = { ...prev };
-            const template = { modalidade: '' }; // Novo item com modalidade em branco
-            newData[section][field] = [...prev[section][field], { ...template }];
-            return newData;
-        });
-    };
+    const addItem = (section, field, defaultValue = {}) => {
+  setFormData((prevData) => {
+    const updated = { ...prevData };
+    updated[section][field].push(defaultValue);
+    return updated;
+  });
+};
 
     const removeItem = (section, field, index) => {
         if (formData[section][field].length > 1) {
@@ -1275,36 +1473,164 @@ for (const secao of Object.keys(camposObrigatorios)) {
                 [190]
             );
 
-            // 3.6 GRADE HORÁRIA DAS ATIVIDADES
-            const gradeHorariaIntro = [
-                [`O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 (vinte) horas semanais de atividades, no mínimo 16 (dezesseis) horas de atendimento mais 4 (quatro) horas de planejamento, distribuídos em turmas separadas por faixa etária e perfil dos participantes, de forma a atender os ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários previstos.`]
-            ];
-            currentY = createTable(
-                '3.6 GRADE HORÁRIA DAS ATIVIDADES',
-                [['']],
-                gradeHorariaIntro,
-                currentY,
-                [190]
-            );
+// 3.6 GRADE HORÁRIA DAS ATIVIDADES
+const gradeHorariaIntro = [
+  [
+    `O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 (vinte) horas semanais de atividades, no mínimo 16 (dezesseis) horas de atendimento mais 4 (quatro) horas de planejamento, distribuídos em turmas separadas por faixa etária e perfil dos participantes, de forma a atender os ${formData.dadosProjeto.publicoDireto || 'XX'} (${numeroPorExtenso && typeof numeroPorExtenso === 'function' ? numeroPorExtenso(formData.dadosProjeto.publicoDireto || 'XX') : 'N/A'}) beneficiários previstos.`,
+  ],
+];
 
-            const gradeHorariaRows = Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gradeHoraria.length > 0 
-                ? formData.infoProjeto.gradeHoraria.map((row, index) => [
-                    `${index + 1}.`,
-                    row.nucleoLocalidade || 'N/A',
-                    row.modalidadesNucleo || 'N/A',
-                    row.gradeHorariaDescricao || 'N/A' // Usar o novo campo
-                ]) 
-                : [['1.', 'N/A', 'N/A', 'N/A']];
+// Assuming createTable uses jsPDF's autoTable, we can leverage its built-in page break handling
+currentY = createTable(
+  '3.6 GRADE HORÁRIA DAS ATIVIDADES',
+  [['']],
+  gradeHorariaIntro,
+  currentY,
+  [190],
+  { bodyStyles: { fontSize: config.fontSize.medium || 10 } } // Fallback font size
+);
 
-            currentY = createTable(
-                null,
-                [['Nº', 'Núcleo (localidade)', 'Modalidades', 'Grade Horária']],
-                gradeHorariaRows,
-                currentY,
-                [15, 60, 60, 55],
-                { bodyStyles: { fontSize: config.fontSize.small } }
-            );
+if (Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gradeHoraria.length > 0) {
+  formData.infoProjeto.gradeHoraria.forEach((row, index) => {
+    // Núcleo header
+    const nucleoHeader = [
+      [
+        `Núcleo "${String.fromCharCode(97 + index)}" ${Array.isArray(row.nucleoLocalidade) ? row.nucleoLocalidade.join(', ') : 'N/A'}`,
+      ],
+    ];
+    currentY = createTable(
+      null,
+      [['']],
+      nucleoHeader,
+      currentY,
+      [190],
+      { bodyStyles: { fontSize: config.fontSize.medium || 10, fontStyle: 'bold' } }
+    );
 
+    // Localidades
+    const localidadeRows = Array.isArray(row.nucleoLocalidade) && row.nucleoLocalidade.length > 0
+      ? row.nucleoLocalidade.map(loc => [`${loc}`])
+      : [['N/A']];
+    currentY = createTable(
+      null,
+      [['Localidade']],
+      localidadeRows,
+      currentY,
+      [190],
+      { 
+        bodyStyles: { fontSize: config.fontSize.small || 8 },
+        // Enable auto page break with jsPDF autoTable
+        startY: currentY,
+        pageBreak: 'auto'
+      }
+    );
+
+    // Modalidades
+    const modalidadeRows = Array.isArray(row.modalidadesNucleo) && row.modalidadesNucleo.length > 0
+      ? row.modalidadesNucleo.map(mod => [`${mod}`])
+      : [['N/A']];
+    currentY = createTable(
+      null,
+      [['Modalidades']],
+      modalidadeRows,
+      currentY,
+      [190],
+      { 
+        bodyStyles: { fontSize: config.fontSize.small || 8 },
+        startY: currentY,
+        pageBreak: 'auto'
+      }
+    );
+
+    // Recursos Humanos
+    const rhRows = Array.isArray(row.rhNucleo) && row.rhNucleo.length > 0
+      ? row.rhNucleo.map(rh => [`Cargo: ${rh.cargo || 'N/A'}, Descrição: ${rh.descricao || 'N/A'}`])
+      : [['N/A']];
+    currentY = createTable(
+      null,
+      [['Recursos Humanos']],
+      rhRows,
+      currentY,
+      [190],
+      { 
+        bodyStyles: { fontSize: config.fontSize.small || 8 },
+        startY: currentY,
+        pageBreak: 'auto'
+      }
+    );
+
+    // Informações do Núcleo
+    const infoRows = Array.isArray(row.infoNucleo) && row.infoNucleo.length > 0
+      ? row.infoNucleo.map(info => [`${info}`])
+      : [['N/A']];
+    currentY = createTable(
+      null,
+      [['Informações do Núcleo']],
+      infoRows,
+      currentY,
+      [190],
+      { 
+        bodyStyles: { fontSize: config.fontSize.small || 8 },
+        startY: currentY,
+        pageBreak: 'auto'
+      }
+    );
+
+    // Schedule table for the current núcleo
+    const scheduleRows = Array.isArray(row.gradeHorariaItens) && row.gradeHorariaItens.length > 0
+      ? row.gradeHorariaItens.map(item => [
+          `${item.dia || 'N/A'}`,
+          `${item.horario || 'N/A'}`,
+          `${item.atividade || 'N/A'}`,
+          `${item.quantidadeBeneficiarios || 'N/A'}`,
+        ])
+      : [['N/A', 'N/A', 'N/A', 'N/A']];
+    currentY = createTable(
+      null,
+      [['DIAS DA SEMANA', 'HORÁRIO', 'ATIVIDADE', 'QUANT. VAGAS']],
+      scheduleRows,
+      currentY,
+      [45, 45, 60, 40],
+      { 
+        bodyStyles: { fontSize: config.fontSize.small || 8 },
+        startY: currentY,
+        pageBreak: 'auto'
+      }
+    );
+
+    // Add the description below the schedule table
+    const descriptionRows = [[row.gradeHorariaDescricao || 'N/A']];
+    currentY = createTable(
+      null,
+      [['DESCRIÇÃO DA GRADE HORÁRIA']],
+      descriptionRows,
+      currentY,
+      [190],
+      { 
+        bodyStyles: { fontSize: config.fontSize.small || 8 },
+        startY: currentY,
+        pageBreak: 'auto'
+      }
+    );
+
+    // Add vertical spacing after each núcleo
+    currentY += 10; // Add some space between núcleos
+  });
+} else {
+  // Fallback if no núcleos are available
+  currentY = createTable(
+    null,
+    [['DIAS DA SEMANA', 'HORÁRIO', 'ATIVIDADE', 'QUANT. VAGAS']],
+    [['N/A', 'N/A', 'N/A', 'N/A']],
+    currentY,
+    [45, 45, 60, 40],
+    { 
+      bodyStyles: { fontSize: config.fontSize.small || 8 },
+      startY: currentY,
+      pageBreak: 'auto'
+    }
+  );
+}
             // 3.7 EVENTOS
             const eventosSelecionados = Array.isArray(formData.infoProjeto.eventosSelecionados)
                 ? formData.infoProjeto.eventosSelecionados
@@ -2928,202 +3254,316 @@ const sections = {
                                         </p>
                                     </div>
                                 </fieldset>
-
-                        <fieldset className="border p-4 rounded">
-                            <legend className="text-blue-900 font-bold">3.6 Grade Horária das Atividades</legend>
-                            <p className="italic text-gray-600">
-                                O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 horas semanais de atividades, com 16 horas de atendimento e 4 horas de planejamento, para atender os {formData.dadosProjeto.publicoDireto || 'XX'} beneficiários.
-                            </p>
-                            <p className="text-gray-600 mb-4">
-                                <strong><span aria-label="required">*</span></strong> indica campos obrigatórios.
-                            </p>
-                            <div className="space-y-4">
-                                {formData.infoProjeto.gradeHoraria.map((row, index) => (
-                                    <div key={index} className="border p-4 rounded">
-                                        <h4 className="font-bold">Núcleo {index + 1}</h4>
-                                        <label className="block">
-                                            Localidade:<span className="text-red-500" aria-hidden="true">*</span>
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={row.nucleoLocalidade}
-                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'nucleoLocalidade')}
-                                                required
-                                                aria-required="true"
-                                                id={`nucleoLocalidade-${index}`}
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            Modalidades<span className="text-red-500" aria-hidden="true">*</span>
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={row.modalidadesNucleo}
-                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'modalidadesNucleo')}
-                                                required
-                                                aria-required="true"
-                                                id={`modalidadesNucleo-${index}`}
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            Recursos Humanos<span className="text-red-500" aria-hidden="true">*</span>
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={row.rhNucleo}
-                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'rhNucleo')}
-                                                required
-                                                aria-required="true"
-                                                id={`rhNucleo-${index}`}
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            Informações do Núcleo<span className="text-red-500" aria-hidden="true">*</span>
-                                            <textarea
-                                                className="w-full p-2 border rounded"
-                                                value={row.infoNucleo}
-                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'infoNucleo')}
-                                                required
-                                                aria-required="true"
-                                                id={`infoNucleo-${index}`}
-                                                rows="3"
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            Grade Horária<span className="text-red-500" aria-hidden="true">*</span>
-                                            <textarea
-                                                className="w-full p-2 border rounded"
-                                                placeholder="Ex.: 3 vezes na semana, 1h30 cada aula, 4h planejamento, 20h semanais por professor"
-                                                value={row.gradeHorariaDescricao || ''}
-                                                onChange={(e) => handleInputChange('infoProjeto', 'gradeHoraria', e.target.value, index, 'gradeHorariaDescricao')}
-                                                required
-                                                aria-required="true"
-                                                id={`gradeHorariaDescricao-${index}`}
-                                                rows="3"
-                                            />
-                                        </label>
-                                        {formData.infoProjeto.gradeHoraria.length > 1 && (
-                                            <button
-                                                type="button"
-                                                className="bg-red-500 text-white px-2 py-1 rounded mt-2"
-                                                onClick={() => removeItem('infoProjeto', 'gradeHoraria', index)}
-                                                aria-label={`Remover Núcleo ${index + 1}`}
-                                            >
-                                                Remover Núcleo
-                                            </button>
-                                        )}
-                                    </div>
-                                ))}
-                                <button
-                                    type="button"
-                                    className="bg-green-500 text-white px-4 py-2 rounded"
-                                    onClick={() => addItem('infoProjeto', 'gradeHoraria')}
-                                    aria-label="Adicionar novo núcleo"
-                                >
-                                    Adicionar Núcleo
-                                </button>
-                            </div>
-                        </fieldset>
-
                                 <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.9 Recursos Humanos</legend>
-                                    
-                                    {/* Novo campo fora da lista de recursos */}
-                                    <div className="mb-4">
-                                        <label className="block w-32">
-                                        Tipo:
-                                        <select
-                                            className="w-full p-2 border rounded"
-                                            value={formData.infoProjeto.tipoRH}
-                                            onChange={(e) => handleInputChange('infoProjeto', null, e.target.value, null, 'tipoRH')}
-                                        >
-                                            <option value="">Selecione</option>
-                                            <option value="Contratados">Contratados</option>
-                                            <option value="Cedidos">Cedidos</option>
-                                        </select>
-                                        </label>
-                                    </div>
+                                <legend className="text-blue-900 font-bold">3.8 Grade Horária das Atividades</legend>
 
-                                    <div className="space-y-4">
-                                        {formData.infoProjeto.recursosHumanos.map((row, index) => (
-                                        <div key={index} className="flex flex-wrap gap-2 items-center">
-                                            <label className="block flex-1 min-w-[200px]">
-                                            Função:
+                                <p className="italic text-gray-600">
+                                    O(s) núcleo(s) do projeto ofertará(ão), no mínimo, 20 horas semanais de atividades, com 16 horas de atendimento e 4 horas de planejamento, para atender os {formData.dadosProjeto.publicoDireto || 'XX'} beneficiários.
+                                </p>
+                                <p className="text-gray-600 mb-4">
+                                    <strong><span aria-label="required">*</span></strong> indica campos obrigatórios.
+                                </p>
+
+                                <div className="space-y-4">
+                                    {formData.infoProjeto.gradeHoraria.map((row, index) => (
+                                    <div key={index} className="border p-4 rounded space-y-4">
+                                        <h4 className="font-bold">Núcleo {index + 1}</h4>
+
+                                        {/* Localidades */}
+                                        <div>
+                                        <label className="font-semibold block">Localidade<span className="text-red-500">*</span></label>
+                                        {row.nucleoLocalidade.map((loc, locIdx) => (
+                                            <div key={locIdx} className="flex items-center gap-2 mb-1">
                                             <input
                                                 type="text"
                                                 className="w-full p-2 border rounded"
-                                                value={row.funcaoRH}
-                                                onChange={(e) =>
-                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'funcaoRH')
-                                                }
+                                                value={loc}
+                                                onChange={(e) => {
+                                                const updated = [...row.nucleoLocalidade];
+                                                updated[locIdx] = e.target.value;
+                                                updateGradeField(index, 'nucleoLocalidade', updated);
+                                                }}
+                                                required
                                             />
-                                            </label>
-                                            <label className="block w-20">
-                                            Quantidade:
-                                            <input
-                                                type="number"
-                                                className="w-full p-2 border rounded"
-                                                value={row.quantidadeRH}
-                                                onChange={(e) =>
-                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'quantidadeRH')
-                                                }
-                                                min="1"
-                                            />
-                                            </label>
-                                            <label className="block flex-1 min-w-[200px]">
-                                            Atribuição:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={row.atribuicaoRH}
-                                                onChange={(e) =>
-                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'atribuicaoRH')
-                                                }
-                                            />
-                                            </label>
-                                            <label className="block w-32">
-                                            Carga Horária:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={row.cargaHorariaRH}
-                                                onChange={(e) =>
-                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'cargaHorariaRH')
-                                                }
-                                            />
-                                            </label>
-                                            <label className="block w-32">
-                                            Período:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={row.periodoRH}
-                                                onChange={(e) =>
-                                                handleInputChange('infoProjeto', 'recursosHumanos', e.target.value, index, 'periodoRH')
-                                                }
-                                            />
-                                            </label>
-                                            {formData.infoProjeto.recursosHumanos.length > 1 && (
                                             <button
                                                 type="button"
-                                                className="bg-red-500 text-white px-2 py-1 rounded"
-                                                onClick={() => removeItem('infoProjeto', 'recursosHumanos', index)}
-                                            >
-                                                <i className="fas fa-trash"></i>
-                                            </button>
-                                            )}
-                                        </div>
+                                                className="text-red-600"
+                                                onClick={() => {
+                                                const updated = row.nucleoLocalidade.filter((_, i) => i !== locIdx);
+                                                updateGradeField(index, 'nucleoLocalidade', updated);
+                                                }}
+                                            >🗑️</button>
+                                            </div>
                                         ))}
                                         <button
-                                        type="button"
-                                        className="bg-green-500 text-white px-4 py-2 rounded"
-                                        onClick={() => addItem('infoProjeto', 'recursosHumanos')}
+                                            type="button"
+                                            className="text-blue-600 underline"
+                                            onClick={() => updateGradeField(index, 'nucleoLocalidade', [...row.nucleoLocalidade, ''])}
                                         >
-                                        Adicionar Recurso Humano
+                                            + Adicionar Localidade
                                         </button>
-                                    </div>
-                                    </fieldset>
+                                        </div>
 
+                                        {/* Modalidades */}
+                                        <div>
+                                        <label className="font-semibold block">Modalidades<span className="text-red-500">*</span></label>
+                                        {row.modalidadesNucleo.map((mod, modIdx) => (
+                                            <div key={modIdx} className="flex items-center gap-2 mb-1">
+                                            <input
+                                                type="text"
+                                                className="w-full p-2 border rounded"
+                                                value={mod}
+                                                onChange={(e) => {
+                                                const updated = [...row.modalidadesNucleo];
+                                                updated[modIdx] = e.target.value;
+                                                updateGradeField(index, 'modalidadesNucleo', updated);
+                                                }}
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                className="text-red-600"
+                                                onClick={() => {
+                                                const updated = row.modalidadesNucleo.filter((_, i) => i !== modIdx);
+                                                updateGradeField(index, 'modalidadesNucleo', updated);
+                                                }}
+                                            >🗑️</button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            className="text-blue-600 underline"
+                                            onClick={() => updateGradeField(index, 'modalidadesNucleo', [...row.modalidadesNucleo, ''])}
+                                        >
+                                            + Adicionar Modalidade
+                                        </button>
+                                        </div>
+
+                                        {/* Recursos Humanos */}
+                                        <div>
+                                        <label className="font-semibold block">Recursos Humanos<span className="text-red-500">*</span></label>
+                                        {row.rhNucleo.map((rh, rhIdx) => (
+                                            <div key={rhIdx} className="grid md:grid-cols-2 gap-2 mb-2">
+                                            <input
+                                                type="text"
+                                                className="p-2 border rounded"
+                                                placeholder="Cargo (ex: Professor de Esportes)"
+                                                value={rh.cargo}
+                                                onChange={(e) => {
+                                                const updated = [...row.rhNucleo];
+                                                updated[rhIdx].cargo = e.target.value;
+                                                updateGradeField(index, 'rhNucleo', updated);
+                                                }}
+                                                required
+                                            />
+                                            <input
+                                                type="text"
+                                                className="p-2 border rounded"
+                                                placeholder="Descrição do cargo"
+                                                value={rh.descricao}
+                                                onChange={(e) => {
+                                                const updated = [...row.rhNucleo];
+                                                updated[rhIdx].descricao = e.target.value;
+                                                updateGradeField(index, 'rhNucleo', updated);
+                                                }}
+                                                required
+                                            />
+                                            <div className="md:col-span-2 text-right">
+                                                <button
+                                                type="button"
+                                                className="text-red-600 text-sm"
+                                                onClick={() => {
+                                                    const updated = row.rhNucleo.filter((_, i) => i !== rhIdx);
+                                                    updateGradeField(index, 'rhNucleo', updated);
+                                                }}
+                                                >
+                                                🗑️ Remover Cargo
+                                                </button>
+                                            </div>
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            className="text-blue-600 underline"
+                                            onClick={() => updateGradeField(index, 'rhNucleo', [...row.rhNucleo, { cargo: '', descricao: '' }])}
+                                        >
+                                            + Adicionar Cargo
+                                        </button>
+                                        </div>
+
+                                        {/* Informações do Núcleo */}
+                                        <div>
+                                        <label className="font-semibold block">Informações do Núcleo<span className="text-red-500">*</span></label>
+                                        {row.infoNucleo.map((info, infoIdx) => (
+                                            <div key={infoIdx} className="flex items-center gap-2 mb-1">
+                                            <textarea
+                                                className="w-full p-2 border rounded"
+                                                rows="2"
+                                                value={info}
+                                                onChange={(e) => {
+                                                const updated = [...row.infoNucleo];
+                                                updated[infoIdx] = e.target.value;
+                                                updateGradeField(index, 'infoNucleo', updated);
+                                                }}
+                                                required
+                                            />
+                                            <button
+                                                type="button"
+                                                className="text-red-600"
+                                                onClick={() => {
+                                                const updated = row.infoNucleo.filter((_, i) => i !== infoIdx);
+                                                updateGradeField(index, 'infoNucleo', updated);
+                                                }}
+                                            >🗑️</button>
+                                            </div>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            className="text-blue-600 underline"
+                                            onClick={() => updateGradeField(index, 'infoNucleo', [...row.infoNucleo, ''])}
+                                        >
+                                            + Adicionar Informação
+                                        </button>
+                                        </div>
+
+                                        {/* Grade Horária Organizada */}
+                                        <div className="mb-4 mt-4">
+                                        <label className="block font-medium mb-2">
+                                            Grade Horária Organizada:<span className="text-red-500">*</span>
+                                        </label>
+
+                                        <div className="overflow-x-auto">
+                                            <table className="min-w-full bg-white border rounded">
+                                            <thead>
+                                                <tr className="bg-gray-100">
+                                                <th className="p-2 border">Dia</th>
+                                                <th className="p-2 border">Horário</th>
+                                                <th className="p-2 border">Atividade</th>
+                                                <th className="p-2 border">Professor/Monitor</th>
+                                                <th className="p-2 border">Quantidade Beneficiários</th>
+                                                <th className="p-2 border">Ações</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {(row.gradeHorariaItens || []).map((item, itemIndex) => (
+                                                <tr key={itemIndex}>
+                                                    <td className="p-2 border">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full border rounded p-1"
+                                                        placeholder="Ex.: Segunda"
+                                                        value={item.dia}
+                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'dia', e.target.value)}
+                                                    />
+                                                    </td>
+                                                    <td className="p-2 border">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full border rounded p-1"
+                                                        placeholder="08:00 às 10:00"
+                                                        value={item.horario}
+                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'horario', e.target.value)}
+                                                    />
+                                                    </td>
+                                                    <td className="p-2 border">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full border rounded p-1"
+                                                        placeholder="Futebol 6 a 11 anos"
+                                                        value={item.atividade}
+                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'atividade', e.target.value)}
+                                                    />
+                                                    </td>
+                                                    <td className="p-2 border">
+                                                    <input
+                                                        type="text"
+                                                        className="w-full border rounded p-1"
+                                                        placeholder="Professor / Monitor"
+                                                        value={item.responsavel}
+                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'responsavel', e.target.value)}
+                                                    />
+                                                    </td>
+                                                    <td className="p-2 border">
+                                                    <input
+                                                        type="number"
+                                                        className="w-full border rounded p-1"
+                                                        placeholder="Ex.: 15"
+                                                        value={item.quantidadeBeneficiarios || ''}
+                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'quantidadeBeneficiarios', e.target.value)}
+                                                        required
+                                                    />
+                                                    </td>
+                                                    <td className="p-2 border text-center">
+                                                    <button
+                                                        type="button"
+                                                        className="text-red-500 hover:text-red-700"
+                                                        onClick={() => handleRemoveGradeItem(index, itemIndex)}
+                                                    >
+                                                        ×
+                                                    </button>
+                                                    </td>
+                                                </tr>
+                                                ))}
+                                            </tbody>
+                                            </table>
+
+                                            <button
+                                            type="button"
+                                            className="mt-2 bg-blue-600 text-white px-3 py-1 rounded"
+                                            onClick={() => handleAddGradeItem(index)}
+                                            >
+                                            + Adicionar Linha
+                                            </button>
+                                        </div>
+                                        </div>
+
+                                        {/* Descrição da Grade Horária */}
+                                        <div className="mb-4">
+                                        <label className="block font-medium mb-2">
+                                            Descrição da Grade Horária:<span className="text-red-500">*</span>
+                                        </label>
+                                        <textarea
+                                            className="w-full p-2 border rounded"
+                                            rows="4"
+                                            value={row.gradeHorariaDescricao || ''}
+                                            onChange={(e) => updateGradeField(index, 'gradeHorariaDescricao', e.target.value)}
+                                            placeholder="Descreva detalhes adicionais sobre a grade horária do núcleo, como organização das atividades, particularidades do planejamento, ou outras informações relevantes."
+                                            required
+                                        />
+                                        </div>
+
+                                        {/* Botão para remover núcleo */}
+                                        {formData.infoProjeto.gradeHoraria.length > 1 && (
+                                        <button
+                                            type="button"
+                                            className="bg-red-600 text-white px-4 py-2 rounded"
+                                            onClick={() => removeItem('infoProjeto', 'gradeHoraria', index)}
+                                        >
+                                            Remover Núcleo
+                                        </button>
+                                        )}
+                                    </div>
+                                    ))}
+
+                                    {/* Botão para adicionar novo núcleo */}
+                                    <button
+                                    type="button"
+                                    className="bg-green-600 text-white px-4 py-2 rounded"
+                                    onClick={() =>
+                                        addItem('infoProjeto', 'gradeHoraria', {
+                                        nucleoLocalidade: [''],
+                                        modalidadesNucleo: [''],
+                                        rhNucleo: [{ cargo: '', descricao: '' }],
+                                        infoNucleo: [''],
+                                        gradeHorariaDescricao: '',
+                                        gradeHorariaItens: []
+                                        })
+                                    }
+                                    >
+                                    Adicionar Núcleo
+                                    </button>
+                                </div>
+                                </fieldset>
                                 <fieldset className="border p-4 rounded">
                                     <legend className="text-blue-900 font-bold">3.10 Materiais Fornecidos</legend>
                                     <div className="space-y-4">
