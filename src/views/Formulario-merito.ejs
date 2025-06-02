@@ -155,6 +155,10 @@
                 loadSavedData();
             }, []);
 
+            useEffect(() => {
+                calcularValorGlobal();
+            }, [formData.dadosProjeto.valorConcedente, formData.dadosProjeto.valorContrapartida]);
+
             const loadSavedData = () => {
                 const saved = localStorage.getItem('formData');
                 if (saved) {
@@ -523,12 +527,16 @@ const processarDados = async (data) => {
             }, [formData.proponente.cnpj]);
             
             const calcularValorGlobal = () => {
-                const valorConcedente = parseMoeda(formData.dadosProjeto.valorConcedente);
-                const valorContrapartida = parseMoeda(formData.dadosProjeto.valorContrapartida);
+                const valorConcedente = parseMoeda(formData.dadosProjeto.valorConcedente) || 0;
+                const valorContrapartida = parseMoeda(formData.dadosProjeto.valorContrapartida) || 0;
                 const valorGlobal = valorConcedente + valorContrapartida;
+                
                 setFormData(prev => ({
                     ...prev,
-                    dadosProjeto: { ...prev.dadosProjeto, valorGlobal: formatarMoeda(valorGlobal) }
+                    dadosProjeto: { 
+                        ...prev.dadosProjeto, 
+                        valorGlobal: formatarMoeda(valorGlobal.toString()) 
+                    }
                 }));
             };
 
@@ -2190,6 +2198,7 @@ const processarDados = async (data) => {
                                                 onBlur={(e) => {
                                                     const valor = parseMoeda(e.target.value);
                                                     handleInputChange('dadosProjeto', 'valorConcedente', formatarMoeda(valor));
+                                                    calcularValorGlobal(); // Chamada adicional aqui
                                                 }}
                                             />
                                         </label>
@@ -2205,6 +2214,7 @@ const processarDados = async (data) => {
                                                 onBlur={(e) => {
                                                     const valor = parseMoeda(e.target.value);
                                                     handleInputChange('dadosProjeto', 'valorContrapartida', formatarMoeda(valor));
+                                                    calcularValorGlobal(); // Chamada adicional aqui
                                                 }}
                                             />
                                         </label>
