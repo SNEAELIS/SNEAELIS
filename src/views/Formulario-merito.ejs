@@ -346,88 +346,6 @@ const updateGradeField = (index, field, newValue) => {
 };
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
  // Validação específica para gradeHoraria
     const gradeHoraria = formData.infoProjeto.gradeHoraria;
     if (!gradeHoraria || gradeHoraria.length === 0) {
@@ -727,164 +645,248 @@ if (saved) {
     };
 
     const buscarDadosMunicipio = async (municipioId) => {
-        if (!municipioId) {
-            console.warn('ID do município não fornecido.');
-            setFormData(prev => ({
-                ...prev,
-                proponente: {
-                    ...prev.proponente,
-                    numHabitantes: '',
-                    anoHabitantes: '',
-                    idh: '',
-                    anoIDH: ''
-                }
-            }));
-            return;
-        }
-        try {
-            // Buscar dados populacionais
-            const response = await fetch(`https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2021/variaveis/9324?localidades=N6[${municipioId}]`);
-            if (!response.ok) {
-                throw new Error(`Erro ${response.status}: ${response.statusText}`);
+    if (!municipioId) {
+        console.warn('ID do município não fornecido.');
+        setFormData(prev => ({
+            ...prev,
+            proponente: {
+                ...prev.proponente,
+                numHabitantes: '',
+                anoHabitantes: '',
+                idh: '',
+                anoIDH: ''
             }
-            const data = await response.json();
-            console.log('Dados populacionais retornados:', data);
+        }));
+        return;
+    }
 
-            // Extrair população e ano de referência
-            const populacao = data?.[0]?.resultados?.[0]?.series?.[0]?.serie?.['2021'] || '';
-            const anoReferencia = '2021'; // Ano fixo baseado na API usada (ajuste conforme a fonte)
-
-            // Atualizar formData com os dados populacionais
-            setFormData(prev => ({
-                ...prev,
-                proponente: {
-                    ...prev.proponente,
-                    numHabitantes: populacao ? populacao.toString() : '',
-                    anoHabitantes: anoReferencia
-                }
-            }));
-        } catch (error) {
-            console.error('Erro ao buscar dados do município:', error);
-            alert('Erro ao buscar dados populacionais do município. Verifique a conexão ou tente novamente.');
-            setFormData(prev => ({
-                ...prev,
-                proponente: {
-                    ...prev.proponente,
-                    numHabitantes: '',
-                    anoHabitantes: ''
-                }
-            }));
+    try {
+        // Buscar dados populacionais
+        const response = await fetch(`https://servicodados.ibge.gov.br/api/v3/agregados/6579/periodos/2021/variaveis/9324?localidades=N6[${municipioId}]`);
+        
+        if (!response.ok) {
+            throw new Error(`Erro ${response.status}: ${response.statusText}`);
         }
-    };
 
-    const carregarMunicipios = async (uf, retries = 3) => {
-        if (!uf || !/^[A-Z]{2}$/.test(uf)) {
-            console.warn(`UF inválida: "${uf}". Definindo municipios como vazio.`);
-            setMunicipios([]);
-            return [];
+        const data = await response.json();
+        console.log('Dados populacionais retornados:', data);
+
+        // Extrair população e ano de referência
+        const populacao = data?.[0]?.resultados?.[0]?.series?.[0]?.serie?.['2021'] || '';
+        const anoReferencia = '2021';
+
+        // Atualizar formData com os dados populacionais
+        setFormData(prev => ({
+            ...prev,
+            proponente: {
+                ...prev.proponente,
+                numHabitantes: populacao ? populacao.toString() : '',
+                anoHabitantes: anoReferencia,
+                // Mantém os outros dados do proponente inalterados
+                ...prev.proponente
+            }
+        }));
+    } catch (error) {
+        console.error('Erro ao buscar dados do município:', error);
+        alert('Erro ao buscar dados populacionais do município. Verifique a conexão ou tente novamente.');
+        setFormData(prev => ({
+            ...prev,
+            proponente: {
+                ...prev.proponente,
+                numHabitantes: '',
+                anoHabitantes: '',
+                // Mantém os outros dados do proponente inalterados
+                ...prev.proponente
+            }
+        }));
+    }
+};
+
+// Estado para controlar o carregamento
+const [loadingMunicipios, setLoadingMunicipios] = useState(false);
+const [errorUF, setErrorUF] = useState(null);
+
+// Função para carregar municípios com tratamento robusto
+const carregarMunicipiosPorUF = async (uf) => {
+    // Resetar estados
+    setErrorUF(null);
+    setMunicipios([]);
+    
+    // Validar UF
+    const ufNormalizada = String(uf).trim().toUpperCase();
+    if (!ufNormalizada || !/^[A-Z]{2}$/.test(ufNormalizada)) {
+        setErrorUF('UF inválida. Selecione uma UF válida.');
+        return;
+    }
+
+    setLoadingMunicipios(true);
+
+    try {
+        // Versão otimizada da chamada à API
+        const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufNormalizada}/municipios?orderBy=nome`);
+        
+        if (!response.ok) {
+            if (response.status === 404) {
+                throw new Error(`UF ${ufNormalizada} não encontrada no IBGE`);
+            }
+            throw new Error(`Erro na API: ${response.status}`);
         }
-        for (let attempt = 1; attempt <= retries; attempt++) {
-            try {
-                const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${uf}/municipios`);
-                if (!response.ok) {
-                    throw new Error(`Erro ${response.status}: ${response.statusText}`);
-                }
-                const data = await response.json();
-                console.log(`Municípios carregados para UF ${uf}:`, data);
-                setMunicipios(data || []);
-                return data || [];
-            } catch (error) {
-                console.error(`Tentativa ${attempt} falhou ao carregar municípios para UF ${uf}:`, error);
-                if (attempt === retries) {
-                    console.warn(`Não foi possível carregar municípios para UF ${uf}.`);
-                    alert(`Não foi possível carregar os municípios para UF ${uf}. Verifique sua conexão ou tente novamente.`);
+
+        const data = await response.json();
+        
+        if (!Array.isArray(data)) {
+            throw new Error('Formato de dados inválido retornado pela API');
+        }
+
+        // Ordenar municípios alfabeticamente
+        const municipiosOrdenados = data.sort((a, b) => 
+            a.nome.localeCompare(b.nome, 'pt-BR', { sensitivity: 'base' })
+        );
+
+        setMunicipios(municipiosOrdenados);
+        return municipiosOrdenados;
+
+    } catch (error) {
+        console.error(`Falha ao carregar municípios para UF ${ufNormalizada}:`, error);
+        setErrorUF(`Falha ao carregar municípios: ${error.message}`);
+        return [];
+    } finally {
+        setLoadingMunicipios(false);
+    }
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+const carregarMunicipios = async (uf, retries = 3) => {
+    // Validação mais robusta da UF
+    if (!uf || typeof uf !== 'string' || !/^[A-Z]{2}$/.test(uf.trim())) {
+        console.error(`UF inválida: "${uf}". Deve ser sigla com 2 letras maiúsculas.`);
+        setMunicipios([]);
+        return [];
+    }
+
+    const ufNormalizada = uf.trim().toUpperCase();
+    
+    for (let attempt = 1; attempt <= retries; attempt++) {
+        try {
+            const response = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${ufNormalizada}/municipios`);
+            
+            if (!response.ok) {
+                if (response.status === 404) {
+                    console.error(`UF "${ufNormalizada}" não encontrada no IBGE.`);
                     setMunicipios([]);
                     return [];
                 }
+                throw new Error(`Erro ${response.status}: ${response.statusText}`);
             }
-        }
-    };
 
-    const preencherMunicipio = async (nomeMunicipio) => {
-        if (!nomeMunicipio) {
-            console.warn('Nome do município não fornecido.');
-            setFormData(prev => ({
-                ...prev,
-                proponente: { ...prev.proponente, cidade: '' }
-            }));
-            return;
-        }
-
-        // Verificar se nomeMunicipio é um ID (ex.: '1300102')
-        if (/^\d+$/.test(nomeMunicipio)) {
-            console.warn(`nomeMunicipio "${nomeMunicipio}" parece ser um ID, não um nome.`);
+            const data = await response.json();
             
-            setFormData(prev => ({
-                ...prev,
-                proponente: { ...prev.proponente, cidade: nomeMunicipio }
-            }));
-
-            if (formData.proponente.uf) {
-                const lista = await carregarMunicipios(formData.proponente.uf);
-
-                if (Array.isArray(lista)) {
-                    const municipioId = Number(nomeMunicipio.trim());
-                    const municipio = lista.find(mun => mun.id === municipioId);
-
-                    if (municipio) {
-                        console.log('Município encontrado pelo ID:', municipio.nome);
-                        buscarDadosMunicipio(municipio.id);
-                    } else {
-                        console.warn(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
-                        alert(`Município com ID "${municipioId}" não encontrado para UF ${formData.proponente.uf}.`);
-                    }
-                } else {
-                    console.warn('Falha ao obter a lista de municípios.');
-                    alert('Erro ao carregar municípios. Tente novamente.');
-                }
+            if (!Array.isArray(data)) {
+                throw new Error('Resposta do servidor não é um array válido');
             }
-            return;
-        }
-        // Garantir que municipios esteja carregado
-        if (!municipios.length && formData.proponente.uf) {
-            console.log(`Carregando municípios para UF ${formData.proponente.uf}...`);
-            await carregarMunicipios(formData.proponente.uf);
-        }
 
-        const normalizedInput = normalizeString(nomeMunicipio);
-        const municipio = municipios.find(mun => {
-            const normalizedMun = normalizeString(mun.nome);
-            return (
-                normalizedMun === normalizedInput ||
-                normalizedMun.includes(normalizedInput) ||
-                normalizedInput.includes(normalizedMun)
-            );
-        });
+            console.log(`Municípios carregados para UF ${ufNormalizada}:`, data.length, 'itens');
+            setMunicipios(data);
+            return data;
 
-        if (municipio) {
-            console.log('Município encontrado pelo nome:', municipio.nome, 'ID:', municipio.id);
-            setFormData(prev => ({
-                ...prev,
-                proponente: { ...prev.proponente, cidade: municipio.id }
-            }));
-            buscarDadosMunicipio(municipio.id);
-        } else {
-            console.warn(`Município "${nomeMunicipio}" não encontrado para UF ${formData.proponente.uf}. Municipios disponíveis:`, municipios);
-            setFormData(prev => ({
-                ...prev,
-                proponente: { ...prev.proponente, cidade: '' }
-            }));
-            alert(`Município "${nomeMunicipio}" não encontrado na lista de municípios da UF ${formData.proponente.uf}.`);
+        } catch (error) {
+            console.error(`Tentativa ${attempt} falhou ao carregar municípios para UF ${ufNormalizada}:`, error);
+            
+            if (attempt === retries) {
+                console.error(`Falha final ao carregar municípios para UF ${ufNormalizada} após ${retries} tentativas`);
+                setMunicipios([]);
+                return [];
+            }
+            
+            // Espera exponencial antes de tentar novamente
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempt));
         }
-    };
+    }
+};
 
+// Função para preencher município com busca precisa
+const preencherMunicipio = async (inputMunicipio) => {
+    if (!inputMunicipio || !formData.proponente?.uf) {
+        setFormData(prev => ({
+            ...prev,
+            proponente: { ...prev.proponente, cidade: '' }
+        }));
+        return;
+    }
+
+    // Garantir que temos municípios carregados para a UF atual
+    if (!municipios.length || municipios[0]?.microrregiao?.mesorregiao?.UF?.sigla !== formData.proponente.uf) {
+        await carregarMunicipiosPorUF(formData.proponente.uf);
+    }
+
+    const inputNormalizado = normalizeString(inputMunicipio);
+    let municipioEncontrado = null;
+
+    // Busca por ID (se input for numérico)
+    if (/^\d+$/.test(inputNormalizado)) {
+        municipioEncontrado = municipios.find(m => m.id === parseInt(inputNormalizado, 10));
+    } 
+    // Busca por nome exato
+    else {
+        municipioEncontrado = municipios.find(m => 
+            normalizeString(m.nome) === inputNormalizado
+        );
+    }
+
+    // Fallback: busca parcial
+    if (!municipioEncontrado) {
+        municipioEncontrado = municipios.find(m => 
+            normalizeString(m.nome).includes(inputNormalizado) ||
+            inputNormalizado.includes(normalizeString(m.nome))
+        );
+    }
+
+    if (municipioEncontrado) {
+        setFormData(prev => ({
+            ...prev,
+            proponente: {
+                ...prev.proponente,
+                cidade: municipioEncontrado.id.toString()
+            }
+        }));
+        await buscarDadosMunicipio(municipioEncontrado.id);
+    } else {
+        setErrorUF(`Município "${inputMunicipio}" não encontrado na UF ${formData.proponente.uf}`);
+        setFormData(prev => ({
+            ...prev,
+            proponente: { ...prev.proponente, cidade: '' }
+        }));
+    }
+};
+
+   // Função auxiliar para normalizar strings (remover acentos, lowercase, etc)
     const normalizeString = (str) => {
-        return str
-            ?.toLowerCase()
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '') // Remove acentos
-            .replace(/[^a-z0-9\s]/g, ''); // Remove caracteres especiais
+        return String(str).normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+            .toLowerCase()
+            .replace(/\s+/g, ' ')
+            .trim();
     };
+
 
     const calcularVigenciaTotal = () => {
         const periodoEstruturacao = parseFloat(formData.dadosProjeto.periodoEstruturacao) || 1;
@@ -922,15 +924,25 @@ if (saved) {
             setFormularioValido(isValid);
         }, [formData]);
 
-    const calcularValorGlobal = () => {
-        const valorConcedente = parseMoeda(formData.dadosProjeto.valorConcedente);
-        const valorContrapartida = parseMoeda(formData.dadosProjeto.valorContrapartida);
+    // 1. Primeiro, vamos modificar a função para ser mais robusta
+    const calcularValorGlobal = (concedente, contrapartida) => {
+        const valorConcedente = parseMoeda(concedente) || 0;
+        const valorContrapartida = parseMoeda(contrapartida) || 0;
         const valorGlobal = valorConcedente + valorContrapartida;
-        setFormData(prev => ({
-            ...prev,
-            dadosProjeto: { ...prev.dadosProjeto, valorGlobal: formatarMoeda(valorGlobal) }
-        }));
+        return formatarMoeda(valorGlobal);
     };
+    
+    // 2. No seu componente, adicione um useEffect para calcular automaticamente
+useEffect(() => {
+    const novoValorGlobal = calcularValorGlobal(
+        formData.dadosProjeto.valorConcedente,
+        formData.dadosProjeto.valorContrapartida
+    );
+    setFormData(prev => ({
+        ...prev,
+        dadosProjeto: { ...prev.dadosProjeto, valorGlobal: novoValorGlobal }
+    }));
+}, [formData.dadosProjeto.valorConcedente, formData.dadosProjeto.valorContrapartida]);
 
     const calcularPublicoIndireto = (publicoDireto) => {
         const publicoDiretoNum = parseInt(publicoDireto) || 0;
@@ -2451,58 +2463,95 @@ const sections = {
                         </fieldset>
 
                             <fieldset className="border p-4 rounded">
-                            <legend className="text-blue-900 font-bold">1.4 Localidade – Índice de Desenvolvimento Humano</legend>
-                            <div className="space-y-4">
-                                <label className="block">
-                                <span className="text-red-500">*</span> UF:
-                                <select
-                                    className="w-32 p-2 border rounded"
-                                    value={formData.proponente.uf}
-                                    onChange={(e) => handleInputChange('proponente', 'uf', e.target.value)}
-                                    required
-                                >
-                                    <option value="">Selecione</option>
-                                    {['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'].map(uf => (
-                                    <option key={uf} value={uf}>{uf}</option>
-                                    ))}
-                                </select>
-                                </label>
-                                <label className="block">
-                                <span className="text-red-500">*</span> Cidade:
-                                <select
-                                    value={formData.proponente.cidade}
-                                    onChange={(e) => handleInputChange('proponente', 'cidade', e.target.value)}
-                                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-900 focus:border-blue-900"
-                                    disabled={!formData.proponente.uf}
-                                >
-                                    <option value="">Selecione</option>
-                                    {municipios.map(mun => (
-                                    <option key={mun.id} value={mun.id}>{mun.nome}</option>
-                                    ))}
-                                </select>
-                                </label>
-                                <label className="block">
-                                <span className="text-red-500">*</span> IDH:
-                                <input
-                                    type="text"
-                                    className="w-full p-2 border rounded bg-gray-100"
-                                    value={formData.proponente.idh}
-                                    onChange={(e) => handleInputChange('proponente', 'idh', e.target.value)}
-                                    required
-                                />
-                                </label>
-                                <label className="block">
-                                <span className="text-red-500">*</span> Ano de Referência:
-                                <input
-                                    type="number"
-                                    className="w-full p-2 border rounded bg-gray-100"
-                                    value={formData.proponente.anoIDH}
-                                    onChange={(e) => handleInputChange('proponente', 'anoIDH', e.target.value)}
-                                    required
-                                />
-                                </label>
-                            </div>
-                            </fieldset>
+    <legend className="text-blue-900 font-bold">1.4 Localidade – Índice de Desenvolvimento Humano</legend>
+    <div className="space-y-4">
+        {/* Campo UF - Modificado para carregar municípios automaticamente */}
+        <label className="block">
+            <span className="text-red-500">*</span> UF:
+            <select
+                className="w-32 p-2 border rounded"
+                value={formData.proponente.uf}
+                onChange={async (e) => {
+                    const novaUF = e.target.value;
+                    // Atualiza a UF e limpa a cidade selecionada
+                    handleInputChange('proponente', 'uf', novaUF);
+                    // Carrega os municípios da nova UF
+                    if (novaUF) {
+                        await carregarMunicipiosPorUF(novaUF);
+                    } else {
+                        setMunicipios([]);
+                    }
+                }}
+                required
+            >
+                <option value="">Selecione</option>
+                {['AC', 'AL', 'AM', 'AP', 'BA', 'CE', 'DF', 'ES', 'GO', 'MA', 'MG', 'MS', 'MT', 'PA', 'PB', 'PE', 'PI', 'PR', 'RJ', 'RN', 'RO', 'RR', 'RS', 'SC', 'SE', 'SP', 'TO'].map(uf => (
+                    <option key={uf} value={uf}>{uf}</option>
+                ))}
+            </select>
+            {loadingMunicipios && <span className="text-sm text-gray-500 ml-2">Carregando municípios...</span>}
+            {errorUF && <span className="text-sm text-red-500 ml-2">{errorUF}</span>}
+        </label>
+
+        {/* Campo Cidade - Melhorado com feedback visual */}
+        <label className="block">
+            <span className="text-red-500">*</span> Cidade:
+            <select
+                value={formData.proponente.cidade}
+                onChange={(e) => {
+                    handleInputChange('proponente', 'cidade', e.target.value);
+                    // Busca automaticamente os dados do município quando selecionado
+                    if (e.target.value) {
+                        buscarDadosMunicipio(e.target.value);
+                    }
+                }}
+                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-900 focus:border-blue-900"
+                disabled={!formData.proponente.uf || loadingMunicipios}
+            >
+                <option value="">Selecione</option>
+                {municipios.length > 0 ? (
+                    municipios.map(mun => (
+                        <option key={mun.id} value={mun.id}>{mun.nome}</option>
+                    ))
+                ) : (
+                    formData.proponente.uf && <option value="" disabled>Nenhum município encontrado</option>
+                )}
+            </select>
+        </label>
+
+        {/* Campos IDH e Ano - Melhorados com validação */}
+        <label className="block">
+            <span className="text-red-500">*</span> IDH:
+            <input
+                type="number"
+                step="0.001"
+                min="0"
+                max="1"
+                className="w-full p-2 border rounded bg-gray-100"
+                value={formData.proponente.idh}
+                onChange={(e) => handleInputChange('proponente', 'idh', e.target.value)}
+                required
+                disabled={!formData.proponente.cidade}
+            />
+            <span className="text-xs text-gray-500">Valor entre 0 e 1 (ex: 0.759)</span>
+        </label>
+
+        <label className="block">
+            <span className="text-red-500">*</span> Ano de Referência:
+            <input
+                type="number"
+                min="1990"
+                max={new Date().getFullYear()}
+                className="w-full p-2 border rounded bg-gray-100"
+                value={formData.proponente.anoIDH}
+                onChange={(e) => handleInputChange('proponente', 'anoIDH', e.target.value)}
+                required
+                disabled={!formData.proponente.cidade}
+            />
+            <span className="text-xs text-gray-500">Ano entre 1990 e {new Date().getFullYear()}</span>
+        </label>
+    </div>
+</fieldset>
 
                             <fieldset className="border p-4 rounded">
                             <legend className="text-blue-900 font-bold">1.5 População - Característica Demográfica</legend>
@@ -2925,50 +2974,57 @@ const sections = {
                                     </div>
                                 </fieldset>
 
-                                <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">2.8 Cronograma de Execução Físico-Financeira</legend>
-                                    <div className="space-y-4">
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Valor do Concedente:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.dadosProjeto.valorConcedente}
-                                                onChange={(e) => handleInputChange('dadosProjeto', 'valorConcedente', e.target.value)}
-                                                placeholder="R$ 0,00"
-                                                required
-                                                onBlur={(e) => {
-                                                    const valor = parseMoeda(e.target.value);
-                                                    handleInputChange('dadosProjeto', 'valorConcedente', formatarMoeda(valor));
-                                                }}
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Valor Contrapartida:
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded"
-                                                value={formData.dadosProjeto.valorContrapartida}
-                                                onChange={(e) => handleInputChange('dadosProjeto', 'valorContrapartida', e.target.value)}
-                                                placeholder="R$ 0,00"
-                                                required
-                                                onBlur={(e) => {
-                                                    const valor = parseMoeda(e.target.value);
-                                                    handleInputChange('dadosProjeto', 'valorContrapartida', formatarMoeda(valor));
-                                                }}
-                                            />
-                                        </label>
-                                        <label className="block">
-                                            Valor Global (calculado automaticamente):
-                                            <input
-                                                type="text"
-                                                className="w-full p-2 border rounded bg-gray-100"
-                                                value={formData.dadosProjeto.valorGlobal}
-                                                readOnly
-                                            />
-                                        </label>
-                                    </div>
-                                </fieldset>
+                                // 3. Atualize o campo Valor Global para usar o valor calculado:
+<fieldset className="border p-4 rounded">
+    <legend className="text-blue-900 font-bold">2.8 Cronograma de Execução Físico-Financeira</legend>
+    <div className="space-y-4">
+        <label className="block">
+            <span className="text-red-500">*</span> Valor do Concedente:
+            <input
+                type="text"
+                className="w-full p-2 border rounded"
+                value={formData.dadosProjeto.valorConcedente}
+                onChange={(e) => {
+                    handleInputChange('dadosProjeto', 'valorConcedente', e.target.value);
+                    // Não precisamos chamar calcularValorGlobal aqui, o useEffect cuidará disso
+                }}
+                placeholder="R$ 0,00"
+                required
+                onBlur={(e) => {
+                    const valor = parseMoeda(e.target.value) || 0;
+                    handleInputChange('dadosProjeto', 'valorConcedente', formatarMoeda(valor));
+                }}
+            />
+        </label>
+        <label className="block">
+            <span className="text-red-500">*</span> Valor Contrapartida:
+            <input
+                type="text"
+                className="w-full p-2 border rounded"
+                value={formData.dadosProjeto.valorContrapartida}
+                onChange={(e) => {
+                    handleInputChange('dadosProjeto', 'valorContrapartida', e.target.value);
+                    // Não precisamos chamar calcularValorGlobal aqui, o useEffect cuidará disso
+                }}
+                placeholder="R$ 0,00"
+                required
+                onBlur={(e) => {
+                    const valor = parseMoeda(e.target.value) || 0;
+                    handleInputChange('dadosProjeto', 'valorContrapartida', formatarMoeda(valor));
+                }}
+            />
+        </label>
+        <label className="block">
+            Valor Global (calculado automaticamente):
+            <input
+                type="text"
+                className="w-full p-2 border rounded bg-gray-100"
+                value={formData.dadosProjeto.valorGlobal || 'R$ 0,00'}
+                readOnly
+            />
+        </label>
+    </div>
+</fieldset>
 
                                 <div className="flex gap-4">
                                     <button
@@ -3456,85 +3512,113 @@ const sections = {
 
                                         <div className="overflow-x-auto">
                                             <table className="min-w-full bg-white border rounded">
-                                            <thead>
-                                                <tr className="bg-gray-100">
-                                                <th className="p-2 border">Dia</th>
-                                                <th className="p-2 border">Horário</th>
-                                                <th className="p-2 border">Atividade</th>
-                                                <th className="p-2 border">Professor/Monitor</th>
-                                                <th className="p-2 border">Quantidade Beneficiários</th>
-                                                <th className="p-2 border">Ações</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {(row.gradeHorariaItens || []).map((item, itemIndex) => (
-                                                <tr key={itemIndex}>
-                                                    <td className="p-2 border">
-                                                    <input
-                                                        type="text"
-                                                        className="w-full border rounded p-1"
-                                                        placeholder="Ex.: Segunda"
-                                                        value={item.dia}
-                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'dia', e.target.value)}
-                                                    />
-                                                    </td>
-                                                    <td className="p-2 border">
-                                                    <input
-                                                        type="text"
-                                                        className="w-full border rounded p-1"
-                                                        placeholder="08:00 às 10:00"
-                                                        value={item.horario}
-                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'horario', e.target.value)}
-                                                    />
-                                                    </td>
-                                                    <td className="p-2 border">
-                                                    <input
-                                                        type="text"
-                                                        className="w-full border rounded p-1"
-                                                        placeholder="Futebol 6 a 11 anos"
-                                                        value={item.atividade}
-                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'atividade', e.target.value)}
-                                                    />
-                                                    </td>
-                                                    <td className="p-2 border">
-                                                    <input
-                                                        type="text"
-                                                        className="w-full border rounded p-1"
-                                                        placeholder="Professor / Monitor"
-                                                        value={item.responsavel}
-                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'responsavel', e.target.value)}
-                                                    />
-                                                    </td>
-                                                    <td className="p-2 border">
-                                                    <input
-                                                        type="number"
-                                                        className="w-full border rounded p-1"
-                                                        placeholder="Ex.: 15"
-                                                        value={item.quantidadeBeneficiarios || ''}
-                                                        onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'quantidadeBeneficiarios', e.target.value)}
-                                                        required
-                                                    />
-                                                    </td>
-                                                    <td className="p-2 border text-center">
-                                                    <button
-                                                        type="button"
-                                                        className="text-red-500 hover:text-red-700"
-                                                        onClick={() => handleRemoveGradeItem(index, itemIndex)}
-                                                    >
-                                                        ×
-                                                    </button>
-                                                    </td>
-                                                </tr>
-                                                ))}
-                                            </tbody>
+                                                <thead>
+                                                    <tr className="bg-gray-100">
+                                                        <th className="p-2 border">Dia</th>
+                                                        <th className="p-2 border">Horário</th>
+                                                        <th className="p-2 border">Atividade</th>
+                                                        <th className="p-2 border">Professor (Qtd)</th>
+                                                        <th className="p-2 border">Monitor (Qtd)</th>
+                                                        <th className="p-2 border">Instrutor (Qtd)</th>
+                                                        <th className="p-2 border">Quantidade Beneficiários</th>
+                                                        <th className="p-2 border">Ações</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {(row.gradeHorariaItens || []).map((item, itemIndex) => (
+                                                        <tr key={itemIndex}>
+                                                            <td className="p-2 border">
+                                                                <input
+                                                                    type="text"
+                                                                    className="w-full border rounded p-1"
+                                                                    placeholder="Ex.: Segunda"
+                                                                    value={item.dia}
+                                                                    onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'dia', e.target.value)}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                <input
+                                                                    type="text"
+                                                                    className="w-full border rounded p-1"
+                                                                    placeholder="08:00 às 10:00"
+                                                                    value={item.horario}
+                                                                    onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'horario', e.target.value)}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                <input
+                                                                    type="text"
+                                                                    className="w-full border rounded p-1"
+                                                                    placeholder="Futebol 6 a 11 anos"
+                                                                    value={item.atividade}
+                                                                    onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'atividade', e.target.value)}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    className="w-full border rounded p-1"
+                                                                    placeholder="Qtd. Professores"
+                                                                    value={item.professor || ''}
+                                                                    onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'professor', e.target.value)}
+                                                                    onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    className="w-full border rounded p-1"
+                                                                    placeholder="Qtd. Monitores"
+                                                                    value={item.monitor || ''}
+                                                                    onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'monitor', e.target.value)}
+                                                                    onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    className="w-full border rounded p-1"
+                                                                    placeholder="Qtd. Instrutores"
+                                                                    value={item.instrutor || ''}
+                                                                    onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'instrutor', e.target.value)}
+                                                                    onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2 border">
+                                                                <input
+                                                                    type="number"
+                                                                    min="0"
+                                                                    className="w-full border rounded p-1"
+                                                                    placeholder="Ex.: 15"
+                                                                    value={item.quantidadeBeneficiarios || ''}
+                                                                    onChange={(e) => handleUpdateGradeItem(index, itemIndex, 'quantidadeBeneficiarios', e.target.value)}
+                                                                    required
+                                                                    onKeyPress={(e) => !/[0-9]/.test(e.key) && e.preventDefault()}
+                                                                />
+                                                            </td>
+                                                            <td className="p-2 border text-center">
+                                                                <button
+                                                                    type="button"
+                                                                    className="text-red-500 hover:text-red-700"
+                                                                    onClick={() => handleRemoveGradeItem(index, itemIndex)}
+                                                                >
+                                                                    ×
+                                                                </button>
+                                                            </td>
+                                                        </tr>
+                                                    ))}
+                                                </tbody>
                                             </table>
 
                                             <button
-                                            type="button"
-                                            className="mt-2 bg-blue-600 text-white px-3 py-1 rounded"
-                                            onClick={() => handleAddGradeItem(index)}
+                                                type="button"
+                                                className="mt-2 bg-blue-600 text-white px-3 py-1 rounded"
+                                                onClick={() => handleAddGradeItem(index)}
                                             >
-                                            + Adicionar Linha
+                                                + Adicionar Linha
                                             </button>
                                         </div>
                                         </div>
