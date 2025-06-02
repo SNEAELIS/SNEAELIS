@@ -141,13 +141,26 @@ const handleRemoveGradeItem = (nucleoIndex, itemIndex) => {
 
 const handleUpdateGradeItem = (nucleoIndex, itemIndex, field, value) => {
   setFormData((prev) => {
-    const updated = [...prev.infoProjeto.gradeHoraria];
-    updated[nucleoIndex].gradeHorariaItens[itemIndex][field] = value;
+    const gradeHorariaAtualizada = prev.infoProjeto.gradeHoraria.map((nucleo, i) => {
+      if (i !== nucleoIndex) return nucleo;
+          const gradeHorariaItensAtualizada = nucleo.gradeHorariaItens.map((item, j) => {
+        if (j !== itemIndex) return item;
+        return {
+          ...item,
+          [field]: value
+        };
+      });
+      return {
+        ...nucleo,
+        gradeHorariaItens: gradeHorariaItensAtualizada
+      };
+    });
+
     return {
       ...prev,
       infoProjeto: {
         ...prev.infoProjeto,
-        gradeHoraria: updated
+        gradeHoraria: gradeHorariaAtualizada
       }
     };
   });
@@ -1636,6 +1649,7 @@ if (Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gra
                 ? formData.infoProjeto.eventosSelecionados
                 : [];
             const abrangencia = formData.infoProjeto.abrangenciaEventos || 'Por Projeto';
+            const justificativaPorNucleo = formData.infoProjeto.justificativaPorNucleo || '';
             const numNucleos = parseInt(formData.dadosProjeto.quantidadeNucleos) || 1;
             const multiplicador = abrangencia === 'Por Núcleo' ? numNucleos : 1;
 
@@ -1661,6 +1675,9 @@ if (Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gra
             }
 
             eventosContent += `Abrangência: ${abrangencia}\n`;
+            if (abrangencia === 'Por Núcleo' && justificativaPorNucleo.trim() !== '') {
+                eventosContent += `\nJustificativa para realização dos eventos por núcleo:\n${justificativaPorNucleo.trim()}\n`;
+            }
             eventosContent += `Total de Eventos: ${eventosSelecionados.length * multiplicador}`;
 
             currentY = createTable(
@@ -1670,7 +1687,6 @@ if (Array.isArray(formData.infoProjeto.gradeHoraria) && formData.infoProjeto.gra
                 currentY,
                 [190]
             );
-
             // 3.8 RECURSOS HUMANOS
             const tipoRH = formData.infoProjeto.tipoRH?.toLowerCase() === 'cedidos' ? 'cedidos' : 'contratados';
             const recursosHumanosIntro = [
@@ -3177,83 +3193,89 @@ const sections = {
                                 </fieldset>
 
                                 <fieldset className="border p-4 rounded">
-                                    <legend className="text-blue-900 font-bold">3.7 Eventos</legend>
-                                    <div className="space-y-4">
-                                        <p className="italic text-gray-600">
-                                            Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica.
-                                        </p>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Selecione os eventos a serem realizados:
-                                            <div className="flex flex-wrap gap-4 mt-2">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        value="Evento de Abertura"
-                                                        checked={(formData.infoProjeto.eventosSelecionados || []).includes('Evento de Abertura')}
-                                                        onChange={(e) => {
-                                                            const updatedEventos = e.target.checked
-                                                                ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
-                                                                : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
-                                                            handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
-                                                        }}
-                                                    />
-                                                    <span className="ml-2">Evento de Abertura</span>
-                                                </label>
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="checkbox"
-                                                        value="Evento de Encerramento"
-                                                        checked={(formData.infoProjeto.eventosSelecionados || []).includes('Evento de Encerramento')}
-                                                        onChange={(e) => {
-                                                            const updatedEventos = e.target.checked
-                                                                ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
-                                                                : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
-                                                            handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
-                                                        }}
-                                                    />
-                                                    <span className="ml-2">Evento de Encerramento</span>
-                                                </label>
-                                            </div>
-                                        </label>
-                                        <label className="block">
-                                            <span className="text-red-500">*</span> Os eventos serão realizados:
-                                            <div className="flex gap-4 mt-2">
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="abrangenciaEventos"
-                                                        value="Por Projeto"
-                                                        checked={formData.infoProjeto.abrangenciaEventos === 'Por Projeto'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
-                                                        required
-                                                    />
-                                                    <span className="ml-2">Por Projeto (1 ocorrência por evento)</span>
-                                                </label>
-                                                <label className="flex items-center">
-                                                    <input
-                                                        type="radio"
-                                                        name="abrangenciaEventos"
-                                                        value="Por Núcleo"
-                                                        checked={formData.infoProjeto.abrangenciaEventos === 'Por Núcleo'}
-                                                        onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
-                                                    />
-                                                    <span className="ml-2">Por Núcleo (multiplicado pelo número de núcleos)</span>
-                                                </label>
-                                            </div>
-                                        </label>
-                                        <p className="italic text-gray-600">
-                                            <strong>Evento de Abertura:</strong> Apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania. Inclui:
-                                        </p>
-                                        <ul className="list-disc pl-5">
-                                            <li>Divulgação ampla: Informar à comunidade sobre o projeto e como participar.</li>
-                                            <li>Educação e conscientização: Sensibilizar sobre temas relacionados ao esporte.</li>
-                                            <li>Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de sustentar um projeto transformador.</li>
-                                        </ul>
-                                        <p className="italic text-gray-600">
-                                            <strong>Evento de Encerramento:</strong> Comemorará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades. Todos os participantes receberão medalhas, e os três melhores colocados receberão troféus.
-                                        </p>
-                                    </div>
-                                </fieldset>
+                                        <legend className="text-blue-900 font-bold">3.7 Eventos</legend>
+                                        <div className="space-y-4">
+                                            <p className="italic text-gray-600">
+                                                Têm como objetivo celebrar o início e o sucesso do projeto, fortalecer o engajamento da comunidade e promover um ambiente seguro. Durante cada evento, serão distribuídos kits lanches aos beneficiados e à equipe técnica.
+                                            </p>
+
+                                            {/* Checkboxes dos eventos */}
+                                            <label className="block">
+                                                <span className="text-red-500">*</span> Selecione os eventos a serem realizados:
+                                                <div className="flex flex-wrap gap-4 mt-2">
+                                                    {["Evento de Abertura", "Evento de Encerramento"].map((evento) => (
+                                                        <label key={evento} className="flex items-center">
+                                                            <input
+                                                                type="checkbox"
+                                                                value={evento}
+                                                                checked={(formData.infoProjeto.eventosSelecionados || []).includes(evento)}
+                                                                onChange={(e) => {
+                                                                    const updatedEventos = e.target.checked
+                                                                        ? [...(formData.infoProjeto.eventosSelecionados || []), e.target.value]
+                                                                        : (formData.infoProjeto.eventosSelecionados || []).filter(item => item !== e.target.value);
+                                                                    handleInputChange('infoProjeto', 'eventosSelecionados', updatedEventos);
+                                                                }}
+                                                            />
+                                                            <span className="ml-2">{evento}</span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </label>
+
+                                            {/* Radios de abrangência */}
+                                            <label className="block">
+                                                <span className="text-red-500">*</span> Os eventos serão realizados:
+                                                <div className="flex gap-4 mt-2">
+                                                    {["Por Projeto", "Por Núcleo"].map((opcao) => (
+                                                        <label key={opcao} className="flex items-center">
+                                                            <input
+                                                                type="radio"
+                                                                name="abrangenciaEventos"
+                                                                value={opcao}
+                                                                checked={formData.infoProjeto.abrangenciaEventos === opcao}
+                                                                onChange={(e) => handleInputChange('infoProjeto', 'abrangenciaEventos', e.target.value)}
+                                                                required
+                                                            />
+                                                            <span className="ml-2">
+                                                                {opcao === "Por Projeto"
+                                                                    ? "Por Projeto (1 ocorrência por evento)"
+                                                                    : "Por Núcleo (multiplicado pelo número de núcleos)"}
+                                                            </span>
+                                                        </label>
+                                                    ))}
+                                                </div>
+                                            </label>
+
+                                            {/* Campo condicional de justificativa */}
+                                            {formData.infoProjeto.abrangenciaEventos === "Por Núcleo" && (
+                                                <div>
+                                                    <label className="block mt-4">
+                                                        <span className="text-red-500">*</span> Justificativa para a realização por núcleo:
+                                                        <textarea
+                                                            className="mt-2 block w-full border border-gray-300 rounded p-2"
+                                                            value={formData.infoProjeto.justificativaPorNucleo || ""}
+                                                            onChange={(e) => handleInputChange('infoProjeto', 'justificativaPorNucleo', e.target.value)}
+                                                            rows={4}
+                                                            required
+                                                        />
+                                                    </label>
+                                                </div>
+                                            )}
+
+                                            {/* Descrições dos eventos */}
+                                            <p className="italic text-gray-600">
+                                                <strong>Evento de Abertura:</strong> Apresentará o projeto à comunidade local, reforçando sua relevância para o desenvolvimento social e esportivo, promovendo valores como inclusão social, saúde e cidadania. Inclui:
+                                            </p>
+                                            <ul className="list-disc pl-5">
+                                                <li>Divulgação ampla: Informar à comunidade sobre o projeto e como participar.</li>
+                                                <li>Educação e conscientização: Sensibilizar sobre temas relacionados ao esporte.</li>
+                                                <li>Fortalecimento da autoestima comunitária: Mostrar que a comunidade é capaz de sustentar um projeto transformador.</li>
+                                            </ul>
+                                            <p className="italic text-gray-600">
+                                                <strong>Evento de Encerramento:</strong> Comemorará o término do projeto com competições/torneios, cerimônia de premiação e demonstrações de habilidades. Todos os participantes receberão medalhas, e os três melhores colocados receberão troféus.
+                                            </p>
+                                        </div>
+                                    </fieldset>
                                 <fieldset className="border p-4 rounded">
                                 <legend className="text-blue-900 font-bold">3.8 Grade Horária das Atividades</legend>
 
